@@ -10,7 +10,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import microservice.base_source.presentation.exception.type.OtherException;
+import microservice.base_source.presentation.exception.type.CategoryNotFoundException;
+import microservice.base_source.presentation.exception.type.ProductNotFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -42,13 +43,23 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 
-	// Define OtherException
-    @ExceptionHandler(OtherException.class)
-    public ResponseEntity<Object> handleOtherException(OtherException ex) {
+	// Define ProductNotFoundException
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<Object> handleOtherException(ProductNotFoundException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("warn", "Bad Request");
-        body.put("message", "other exxception define");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    // Define CategoryNotFoundException
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<Object> handleOtherException(CategoryNotFoundException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("warn", "Bad Request");
+        body.put("message", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 }
