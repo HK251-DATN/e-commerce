@@ -1,0 +1,160 @@
+{
+  "info": {
+    "name": "Base Source API Collection",
+    "_postman_id": "d1e3f044-7b12-4fc4-9d8d-abc123456789",
+    "description": "API collection for Category, ProductGeneral, ProductDetail",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Category APIs",
+      "item": [
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"categoryName\": \"Electronics\",\n    \"displayOrder\": 1,\n    \"description\": \"Electrical devices\",\n    \"iconUrl\": \"https://cdn.com/icon.png\",\n    \"isSubCategory\": \"N\",\n    \"belongToCategory\": null\n}"
+            },
+            "url": { "raw": "http://localhost:8080/api/categories", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "categories"] }
+          }
+        },
+        {
+          "name": "Get Category By ID",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/categories/1"
+          }
+        },
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/categories?page=0&size=20"
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"categoryName\": \"Updated Name\",\n    \"displayOrder\": 2,\n    \"description\": \"Updated description\",\n    \"iconUrl\": \"https://cdn.com/new-icon.png\",\n    \"isSubCategory\": \"Y\",\n    \"belongToCategory\": 1\n}"
+            },
+            "url": "http://localhost:8080/api/categories/1"
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "url": "http://localhost:8080/api/categories/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ProductGeneral APIs",
+      "item": [
+        {
+          "name": "Create Product General",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"productName\": \"MacBook Pro\",\n    \"description\": \"High-end laptop\",\n    \"status\": \"ACTIVE\",\n    \"photoUrls\": \"[\\\"https://cdn.com/mac1.png\\\", \\\"https://cdn.com/mac2.png\\\"]\"\n}"
+            },
+            "url": "http://localhost:8080/api/product-generals"
+          }
+        },
+        {
+          "name": "Get Product General By ID",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/product-generals/1"
+          }
+        },
+        {
+          "name": "Get All Product Generals",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/product-generals?page=0&size=20"
+          }
+        },
+        {
+          "name": "Update Product General",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"productName\": \"MacBook Pro 2024\",\n    \"description\": \"Updated description\",\n    \"status\": \"INACTIVE\",\n    \"photoUrls\": \"[\\\"https://cdn.com/new1.png\\\"]\"\n}"
+            },
+            "url": "http://localhost:8080/api/product-generals/1"
+          }
+        },
+        {
+          "name": "Delete Product General",
+          "request": {
+            "method": "DELETE",
+            "url": "http://localhost:8080/api/product-generals/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ProductDetail APIs",
+      "item": [
+        {
+          "name": "Create Product Detail",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"description\": \"8GB RAM, 256GB SSD\",\n    \"status\": \"AVAILABLE\",\n    \"quantityAvailable\": 10,\n    \"price\": 1999.99,\n    \"belongToProductGeneral\": 1\n}"
+            },
+            "url": "http://localhost:8080/api/product-details"
+          }
+        },
+        {
+          "name": "Get Product Detail By ID",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/product-details/1"
+          }
+        },
+        {
+          "name": "Get All Product Details",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:8080/api/product-details?page=0&size=20"
+          }
+        },
+        {
+          "name": "Update Product Detail",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"description\": \"Updated Specs\",\n    \"status\": \"OUT_OF_STOCK\",\n    \"quantityAvailable\": 0,\n    \"price\": 1599.99,\n    \"belongToProductGeneral\": 1\n}"
+            },
+            "url": "http://localhost:8080/api/product-details/1"
+          }
+        },
+        {
+          "name": "Delete Product Detail",
+          "request": {
+            "method": "DELETE",
+            "url": "http://localhost:8080/api/product-details/1"
+          }
+        }
+      ]
+    }
+  ]
+}
