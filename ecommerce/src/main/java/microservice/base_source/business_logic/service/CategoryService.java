@@ -48,7 +48,10 @@ public class CategoryService implements CategoryUseCase {
 	@Override
 	public void delete(Long id) {
 		categoryRepository.findById(id)
-			.ifPresent(categoryRepository::delete);
+			.ifPresentOrElse(
+				categoryRepository::delete,
+				() -> {}	
+			);
 	}
 
 	@Override

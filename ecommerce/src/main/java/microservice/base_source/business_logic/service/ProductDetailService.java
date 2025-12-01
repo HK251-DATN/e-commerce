@@ -46,7 +46,10 @@ public class ProductDetailService implements ProductDetailUseCase {
 	@Override
 	public void delete(Long id) {
 		productDetailRepository.findById(id)
-			.ifPresent(productDetailRepository::delete);
+			.ifPresentOrElse(
+				productDetailRepository::delete,
+				() -> {}
+			);
 	}
 	
 }

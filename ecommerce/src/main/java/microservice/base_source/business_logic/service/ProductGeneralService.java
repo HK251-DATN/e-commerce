@@ -46,7 +46,10 @@ public class ProductGeneralService implements ProductGeneralUseCase {
 	@Override
 	public void delete(Long id) {
 		productGeneralRepository.findById(id)
-			.ifPresent(productGeneralRepository::delete);
+			.ifPresentOrElse(
+				productGeneralRepository::delete,
+				() -> {}
+			);
 	}
 
 	@Override

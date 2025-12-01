@@ -1,6 +1,5 @@
 package microservice.base_source.presentation.exception;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,54 +11,57 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import microservice.base_source.presentation.exception.type.CategoryNotFoundException;
 import microservice.base_source.presentation.exception.type.ProductNotFoundException;
+import microservice.base_source.presentation.response.global.ApiResponse;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 	// Exception not define
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleGeneralException(Exception ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("error", "Internal Server Error");
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    public <T> ResponseEntity<ApiResponse<String>> handleGeneralException(Exception ex) {
+        String guide = "Please contact the system administrator.";
+        ApiResponse<String> response = ApiResponse.ERROR(
+                "500",
+                "Internal Server Error",
+                guide);
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 	// Define Not validation dependency exxception
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationException(MethodArgumentNotValidException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("warn", "Validation Failed");
-
+    public <T> ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(MethodArgumentNotValidException ex) {
         // Lấy danh sách lỗi cụ thể cho từng field
         Map<String, String> fieldErrors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error -> 
             fieldErrors.put(error.getField(), error.getDefaultMessage())
         );
 
-        body.put("message", fieldErrors);
+        ApiResponse<Map<String, String>> response = ApiResponse.WARN(
+                HttpStatus.BAD_REQUEST.toString(),
+                "BAD REQUEST",
+                fieldErrors);
 
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
 	// Define ProductNotFoundException
     @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<Object> handleOtherException(ProductNotFoundException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("warn", "Bad Request");
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    public <T> ResponseEntity<ApiResponse<String>> handleOtherException(ProductNotFoundException ex) {
+        String guide = "Please check your request again";
+        ApiResponse<String> response = ApiResponse.WARN(
+                HttpStatus.BAD_REQUEST.toString(),
+                ex.getMessage(),
+                guide);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     // Define CategoryNotFoundException
     @ExceptionHandler(CategoryNotFoundException.class)
-    public ResponseEntity<Object> handleOtherException(CategoryNotFoundException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("warn", "Bad Request");
-        body.put("message", ex.getMessage());
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    public <T> ResponseEntity<ApiResponse<String>> handleOtherException(CategoryNotFoundException ex) {
+        String guide = "Please check your request again";
+        ApiResponse<String> response = ApiResponse.WARN(
+                HttpStatus.BAD_REQUEST.toString(),
+                ex.getMessage(),
+                guide);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }
