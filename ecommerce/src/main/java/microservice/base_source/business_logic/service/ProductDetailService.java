@@ -51,5 +51,10 @@ public class ProductDetailService implements ProductDetailUseCase {
 				() -> {}
 			);
 	}
+
+	@Override
+	public List<Object[]> search(Long categoryId, String searchString, Integer page, Integer size) {
+		return productDetailRepository.search(categoryId, searchString, page, size);
+	}
 	
 }

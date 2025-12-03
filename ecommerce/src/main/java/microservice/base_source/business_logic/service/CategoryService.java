@@ -56,9 +56,7 @@ public class CategoryService implements CategoryUseCase {
 
 	@Override
 	public List<Category> search(String searchName, Integer page, Integer size) {
-		Pageable pageable = PageRequest.of(page, size);
-		Page<Category> categoryPage = categoryRepository.search(searchName, pageable);
-		return categoryPage.getContent();
+		return categoryRepository.search(searchName, page, size);
 	}
 	
 }

@@ -7,10 +7,14 @@ import microservice.base_source.data_access.entity.ProductDetail;
 public interface ProductDetailUseCase {
 
 	/**
-	 * 
-	 * @return
+	 * Search products with pagination and optional filters.
+	 * @param categoryId
+	 * @param searchString
+	 * @param page
+	 * @param size
+	 * @return List of Object arrays ProductDetail container ProductGeneral data
 	 */
-	// List<ProductDetail> search();
+	List<Object[]> search(Long categoryId, String searchString, Integer page, Integer size);
 	List<ProductDetail> getAll(Integer page, Integer size);
 	ProductDetail get(Long id);
 	ProductDetail create(ProductDetail productDetail);

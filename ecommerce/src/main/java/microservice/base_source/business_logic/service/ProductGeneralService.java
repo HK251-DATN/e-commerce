@@ -54,8 +54,6 @@ public class ProductGeneralService implements ProductGeneralUseCase {
 
 	@Override
 	public List<ProductGeneral> search(Long categoryId, String searchString, Integer page, Integer size) {
-		Pageable pageable = PageRequest.of(page, size);
-		Page<ProductGeneral> productGeneralPage = productGeneralRepository.search(categoryId, searchString, pageable);
-		return productGeneralPage.getContent();
+		return productGeneralRepository.search(categoryId, searchString, page, size);
 	}
 }
