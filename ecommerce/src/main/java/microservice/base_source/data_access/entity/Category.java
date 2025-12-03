@@ -15,7 +15,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "category")
+@Table(name = "CATEGORY")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,12 +23,13 @@ public class Category {
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "category_id")
     private Long categoryId;
     
-    @Column(name = "categoryName", nullable = false)
+    @Column(name = "category_name", nullable = false)
     private String categoryName;
     
-    @Column(name = "displayOrder")
+    @Column(name = "display_order")
     private Integer displayOrder;
     
     @Column(name = "description", columnDefinition = "TEXT")
@@ -37,16 +38,16 @@ public class Category {
     @Column(name = "icon_url")
     private String iconUrl;
     
-    @Column(name = "isSubCategory")
+    @Column(name = "is_sub_category")
     private String isSubCategory; // "Y" or "N"
     
-    @Column(name = "createdAt", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
-    @Column(name = "updatedAt")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "belongToCategory")
+    @Column(name = "belong_to_category")
     private Long belongToCategory;
 
     @PrePersist

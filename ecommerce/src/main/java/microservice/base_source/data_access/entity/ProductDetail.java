@@ -11,22 +11,24 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "productDetail")
+@Table(name = "PRODUCT_DETAIL")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDetail {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "product_detail_id")
     private Long productDetailId;
 
     // foreign key to ProductGeneral
-	@Column(name = "productGeneralId", nullable = false)
+	@Column(name = "product_general_id", nullable = false)
     private Long productGeneralId;
     
     @Column(name = "description", columnDefinition = "TEXT")
@@ -35,17 +37,20 @@ public class ProductDetail {
     @Column(name = "status")
     private String status;
     
-    @Column(name = "quantityAvailable")
+    @Column(name = "quantity_available")
     private Integer quantityAvailable;
     
     @Column(name = "price", precision = 10, scale = 2)
     private BigDecimal price;
     
-    @Column(name = "createdAt", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
-    @Column(name = "updatedAt")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Transient
+    private ProductGeneral productGeneral = null;
 
     @PrePersist
     public void prePersist() {
