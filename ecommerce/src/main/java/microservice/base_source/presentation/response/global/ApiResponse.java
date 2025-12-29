@@ -43,4 +43,11 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> ERROR(String code, String message, T detail) {
         return buildResponse(ApiResponseType.ERROR, code, message, detail);
     }
+
+    public enum ApiResponseType {
+        ERROR,
+        WARN,
+        GOOD,
+        SKIP_AS_GOOD
+    }
 }
