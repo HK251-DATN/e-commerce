@@ -1,7 +1,6 @@
 package microservice.base_source.data_access.entity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -48,9 +46,6 @@ public class ProductGeneral {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Transient
-    private List<ProductDetail> listProductDetail = null;
 
     @PrePersist
     public void prePersist() {
