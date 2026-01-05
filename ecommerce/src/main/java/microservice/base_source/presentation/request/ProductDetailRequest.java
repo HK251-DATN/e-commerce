@@ -26,7 +26,7 @@ public class ProductDetailRequest {
     private BigDecimal price;
 
     // id của productGeneral (nullable nếu cần)
-    private Long belongToProductGeneral;
+    private Long productGeneralId;
 
     // id của storage tool (nullable)
     // private Long locatedInStorageTool;
@@ -37,7 +37,7 @@ public class ProductDetailRequest {
         d.setStatus(this.status);
         d.setQuantityAvailable(this.quantityAvailable);
         d.setPrice(this.price);
-        d.setProductGeneralId(this.belongToProductGeneral);
+        d.setProductGeneralId(this.productGeneralId);
         // d.setLocatedInStorageTool(this.locatedInStorageTool);
         return d;
     }
