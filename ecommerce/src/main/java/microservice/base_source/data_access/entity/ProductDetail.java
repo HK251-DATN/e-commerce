@@ -5,12 +5,9 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -34,26 +31,25 @@ public class ProductDetail {
     private Long productGeneralId;
     
     @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    private String description; // content detail info: HTML, CSS
     
     @Column(name = "status")
-    private String status;
+    private String status; // ACTIVE, DELETED, OUT_OF_STOCK
     
     @Column(name = "quantity_available")
     private Integer quantityAvailable;
     
-    @Column(name = "price", precision = 10, scale = 2)
+    @Column(name = "price", precision = 10, scale = 2) // index
     private BigDecimal price;
+
+    @Column(name = "rating", precision = 10, scale = 2) // index
+    private BigDecimal rating; // job caculate rating
     
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt; // index
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "product_general_id", insertable = false, updatable = false)
-    private ProductGeneral productGeneral;
 
     @PrePersist
     public void prePersist() {

@@ -38,6 +38,10 @@ public class ProductGeneral {
     @Column(name = "status")
     private String status;
 
+    // array of tags
+    @Column(name = "tags", columnDefinition = "text[]")
+    private String[] tags;
+
     @Column(name = "photo_urls")
     private String photoUrls;
 
