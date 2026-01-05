@@ -1,0 +1,515 @@
+{
+	"info": {
+		"_postman_id": "b9c6c2a4-3249-4f9d-890f-f12b2e66c3d9",
+		"name": "ecom_datn",
+		"description": "API collection for Category, ProductGeneral, ProductDetail",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "39757495"
+	},
+	"item": [
+		{
+			"name": "Category APIs",
+			"item": [
+				{
+					"name": "Create Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"categoryName\": \"Electronics\",\n    \"displayOrder\": 1,\n    \"description\": \"Electrical devices\",\n    \"iconUrl\": \"https://cdn.com/icon.png\",\n    \"isSubCategory\": \"Y\",\n    \"belongToCategory\": null\n}"
+						},
+						"url": "http://localhost:8080/api/categories"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/categories/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/categories?page=0&size=20",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"categories"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Category",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"categoryName\": \"Updated Name\",\n    \"displayOrder\": 2,\n    \"description\": \"Updated description\",\n    \"iconUrl\": \"https://cdn.com/new-icon.png\",\n    \"isSubCategory\": \"Y\",\n    \"belongToCategory\": 1\n}"
+						},
+						"url": "http://localhost:8080/api/categories/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Category",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/api/categories/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Search sub category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/categories/search",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"categories",
+								"search"
+							],
+							"query": [
+								{
+									"key": "searchString",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ProductGeneral APIs",
+			"item": [
+				{
+					"name": "Create Product General",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"productName\": \"MacBook Pro\",\n    \"description\": \"High-end laptop\",\n    \"status\": \"ACTIVE\",\n    \"photoUrls\": \"[\\\"https://cdn.com/mac1.png\\\", \\\"https://cdn.com/mac2.png\\\"]\",\n    \"categoryId\": 1,\n    \"tags\": [\"vegetable\", \"meal\"]\n}"
+						},
+						"url": "http://localhost:8080/api/product-generals"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product General By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/product-generals/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Product Generals",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/product-generals?page=0&size=20",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"product-generals"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product General",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"productName\": \"MacBook Pro 2024\",\n    \"description\": \"Updated description\",\n    \"status\": \"INACTIVE\",\n    \"photoUrls\": \"[\\\"https://cdn.com/new1.png\\\"]\",\n    \"tags\": [\"vegetable\", \"meal\"],\n    \"categoryId\": 1\n}"
+						},
+						"url": "http://localhost:8080/api/product-generals/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product General",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/api/product-generals/1"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ProductDetail APIs",
+			"item": [
+				{
+					"name": "Create Product Detail",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\": \"8GB RAM, 256GB SSD\",\n    \"status\": \"AVAILABLE\",\n    \"quantityAvailable\": 10,\n    \"price\": 1999.99,\n    \"productGeneralId\": 1\n}"
+						},
+						"url": "http://localhost:8080/api/product-details"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product Detail By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/api/product-details/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Product Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/product-details?page=0&size=20",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"product-details"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product Detail",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\": \"Updated Specs\",\n    \"status\": \"OUT_OF_STOCK\",\n    \"quantityAvailable\": 0,\n    \"price\": 1599.99,\n    \"belongToProductGeneral\": 1\n}"
+						},
+						"url": "http://localhost:8080/api/product-details/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product Detail",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "http://localhost:8080/api/product-details/1"
+					},
+					"response": []
+				},
+				{
+					"name": "search detail contain general",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/product-details/search?searchString=Mac&categoryId=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"product-details",
+								"search"
+							],
+							"query": [
+								{
+									"key": "searchString",
+									"value": "Mac"
+								},
+								{
+									"key": "categoryId",
+									"value": "1"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "1",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "aggreageted-search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/product-details/aggregated-search?categoryId=1&productGeneralId=2&searchString=ABCXY&minPrice=1&maxPrice=1&minRating=1&maxRating=1&tags=meal&createdSortOption=DESC&ratingSortOption=ASC&page=1&size=20&tags=vegetable&tags=beef",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"product-details",
+								"aggregated-search"
+							],
+							"query": [
+								{
+									"key": "categoryId",
+									"value": "1"
+								},
+								{
+									"key": "productGeneralId",
+									"value": "2"
+								},
+								{
+									"key": "searchString",
+									"value": "ABCXY"
+								},
+								{
+									"key": "minPrice",
+									"value": "1"
+								},
+								{
+									"key": "maxPrice",
+									"value": "1"
+								},
+								{
+									"key": "minRating",
+									"value": "1"
+								},
+								{
+									"key": "maxRating",
+									"value": "1"
+								},
+								{
+									"key": "tags",
+									"value": "meal"
+								},
+								{
+									"key": "createdSortOption",
+									"value": "DESC"
+								},
+								{
+									"key": "ratingSortOption",
+									"value": "ASC"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								},
+								{
+									"key": "tags",
+									"value": "vegetable"
+								},
+								{
+									"key": "tags",
+									"value": "beef"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "count-aggregated-search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/product-details/count-aggregated-search?categoryId=1&productGeneralId=2&searchString=ABCXYZ&minPrice=1&maxPrice=1&minRating=3&maxRating=4.5&tags=meal&createdSortOption=DESC&ratingSortOption=ASC&page=1&size=20&tags=vegetable&tags=beef",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"product-details",
+								"count-aggregated-search"
+							],
+							"query": [
+								{
+									"key": "categoryId",
+									"value": "1"
+								},
+								{
+									"key": "productGeneralId",
+									"value": "2"
+								},
+								{
+									"key": "searchString",
+									"value": "ABCXYZ"
+								},
+								{
+									"key": "minPrice",
+									"value": "1"
+								},
+								{
+									"key": "maxPrice",
+									"value": "1"
+								},
+								{
+									"key": "minRating",
+									"value": "3"
+								},
+								{
+									"key": "maxRating",
+									"value": "4.5"
+								},
+								{
+									"key": "tags",
+									"value": "meal"
+								},
+								{
+									"key": "createdSortOption",
+									"value": "DESC"
+								},
+								{
+									"key": "ratingSortOption",
+									"value": "ASC"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								},
+								{
+									"key": "tags",
+									"value": "vegetable"
+								},
+								{
+									"key": "tags",
+									"value": "beef"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
