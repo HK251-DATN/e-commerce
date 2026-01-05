@@ -17,8 +17,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             FROM CATEGORY c
             WHERE c.is_sub_category = 'Y'
 				AND (
-					LOWER(c.category_name) LIKE LOWER(CONCAT('%', :searchName, '%'))
-					OR LOWER(c.description) LIKE LOWER(CONCAT('%', :searchName, '%'))
+					:searchString = '' OR
+					LOWER(c.category_name) LIKE LOWER(CONCAT('%', :searchString, '%'))
+					OR LOWER(c.description) LIKE LOWER(CONCAT('%', :searchString, '%'))
 				)
             LIMIT :size 
 			OFFSET ((:page - 1) * :size)
@@ -26,7 +27,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 		nativeQuery = true
 	)
 	List<Category> search(
-		@Param("searchName") String searchName, 
+		@Param("searchString") String searchString, 
 		@Param("page") Integer page, 
 		@Param("size") Integer size
 	);
