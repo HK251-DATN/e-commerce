@@ -32,7 +32,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce_db
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin123
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create
       SERVER_PORT: 8080
     ports:
       - "8080:8080"

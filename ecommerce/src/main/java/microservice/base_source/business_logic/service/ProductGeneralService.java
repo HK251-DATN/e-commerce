@@ -2,6 +2,7 @@ package microservice.base_source.business_logic.service;
 
 import java.util.List;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -40,6 +41,12 @@ public class ProductGeneralService implements ProductGeneralUseCase {
 		ProductGeneral existingProductGeneral = productGeneralRepository.findById(id)
 				.orElseThrow(() -> new ProductNotFoundException("ProductGeneral not found"));
 		
+		// copy properties from productGeneral to existingProductGeneral
+		BeanUtils.copyProperties(
+				productGeneral,
+				existingProductGeneral,
+				"productGeneralId", "createdAt", "updatedAt" // filed not update
+		);
 		return productGeneralRepository.save(existingProductGeneral);
 	}
 
@@ -54,8 +61,6 @@ public class ProductGeneralService implements ProductGeneralUseCase {
 
 	@Override
 	public List<ProductGeneral> search(Long categoryId, String searchString, Integer page, Integer size) {
-		Pageable pageable = PageRequest.of(page, size);
-		Page<ProductGeneral> productGeneralPage = productGeneralRepository.search(categoryId, searchString, pageable);
-		return productGeneralPage.getContent();
+		return productGeneralRepository.search(categoryId, searchString, page, size);
 	}
 }

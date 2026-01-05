@@ -6,7 +6,7 @@ import microservice.base_source.data_access.entity.Category;
 
 public interface CategoryUseCase {
 	/**
-	 * Tìm kiếm category theo categoryName nếu isSubCategory true
+	 * Tìm kiếm category theo category_name or description nếu is_sub_category true
 	 * @param searchName tìm kiếm categoryNamw
 	 * @param page
 	 * @param size

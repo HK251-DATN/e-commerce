@@ -16,35 +16,39 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "productDetail")
+@Table(name = "PRODUCT_DETAIL")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDetail {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "product_detail_id")
     private Long productDetailId;
 
     // foreign key to ProductGeneral
-	@Column(name = "productGeneralId", nullable = false)
+	@Column(name = "product_general_id", nullable = false)
     private Long productGeneralId;
     
     @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    private String description; // content detail info: HTML, CSS
     
     @Column(name = "status")
-    private String status;
+    private String status; // ACTIVE, DELETED, OUT_OF_STOCK
     
-    @Column(name = "quantityAvailable")
+    @Column(name = "quantity_available")
     private Integer quantityAvailable;
     
-    @Column(name = "price", precision = 10, scale = 2)
+    @Column(name = "price", precision = 10, scale = 2) // index
     private BigDecimal price;
+
+    @Column(name = "rating", precision = 10, scale = 2) // index
+    private BigDecimal rating; // job caculate rating
     
-    @Column(name = "createdAt", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt; // index
     
-    @Column(name = "updatedAt")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist

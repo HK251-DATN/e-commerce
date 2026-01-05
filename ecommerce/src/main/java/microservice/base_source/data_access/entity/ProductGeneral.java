@@ -15,35 +15,40 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "productGeneral")
+@Table(name = "PRODUCT_GENERAL")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductGeneral {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "product_general_id")
     private Long productGeneralId;
 
     // foreign key to Category
-    @Column(name = "categoryId")
+    @Column(name = "category_id")
     private Long categoryId;
     
-    @Column(name = "productName", nullable = false)
+    @Column(name = "product_name", nullable = false)
     private String productName;
     
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
-	
+
     @Column(name = "status")
     private String status;
 
-    @Column(name = "photoUrls")
+    // array of tags
+    @Column(name = "tags", columnDefinition = "text[]")
+    private String[] tags;
+
+    @Column(name = "photo_urls")
     private String photoUrls;
 
-    @Column(name = "createdAt", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updatedAt")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist

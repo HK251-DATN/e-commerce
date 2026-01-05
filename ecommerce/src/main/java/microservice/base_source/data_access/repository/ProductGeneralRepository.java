@@ -1,7 +1,7 @@
 package microservice.base_source.data_access.repository;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,12 +11,28 @@ import microservice.base_source.data_access.entity.ProductGeneral;
 
 @Repository
 public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, Long> {
-	@Query("SELECT p FROM ProductGeneral p WHERE " +
-			"(:categoryId IS NULL OR p.categoryId = :categoryId) AND " +
-			"(:searchString IS NULL OR :searchString = '' OR " +
-			"LOWER(p.productName) LIKE LOWER(CONCAT('%', :searchString, '%')) OR " +
-			"LOWER(p.description) LIKE LOWER(CONCAT('%', :searchString, '%')))")
-	Page<ProductGeneral> search(@Param("categoryId") Long categoryId,
-			@Param("searchString") String searchString,
-			Pageable pageable);
+	@Query(
+		value = """
+            SELECT *
+            FROM PRODUCT_GENERAL pg
+            WHERE 
+                (:categoryId = 0 OR pg.category_id = :categoryId)
+                AND (
+                        :searchString = '' OR
+                        LOWER(pg.product_name) LIKE LOWER(CONCAT('%', :searchString, '%')) OR
+                        LOWER(pg.description) LIKE LOWER(CONCAT('%', :searchString, '%'))
+                    )
+            LIMIT :size
+            OFFSET ((:page - 1) * :size)
+            """,
+		nativeQuery = true
+	)
+	List<ProductGeneral> search(
+		@Param("categoryId") Long categoryId,
+		@Param("searchString") String searchString,
+		@Param("page") Integer page,
+		@Param("size") Integer size
+	);
+
+	
 }

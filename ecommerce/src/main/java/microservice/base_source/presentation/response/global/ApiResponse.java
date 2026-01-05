@@ -1,7 +1,6 @@
 package microservice.base_source.presentation.response.global;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,5 +42,12 @@ public class ApiResponse<T> {
 
     public static <T> ApiResponse<T> ERROR(String code, String message, T detail) {
         return buildResponse(ApiResponseType.ERROR, code, message, detail);
+    }
+
+    public enum ApiResponseType {
+        ERROR,
+        WARN,
+        GOOD,
+        SKIP_AS_GOOD
     }
 }
