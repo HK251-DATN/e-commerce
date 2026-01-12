@@ -16,14 +16,26 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@Table(name = "ORDER_ITEM")
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "ORDER_ITEM")
 public class OrderItem {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "order_item_id")
     private Long orderItemId;
+	
+	@Column(name = "order_id")
+	private Long orderId;
+
+	@Column(name = "batch_id")
+	private String batchId;
+
+	@Column(name = "product_general_id")
+	private Long productGeneralId;
+
+	@Column(name = "product_detail_id")
+	private Long productDetailId;
 
 	@Column(name = "quantity")
 	private String quantity;
@@ -34,11 +46,8 @@ public class OrderItem {
 	@Column(name = "sale_price")
 	private String salePrice;
 
-	@Column(name = "total_price")
-	private Long   belongToOrder;
-
-	@Column(name = "buyer_id")
-	private String refToProductDetail;
+	@Column(name = "temp_yn")
+	private String tempYn;
 
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;

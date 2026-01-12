@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreRemove;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -15,10 +16,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "PRODUCT_GENERAL")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "PRODUCT_GENERAL")
 public class ProductGeneral {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,12 +29,15 @@ public class ProductGeneral {
     // foreign key to Category
     @Column(name = "category_id")
     private Long categoryId;
+
+    @Column(name = "provider_id")
+    private String providerId;
     
-    @Column(name = "product_name", nullable = false)
-    private String productName;
+    @Column(name = "name", nullable = false)
+    private String name;
     
     @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    private String description; // detail description
 
     @Column(name = "status")
     private String status;
@@ -42,14 +46,17 @@ public class ProductGeneral {
     @Column(name = "tags", columnDefinition = "text[]")
     private String[] tags;
 
-    @Column(name = "photo_urls")
-    private String photoUrls;
+    @Column(name = "img", columnDefinition = "TEXT")
+    private String img; 
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "delete_at")
+    private LocalDateTime deletedAt;
 
     @PrePersist
     public void prePersist() {
@@ -59,5 +66,10 @@ public class ProductGeneral {
     @PreUpdate
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    @PreRemove
+    public void preRemove() {
+        deletedAt = LocalDateTime.now();
     }
 }
