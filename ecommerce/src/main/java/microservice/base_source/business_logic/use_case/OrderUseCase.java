@@ -37,7 +37,7 @@ public interface OrderUseCase {
 	 * @return danh sách order có phân trang
 	 */
 	List<Order> search(
-		Long buyerId, 
+		String buyerId, 
 		String searchString,
 		OrderStatus status,
 		BigDecimal minPrice, 
@@ -55,7 +55,7 @@ public interface OrderUseCase {
 	 * @param size
 	 * @return List order
 	 */
-	List<Order> getAll(Long buyerId, int page, int size);
+	List<Order> getAll(String buyerId, int page, int size);
 	Order get(Long id);
 	Order create(Order order);
 	Order update(Long id, Order order);

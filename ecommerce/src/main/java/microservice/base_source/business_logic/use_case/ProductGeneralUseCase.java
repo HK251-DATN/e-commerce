@@ -7,7 +7,7 @@ import microservice.base_source.data_access.entity.ProductGeneral;
 public interface ProductGeneralUseCase {
 
 	/**
-	 * Tìm kiếm productGeneral bằng productName, description, categoryId
+	 * Tìm kiếm productGeneral bằng name, description, categoryId
 	 * @param categoryId categoryID của entity Category
 	 * @param searchString dùng search cho cả productName và description
 	 * @param page

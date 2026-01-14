@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
     public <T> ResponseEntity<ApiResponse<String>> handleGeneralException(Exception ex) {
         String guide = "Please contact the system administrator.";
         ApiResponse<String> response = ApiResponse.ERROR(
-                "500",
+                HttpStatus.INTERNAL_SERVER_ERROR.toString(),
                 "Internal Server Error",
                 guide);
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -30,9 +30,13 @@ public interface SearchUseCase {
 		BigDecimal maxPrice,
 		BigDecimal minRating,
 		BigDecimal maxRating,
-		String[] tags,
-		String createdSortOption, // ASC/DESC
-		String ratingSortOption, // ASC/DESC
+		int minNumRate,
+		int maxNumRate,
+		String[] searchTags,
+		String createdSortOption,
+		String ratingSortOption,
+		String numRateSortOption,
 		Integer page,
 		Integer size
-	); }
+	);
+}

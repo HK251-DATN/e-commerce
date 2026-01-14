@@ -45,7 +45,7 @@ public class ProductGeneralService implements ProductGeneralUseCase {
 		BeanUtils.copyProperties(
 				productGeneral,
 				existingProductGeneral,
-				"productGeneralId", "createdAt", "updatedAt" // filed not update
+				"productGeneralId", "createdAt", "updatedAt", "deletedAt" // filed not update
 		);
 		return productGeneralRepository.save(existingProductGeneral);
 	}
