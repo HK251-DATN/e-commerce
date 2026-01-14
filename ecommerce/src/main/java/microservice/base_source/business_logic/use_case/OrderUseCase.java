@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import microservice.base_source.data_access.entity.Order;
+import microservice.base_source.data_access.entity.OrderItem;
 import microservice.base_source.data_access.entity.Order.OrderStatus;
 
 public interface OrderUseCase {
@@ -50,6 +51,17 @@ public interface OrderUseCase {
 		int page, int size);
 
 	/**
+	 * Condition create order
+	 * 	- coupon: valid
+	 * 	- product: in stock
+	 * 	- buyer: exist
+	 * 	- create order temp employee confirm
+	 * @param order
+	 * @return
+	 */
+	Order create(Order order, List<OrderItem> orderItems);
+
+	/**
 	 * Lấy danh sách order
 	 * @param page
 	 * @param size
@@ -57,7 +69,6 @@ public interface OrderUseCase {
 	 */
 	List<Order> getAll(String buyerId, int page, int size);
 	Order get(Long id);
-	Order create(Order order);
 	Order update(Long id, Order order);
 	void delete(Long id);
 }

@@ -7,7 +7,11 @@ import microservice.base_source.data_access.dto.DetailGeneralDTO;
 
 public interface SearchUseCase {
 
-	// search distinct general
+	/**
+	 * search distinct general - search bar
+	 * @param tags array tag name
+	 * @return list DetailGeneralDTO
+	 */
 	List<DetailGeneralDTO> searchGeneral(
 		String searchString,
 		BigDecimal minPrice,
@@ -21,7 +25,10 @@ public interface SearchUseCase {
 		Integer size
 	); 
 
-	// search distict batch after search general
+	/**
+	 * search distict batch after search general WHEN buyer vieww all product
+	 * @return list DetailGeneralDTO
+	 */
 	List<DetailGeneralDTO> searchBatch(
 		Long categoryId,
 		Long productGeneralId,

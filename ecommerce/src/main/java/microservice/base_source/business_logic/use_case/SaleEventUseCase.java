@@ -8,9 +8,9 @@ import microservice.base_source.data_access.entity.SaleEvent;
 public interface SaleEventUseCase {
 
 	/**
-	 * Search SaleEvent
-	 * @param page
-	 * @param size
+	 * Search SaleEvent by searchString 
+	 * Filter: activeYn, enableYn, beginTime, endTime, beginDate, endDate
+	 * Sort: not sort to manage a few event
 	 * @return List SaleEvent
 	 */
 	List<SaleEvent> searchEvents(String searchString, 
@@ -22,8 +22,6 @@ public interface SaleEventUseCase {
 
 	/**
 	 * Lấy danh sách SaleEvent
-	 * @param page
-	 * @param size
 	 * @return List SaleEvent
 	 */
 	List<SaleEvent> getAll(Integer page, Integer size);

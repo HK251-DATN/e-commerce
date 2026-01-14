@@ -8,8 +8,6 @@ public interface SaleProductUseCase {
 
 	/**
 	 * Lấy danh sách SaleProduct
-	 * @param page
-	 * @param size
 	 * @return List SaleProduct
 	 */
 	List<SaleProduct> getAll(Integer page, Integer size);
