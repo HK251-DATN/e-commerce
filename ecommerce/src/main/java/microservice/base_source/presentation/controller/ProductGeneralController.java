@@ -48,17 +48,17 @@ public class ProductGeneralController {
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get all product generals success", productGeneralUseCase.getAll(page, size));
     }
 
-    @GetMapping("/search")
-    public ApiResponse<List<ProductGeneral>> search(
-        @RequestParam(defaultValue = "0") Long categoryId, 
-        @RequestParam(defaultValue = "") String searchString, 
-        @RequestParam(defaultValue = "1") Integer page, 
-        @RequestParam(defaultValue = "20") Integer size) {
-        if (productGeneralUseCase.search(categoryId, searchString, page, size).isEmpty()) {
-            return ApiResponse.SKIP_AS_GOOD(HttpStatus.NO_CONTENT.toString(), "No product generals found", null);
-        }
-        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Search product generals success", productGeneralUseCase.search(categoryId, searchString, page, size));
-    }
+    // @GetMapping("/search")
+    // public ApiResponse<List<ProductGeneral>> search(
+    //     @RequestParam(defaultValue = "0") Long categoryId, 
+    //     @RequestParam(defaultValue = "") String searchString, 
+    //     @RequestParam(defaultValue = "1") Integer page, 
+    //     @RequestParam(defaultValue = "20") Integer size) {
+    //     if (productGeneralUseCase.search(categoryId, searchString, page, size).isEmpty()) {
+    //         return ApiResponse.SKIP_AS_GOOD(HttpStatus.NO_CONTENT.toString(), "No product generals found", null);
+    //     }
+    //     return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Search product generals success", productGeneralUseCase.search(categoryId, searchString, page, size));
+    // }
 
     @PutMapping("/{id}")
     public ApiResponse<ProductGeneral> update(@Valid @RequestBody ProductGeneralRequest req) {

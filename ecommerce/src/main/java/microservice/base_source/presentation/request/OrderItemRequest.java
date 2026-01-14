@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import microservice.base_source.data_access.entity.OrderItem;
 
 @Data
 @NoArgsConstructor
@@ -18,7 +19,6 @@ public class OrderItemRequest {
 	@NotBlank
 	private Long productGeneralId;
 	
-	@NotBlank
 	private Long productDetailId;
 	
 	@NotBlank
@@ -30,6 +30,15 @@ public class OrderItemRequest {
 	@NotBlank
 	private String salePrice;
 
-	@NotBlank
-	private String type; // DEFAULT, PREORDER, CART
+	public OrderItem toEntity() {
+		OrderItem item = new OrderItem();
+		item.setOrderId(this.orderId);
+		item.setBatchId(this.batchId);
+		item.setProductGeneralId(this.productGeneralId);
+		item.setProductDetailId(this.productDetailId);
+		item.setQuantity(this.quantity);
+		item.setOriginalPrice(this.originalPrice);
+		item.setSalePrice(this.salePrice);
+		return item;
+	}
 }

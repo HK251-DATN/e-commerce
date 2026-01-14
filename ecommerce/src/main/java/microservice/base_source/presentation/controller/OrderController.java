@@ -33,8 +33,8 @@ public class OrderController {
 
     @PostMapping
     public ApiResponse<Order> create(@Valid @RequestBody OrderRequest req) {
-        Order created = orderUseCase.create(req.toEntity());
-        return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create success" , created);
+        Order createdOrder = orderUseCase.create(req.toOrderEntity());
+        return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create success" , createdOrder);
     }
 
     @GetMapping("/{id}")
@@ -76,7 +76,7 @@ public class OrderController {
 
     @PutMapping("/{id}")
     public ApiResponse<Order> update(@PathVariable Long id, @Valid @RequestBody OrderRequest req) {
-        Order toUpdate = req.toEntity();
+        Order toUpdate = req.toOrderEntity();
         Order updated = orderUseCase.update(id, toUpdate);
 		return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Update success", updated);
 	}
