@@ -8,10 +8,6 @@ public interface ProductGeneralUseCase {
 
 	/**
 	 * Tìm kiếm productGeneral bằng name, description, categoryId
-	 * @param categoryId categoryID của entity Category
-	 * @param searchString dùng search cho cả productName và description
-	 * @param page
-	 * @param size
 	 * @return danh sách productGeneral hỗ trợ pagination
 	 */
 	List<ProductGeneral> search(Long categoryId, String searchString, Integer page, Integer size);

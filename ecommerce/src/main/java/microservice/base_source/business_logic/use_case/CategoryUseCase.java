@@ -7,18 +7,13 @@ import microservice.base_source.data_access.entity.Category;
 public interface CategoryUseCase {
 	/**
 	 * Tìm kiếm category theo category_name or description nếu is_sub_category true
-	 * @param searchName tìm kiếm categoryNamw
-	 * @param page
-	 * @param size
-	 * @return danh sách category có phân trang
+	 * @return List category
 	 */
 	List<Category> search(String searchName, Integer page, Integer size);
 
 	/**
 	 * Lấy danh sách category
-	 * @param page
-	 * @param size
-	 * @return
+	 * @return List category
 	 */
 	List<Category> getAll(Integer page, Integer size);
 	Category get(Long id);

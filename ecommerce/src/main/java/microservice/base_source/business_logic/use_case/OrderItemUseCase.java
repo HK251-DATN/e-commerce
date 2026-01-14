@@ -6,7 +6,7 @@ import microservice.base_source.data_access.entity.Order;
 
 public interface OrderItemUseCase {
 	/**
-	 * Lấy danh sách order
+	 * Get list order
 	 * @param page
 	 * @param size
 	 * @return List order

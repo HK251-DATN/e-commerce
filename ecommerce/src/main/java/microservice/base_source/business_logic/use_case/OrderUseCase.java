@@ -23,18 +23,6 @@ public interface OrderUseCase {
 	 * 	- status
 	 *  - total_price range
 	 *  - createdAt range
-	 * @param buyerId 
-	 * @param searchString 
-	 * @param status
-	 * @param minPrice 
-	 * @param maxPrice 
-	 * @param minTime 
-	 * @param maxTime
-	 * @param sortByStatus	ASC/DESC
-	 * @param sortByPrice	ASC/DESC
-	 * @param sortByTime	ASC/DESC
-	 * @param page
-	 * @param size
 	 * @return danh sách order có phân trang
 	 */
 	List<Order> search(
@@ -56,15 +44,12 @@ public interface OrderUseCase {
 	 * 	- product: in stock
 	 * 	- buyer: exist
 	 * 	- create order temp employee confirm
-	 * @param order
 	 * @return
 	 */
 	Order create(Order order, List<OrderItem> orderItems);
 
 	/**
 	 * Lấy danh sách order
-	 * @param page
-	 * @param size
 	 * @return List order
 	 */
 	List<Order> getAll(String buyerId, int page, int size);
