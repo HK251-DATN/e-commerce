@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import microservice.base_source.data_access.entity.OrderItem;
+import microservice.base_source.domain.entity.OrderItem;
 
 @Data
 @NoArgsConstructor

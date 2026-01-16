@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import microservice.base_source.data_access.entity.ProductGeneral;
+import microservice.base_source.domain.entity.ProductGeneral;
 
 @Data
 @NoArgsConstructor

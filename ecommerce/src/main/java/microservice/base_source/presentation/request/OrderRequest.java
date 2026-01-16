@@ -8,10 +8,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import microservice.base_source.data_access.entity.Order;
-import microservice.base_source.data_access.entity.Order.OrderStatus;
-import microservice.base_source.data_access.entity.Order.OrderType;
-import microservice.base_source.data_access.entity.OrderItem;
+import microservice.base_source.domain.entity.Order;
+import microservice.base_source.domain.entity.OrderItem;
+import microservice.base_source.domain.entity.Order.OrderStatus;
+import microservice.base_source.domain.entity.Order.OrderType;
 
 @Data
 @AllArgsConstructor
