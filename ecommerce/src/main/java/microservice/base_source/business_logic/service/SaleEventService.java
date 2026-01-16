@@ -1,0 +1,73 @@
+package microservice.base_source.business_logic.service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import microservice.base_source.business_logic.use_case.SaleEventUseCase;
+import microservice.base_source.data_access.entity.SaleEvent;
+import microservice.base_source.data_access.repository.SaleEventRepository;
+import microservice.base_source.presentation.exception.type.NotFoundException;
+
+public class SaleEventService implements SaleEventUseCase {
+	@Autowired
+	private SaleEventRepository saleEventRepository;
+
+	@Override
+	public List<SaleEvent> searchEvents(String searchString, String activeYn, String enableYn, LocalDateTime beginTime,
+			LocalDateTime endTime, LocalDateTime beginDate, LocalDateTime endDate, int page, int size) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'searchEvents'");
+	}
+
+	@Override
+	public List<SaleEvent> getAll(Integer page, Integer size) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<SaleEvent> saleEventPage = saleEventRepository.findAll(pageable);
+		return saleEventPage.getContent();
+	}
+
+	@Override
+	public SaleEvent get(Long saleEventid) {
+		return saleEventRepository.findById(saleEventid).orElseThrow(() -> new NotFoundException("SaleEvent not found"));
+	}
+
+	@Override
+	public SaleEvent create(SaleEvent saleEvent) {
+		return saleEventRepository.save(saleEvent);
+	}
+
+	@Override
+	public SaleEvent update(Long saleEventid, SaleEvent saleEvent) {
+		SaleEvent existingSaleEvent = saleEventRepository.findById(saleEventid)
+				.orElseThrow(() -> new NotFoundException("SaleEvent not found"));
+
+		// Update all fields
+		existingSaleEvent.setName(saleEvent.getName());
+		existingSaleEvent.setDescription(saleEvent.getDescription());
+		existingSaleEvent.setImg(saleEvent.getImg());
+		existingSaleEvent.setDisplayPriority(saleEvent.getDisplayPriority());
+		existingSaleEvent.setActiveYn(saleEvent.getActiveYn());
+		existingSaleEvent.setEnabledYn(saleEvent.getEnabledYn());
+		existingSaleEvent.setBeginTime(saleEvent.getBeginTime());
+		existingSaleEvent.setEndTime(saleEvent.getEndTime());
+		existingSaleEvent.setBeginDate(saleEvent.getBeginDate());
+		existingSaleEvent.setEndDate(saleEvent.getEndDate());  
+		
+		return saleEventRepository.save(existingSaleEvent);
+	}
+
+	@Override
+	public void delete(Long saleEventid) {
+		saleEventRepository.findById(saleEventid)
+			.ifPresentOrElse(
+				saleEventRepository::delete,
+				() -> {}
+			);
+	}
+	
+}
