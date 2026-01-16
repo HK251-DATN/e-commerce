@@ -1,6 +1,7 @@
 package microservice.base_source.business_logic.service;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,9 @@ public class SaleEventService implements SaleEventUseCase {
 	private SaleEventRepository saleEventRepository;
 
 	@Override
-	public List<SaleEvent> searchEvents(String searchString, String activeYn, String enableYn, LocalDateTime beginTime,
-			LocalDateTime endTime, LocalDateTime beginDate, LocalDateTime endDate, int page, int size) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'searchEvents'");
+	public List<SaleEvent> searchEvents(String searchString, String activeYn, String enableYn, LocalTime beginTime,
+			LocalTime endTime, LocalDateTime beginDate, LocalDateTime endDate, int page, int size) {
+		return saleEventRepository.search(searchString, activeYn, enableYn, beginTime, endTime, beginDate, endDate, page, size);
 	}
 
 	@Override
