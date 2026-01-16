@@ -2,26 +2,27 @@ package microservice.base_source.business_logic.use_case;
 
 import java.util.List;
 
-import microservice.base_source.data_access.entity.Feedback;
+import microservice.base_source.data_access.dto.FeedBackDTO;
+import microservice.base_source.data_access.entity.FeedBack;
 
 public interface FeedBackUseCase {
 	/**
-	 * Get list feedback by batchId
+	 * Get list FeedBack by batchId
 	 * @param page
 	 * @param size
-	 * @return List feedback
+	 * @return List FeedBackDTO
 	 */
-	List<Feedback> getByBatchId(Integer page, Integer size);
+	List<FeedBackDTO> getByBatchId(Long batchId, Integer page, Integer size);
 
 	/**
-	 * Lấy danh sách feedback
+	 * Lấy danh sách FeedBack
 	 * @param page
 	 * @param size
-	 * @return List feedback
+	 * @return List FeedBack
 	 */
-	List<Feedback> getAll(Integer page, Integer size);
-	Feedback get(Long id);
-	Feedback create(Feedback feedback);
-	Feedback update(Long id, Feedback feedback);
+	List<FeedBack> getAll(Integer page, Integer size);
+	FeedBack get(Long id);
+	FeedBack create(FeedBack feedback);
+	FeedBack update(Long id, FeedBack feedback);
 	void delete(Long id);
 }
