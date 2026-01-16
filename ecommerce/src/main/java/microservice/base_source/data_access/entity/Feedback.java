@@ -21,8 +21,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "FEEDBACK")
-public class Feedback {
+@Table(name = "FEED_BACK")
+public class FeedBack {
 	@Id
 	@Column(name = "feedback_id")
 	private Long feedbackId;
@@ -31,7 +31,7 @@ public class Feedback {
 	private Long replyId;
 
 	@Column(name = "buyer_id")
-	private Long buyerId;
+	private String buyerId;
 
 	@Column(name = "product_detail_id")
 	private Long productDetailId;
