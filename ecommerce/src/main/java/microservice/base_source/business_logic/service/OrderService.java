@@ -26,8 +26,8 @@ public class OrderService implements OrderUseCase {
 	public List<Order> search(String buyerId, String searchString, OrderStatus status, BigDecimal minPrice,
 			BigDecimal maxPrice, LocalDateTime minTime, LocalDateTime maxTime, String sortByStatus, String sortByPrice,
 			String sortByTime, int page, int size) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'search'");
+		return orderRepository.search(buyerId, searchString, status, minPrice, maxPrice, minTime, maxTime,
+				sortByStatus, sortByPrice, sortByTime, page, size);
 	}
 
 	@Override
