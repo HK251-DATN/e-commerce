@@ -1,18 +1,42 @@
 ## 1. Define core: domain & logic & entity
 ```
-business_logic
-data_access
-```
-
-## 2. Exception
-```txt
-define & handle all exception
-```
-
-
-## 3. Presentation
-```txt
-request -> adapter -> controller -> ressponse
+com.example.ecommerce
+├── EcommerceApplication.java
+│
+├── domain // Core business (pure Java)
+│ ├── entity // Entity, Value Object
+│ │ ├── Order.java
+│ │ └── OrderItem.java
+│ ├── usecase // Interface use-case
+│ │ └── CreateOrderUseCase.java
+│ ├── service // Domain service
+│ │ └── PricingService.java
+│ └── exception
+│ └── BusinessException.java
+│
+├── persistence // get data from database
+│ ├── repository
+│ │ └── SaleProductRepository.java
+│ ├── dto
+│   ├── SaleProductDTO.java
+│   └── SaleEventDTO.java
+|
+├── infrastructure // Framework & DB
+│ ├── config
+│ │ └── JpaConfig.java
+│ └── messaging
+│ └── KafkaProducer.java
+│
+├── presentation // Delivery layer
+│ ├── rest
+│ │ └── OrderController.java
+│ ├── request
+│ │ └── CreateOrderRequest.java
+│ └── response
+| |__ mapping // mapping request <-> response || dto <-> response || request <-> entity
+│
+└── common
+  |__ utils
 ```
 
 ## 4. application.yml
