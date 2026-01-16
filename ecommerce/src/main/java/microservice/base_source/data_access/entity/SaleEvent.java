@@ -1,6 +1,7 @@
 package microservice.base_source.data_access.entity;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -48,10 +49,10 @@ public class SaleEvent {
 	private String enabledYn;
 
 	@Column(name = "begin_time")
-	private LocalDateTime beginTime;
+	private LocalTime beginTime;
 
 	@Column(name = "end_time")
-	private LocalDateTime endTime;
+	private LocalTime endTime;
 
 	@Column(name = "begin_date")
 	private LocalDateTime beginDate;
