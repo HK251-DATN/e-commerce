@@ -8,16 +8,12 @@ import microservice.base_source.data_access.entity.FeedBack;
 public interface FeedBackUseCase {
 	/**
 	 * Get list FeedBack by batchId
-	 * @param page
-	 * @param size
 	 * @return List FeedBackDTO
 	 */
 	List<FeedBackDTO> getByBatchId(Long batchId, Integer page, Integer size);
 
 	/**
 	 * Lấy danh sách FeedBack
-	 * @param page
-	 * @param size
 	 * @return List FeedBack
 	 */
 	List<FeedBack> getAll(Integer page, Integer size);

@@ -9,20 +9,20 @@ import microservice.base_source.data_access.entity.OrderItem;
 import microservice.base_source.data_access.entity.Order.OrderStatus;
 
 public interface OrderUseCase {
-	/**
-	 * Search order by: 
-	 * 	- buyer_id or total price 
-	 * 	- note or status 
-	 * 	- createdAt 
-	 * Sort case:
-	 * 	- buyer_id asc/desc
-	 * 	- total_price asc/desc
-	 * 	- createdAt asc/desc
-	 * 	- status
-	 * Filter case:
-	 * 	- status
-	 *  - total_price range
-	 *  - createdAt range
+	/** 
+	 * <p> Search: 
+	 * <p> 	- buyer_id or total price 
+	 * <p> 	- note or status 
+	 * <p> 	- createdAt 
+	 * <p> Sort:
+	 * <p> 	- buyer_id asc/desc
+	 * <p> 	- total_price asc/desc
+	 * <p> 	- createdAt asc/desc
+	 * <p> 	- status
+	 * <p> Filter:
+	 * <p> 	- status
+	 * <p>  - total_price range
+	 * <p>  - createdAt range
 	 * @return danh sách order có phân trang
 	 */
 	List<Order> search(
@@ -39,11 +39,11 @@ public interface OrderUseCase {
 		int page, int size);
 
 	/**
-	 * Condition create order
-	 * 	- coupon: valid
-	 * 	- product: in stock
-	 * 	- buyer: exist
-	 * 	- create order temp employee confirm
+	 * <p> Condition create order
+	 * <p> 	- coupon: valid
+	 * <p> 	- product: in stock
+	 * <p> 	- buyer: exist
+	 * <p> 	- create order temp employee confirm
 	 * @return
 	 */
 	Order create(Order order, List<OrderItem> orderItems);

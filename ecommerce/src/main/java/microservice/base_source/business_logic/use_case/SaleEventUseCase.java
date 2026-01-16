@@ -1,6 +1,7 @@
 package microservice.base_source.business_logic.use_case;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import microservice.base_source.data_access.entity.SaleEvent;
@@ -9,13 +10,14 @@ public interface SaleEventUseCase {
 
 	/**
 	 * Search SaleEvent by searchString 
-	 * Filter: activeYn, enableYn, beginTime, endTime, beginDate, endDate
-	 * Sort: not sort to manage a few event
+	 * <p> Filter: activeYn, enableYn, beginTime, endTime, beginDate, endDate
+	 * <p> Sort: not sort to manage a few event
+	 * <p> Pass null to skip: beginTime, endTime, beginDate, endDate
 	 * @return List SaleEvent
 	 */
 	List<SaleEvent> searchEvents(String searchString, 
 		String activeYn, String enableYn,
-		LocalDateTime beginTime, LocalDateTime endTime,
+		LocalTime beginTime, LocalTime endTime,
 		LocalDateTime beginDate, LocalDateTime endDate,
 		int page, int size
 	);

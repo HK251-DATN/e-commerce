@@ -7,8 +7,6 @@ import microservice.base_source.data_access.entity.OrderItem;
 public interface OrderItemUseCase {
 	/**
 	 * Get list order
-	 * @param page
-	 * @param size
 	 * @return List order
 	 */
 	List<OrderItem> getAll(Long buyerId, int page, int size);
