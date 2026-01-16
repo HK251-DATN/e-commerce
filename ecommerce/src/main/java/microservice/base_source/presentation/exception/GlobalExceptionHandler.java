@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import microservice.base_source.presentation.exception.type.CategoryNotFoundException;
+import microservice.base_source.presentation.exception.type.NotFoundException;
 import microservice.base_source.presentation.exception.type.ProductNotFoundException;
+import microservice.base_source.presentation.exception.type.WarnException;
 import microservice.base_source.presentation.response.global.ApiResponse;
 
 @ControllerAdvice
@@ -57,6 +59,28 @@ public class GlobalExceptionHandler {
     // Define CategoryNotFoundException
     @ExceptionHandler(CategoryNotFoundException.class)
     public <T> ResponseEntity<ApiResponse<String>> handleOtherException(CategoryNotFoundException ex) {
+        String guide = "Please check your request again";
+        ApiResponse<String> response = ApiResponse.WARN(
+                HttpStatus.BAD_REQUEST.toString(),
+                ex.getMessage(),
+                guide);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    // Define NotFoundException
+    @ExceptionHandler(NotFoundException.class)
+    public <T> ResponseEntity<ApiResponse<String>> handleOtherException(NotFoundException ex) {
+        String guide = "Please check your request again";
+        ApiResponse<String> response = ApiResponse.WARN(
+                HttpStatus.BAD_REQUEST.toString(),
+                ex.getMessage(),
+                guide);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    // Define WarnException
+    @ExceptionHandler(WarnException.class)
+    public <T> ResponseEntity<ApiResponse<String>> handleOtherException(WarnException ex) {
         String guide = "Please check your request again";
         ApiResponse<String> response = ApiResponse.WARN(
                 HttpStatus.BAD_REQUEST.toString(),
