@@ -12,18 +12,18 @@ public interface SearchUseCase {
 	 * @param tags array tag name
 	 * @return list DetailGeneralDTO
 	 */
-	List<DetailGeneralDTO> searchGeneral(
-		String searchString,
-		BigDecimal minPrice,
-		BigDecimal maxPrice,
-		BigDecimal minRating,
-		BigDecimal maxRating,
-		String[] tags,
-		String createdSortOption, // ASC/DESC
-		String ratingSortOption, // ASC/DESC
-		Integer page,
-		Integer size
-	); 
+	// List<DetailGeneralDTO> searchGeneral(
+	// 	String searchString,
+	// 	BigDecimal minPrice,
+	// 	BigDecimal maxPrice,
+	// 	BigDecimal minRating,
+	// 	BigDecimal maxRating,
+	// 	String[] tags,
+	// 	String createdSortOption, // ASC/DESC
+	// 	String ratingSortOption, // ASC/DESC
+	// 	Integer page,
+	// 	Integer size
+	// ); 
 
 	/**
 	 * search distict batch after search general WHEN buyer vieww all product

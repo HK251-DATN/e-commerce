@@ -14,12 +14,12 @@ public class SearchService implements SearchUseCase {
 	@Autowired
 	private ProductGeneralRepository productGeneralRepository;
 
-	@Override
-	public List<DetailGeneralDTO> searchGeneral(String searchString, BigDecimal minPrice, BigDecimal maxPrice,
-			BigDecimal minRating, BigDecimal maxRating, String[] tags, String createdSortOption,
-			String ratingSortOption, Integer page, Integer size) {
-		throw new UnsupportedOperationException("Unimplemented method 'searchGeneral'");
-	}
+	// @Override
+	// public List<DetailGeneralDTO> searchGeneral(String searchString, BigDecimal minPrice, BigDecimal maxPrice,
+	// 		BigDecimal minRating, BigDecimal maxRating, String[] tags, String createdSortOption,
+	// 		String ratingSortOption, Integer page, Integer size) {
+	// 	throw new UnsupportedOperationException("Unimplemented method 'searchGeneral'");
+	// }
 
 	@Override
 	public List<DetailGeneralDTO> searchBatch(Long categoryId, Long productGeneralId, String searchString,
