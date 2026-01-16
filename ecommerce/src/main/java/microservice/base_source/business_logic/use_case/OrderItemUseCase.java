@@ -2,7 +2,7 @@ package microservice.base_source.business_logic.use_case;
 
 import java.util.List;
 
-import microservice.base_source.data_access.entity.Order;
+import microservice.base_source.data_access.entity.OrderItem;
 
 public interface OrderItemUseCase {
 	/**
@@ -11,9 +11,9 @@ public interface OrderItemUseCase {
 	 * @param size
 	 * @return List order
 	 */
-	List<Order> getAll(Long buyerId, int page, int size);
-	Order get(Long id);
-	Order create(Order order);
-	Order update(Long id, Order order);
+	List<OrderItem> getAll(Long buyerId, int page, int size);
+	OrderItem get(Long id);
+	OrderItem create(OrderItem orderItem);
+	OrderItem update(Long id, OrderItem order);
 	void delete(Long id);
 }

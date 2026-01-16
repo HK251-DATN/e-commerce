@@ -54,6 +54,6 @@ public interface OrderUseCase {
 	 */
 	List<Order> getAll(String buyerId, int page, int size);
 	Order get(Long id);
-	Order update(Long id, Order order);
+	// Order update(Long id, Order order);
 	void delete(Long id);
 }
