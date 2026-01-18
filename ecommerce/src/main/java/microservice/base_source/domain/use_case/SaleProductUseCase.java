@@ -11,8 +11,8 @@ public interface SaleProductUseCase {
 	 * @return List SaleProduct
 	 */
 	List<SaleProduct> getAll(Integer page, Integer size);
-	SaleProduct get(Long saleEventid, Long batchId);
+	SaleProduct get(Long saleEventid, String batchId);
 	SaleProduct create(SaleProduct saleProduct);
-	SaleProduct update(Long saleEventid, Long batchId, SaleProduct saleProduct);
-	void delete(Long saleEventid, Long batchId);
+	SaleProduct update(Long saleEventid, String batchId, SaleProduct saleProduct);
+	void delete(Long saleEventid, String batchId);
 }
