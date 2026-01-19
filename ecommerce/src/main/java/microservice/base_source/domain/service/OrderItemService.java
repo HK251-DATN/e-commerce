@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import microservice.base_source.domain.entity.OrderItem;
 import microservice.base_source.domain.exception.type.NotFoundException;
@@ -13,6 +14,7 @@ import microservice.base_source.domain.exception.type.WarnException;
 import microservice.base_source.domain.use_case.OrderItemUseCase;
 import microservice.base_source.persistence.repository.OrderItemRepository;
 
+@Service
 public class OrderItemService implements OrderItemUseCase {
 
 	@Autowired
@@ -20,7 +22,7 @@ public class OrderItemService implements OrderItemUseCase {
 
 	@Override
 	public List<OrderItem> getAll(Long buyerId, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(page - 1, size);
 		Page<OrderItem> orderItemList = orderItemRepository.findAll(pageable);
 		return orderItemList.getContent();
 	}

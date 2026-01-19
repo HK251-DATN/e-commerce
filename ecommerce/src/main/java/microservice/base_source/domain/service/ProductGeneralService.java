@@ -21,7 +21,7 @@ public class ProductGeneralService implements ProductGeneralUseCase {
 
 	@Override
 	public List<ProductGeneral> getAll(Integer page, Integer size) {
-		Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(page - 1, size);
 		Page<ProductGeneral> productGeneralPage = productGeneralRepository.findAll(pageable);
 		return productGeneralPage.getContent();
 	}

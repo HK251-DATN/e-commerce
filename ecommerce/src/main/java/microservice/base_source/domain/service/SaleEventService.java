@@ -8,12 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import microservice.base_source.domain.entity.SaleEvent;
 import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.domain.use_case.SaleEventUseCase;
 import microservice.base_source.persistence.repository.SaleEventRepository;
 
+@Service
 public class SaleEventService implements SaleEventUseCase {
 	@Autowired
 	private SaleEventRepository saleEventRepository;
@@ -26,7 +28,7 @@ public class SaleEventService implements SaleEventUseCase {
 
 	@Override
 	public List<SaleEvent> getAll(Integer page, Integer size) {
-		Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(page - 1, size);
 		Page<SaleEvent> saleEventPage = saleEventRepository.findAll(pageable);
 		return saleEventPage.getContent();
 	}

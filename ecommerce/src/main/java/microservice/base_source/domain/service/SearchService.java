@@ -4,11 +4,13 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import microservice.base_source.domain.use_case.SearchUseCase;
 import microservice.base_source.persistence.dto.DetailGeneralDTO;
 import microservice.base_source.persistence.repository.ProductGeneralRepository;
 
+@Service
 public class SearchService implements SearchUseCase {
 
 	@Autowired

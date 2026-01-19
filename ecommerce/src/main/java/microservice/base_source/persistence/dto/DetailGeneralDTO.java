@@ -16,7 +16,7 @@ public interface DetailGeneralDTO {
 	Long 		  getBatchId();
 	Integer 	  getQuantity();  // status AVAILABLE, OUT_OF_STOCK when quantity = 0
 	BigDecimal 	  getOriginPrice();
-	// BigDecimal 	  getSalePrice(); // when sale event, default: 0
+	// BigDecimal 	  getSalePrice(); // when sale event, default: 0 //TODO: sale price handle logic
 	BigDecimal 	  getAvgRate();   // default: 0 
 	int 		  getNumRate();	  // default: 0
 	LocalDateTime getCreatedAt(); // sort ASC/DESC

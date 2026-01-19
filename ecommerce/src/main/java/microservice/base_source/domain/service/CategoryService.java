@@ -21,7 +21,7 @@ public class CategoryService implements CategoryUseCase {
 
 	@Override
 	public List<Category> getAll(Integer page, Integer size) {
-		Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(page - 1, size);
 		Page<Category> categoryPage = categoryRepository.findAll(pageable);
 		return categoryPage.getContent();
 	}

@@ -22,7 +22,7 @@ public class FeedBackService implements FeedBackUseCase {
 
 	@Override
 	public List<FeedBack> getAll(Integer page, Integer size) {
-		Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(page - 1, size);
 		Page<FeedBack> feedbackPage = feedBackRepository.findAll(pageable);
 		return feedbackPage.getContent();
 	}

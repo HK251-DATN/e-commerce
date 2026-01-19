@@ -20,7 +20,7 @@ public class ProductDetailService implements ProductDetailUseCase {
 
 	@Override
 	public List<ProductDetail> getAll(Integer page, Integer size) {
-		Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(page - 1, size);
 		Page<ProductDetail> productDetailPage = productDetailRepository.findAll(pageable);
 		return productDetailPage.getContent();
 	}

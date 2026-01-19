@@ -32,12 +32,19 @@ public class OrderService implements OrderUseCase {
 
 	@Override
 	public Order create(Order order, List<OrderItem> orderItems) {
+		// check valid coupon
+
+		// check product in stocks
+
+		// insert order item
+
+		// update quantity batch detail & status product detail
 		return orderRepository.save(order);
 	}
 
 	@Override
 	public List<Order> getAll(String buyerId, int page, int size) {
-		Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(page - 1, size);
 		Page<Order> orderPage = orderRepository.findAll(pageable);
 		return orderPage.getContent();
 	}

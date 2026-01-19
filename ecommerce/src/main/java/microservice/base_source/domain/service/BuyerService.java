@@ -21,7 +21,7 @@ public class BuyerService implements BuyerUseCase {
 
 	@Override
 	public List<Buyer> getAll(Integer page, Integer size) {
-		Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(page - 1, size);
 		Page<Buyer> buyerPage = buyerRepository.findAll(pageable);
 		return buyerPage.getContent();
 	}

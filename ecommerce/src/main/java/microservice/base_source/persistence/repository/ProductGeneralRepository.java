@@ -38,25 +38,23 @@ public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, 
 
 	@Query(value = """
 			SELECT
-				PD.PRODUCT_DETAIL_ID AS productDetailId,
-				PD.CATEGORY_ID AS categoryId,
-				PD.PROVIDER_ID AS providerId,
-				PD.NAME        AS name,
-				PD.DESCRIPTION AS description,
-                PD.IMG         AS img,
-
-                BD.BATCH_ID   AS BatchId
-                BD.QUANTITY   AS Quantity
-                BD.PRICE      AS OriginPrice
-                COALESCE(BD.SALE_PRICE, 0) AS salePrice
-                BD.AVG_RATE   AS AvgRate
-                BD.NUM_RATE   AS NumRate
+				PG.PRODUCT_GENERAL_ID AS productGeneralId,
+				PG.CATEGORY_ID AS categoryId,
+				PG.PROVIDER_ID AS providerId,
+				PG.NAME        AS name,
+				PG.DESCRIPTION AS description,
+                PG.IMG         AS img,
+                BD.BATCH_DETAIL_ID   AS BatchId,
+                BD.QUANTITY   AS Quantity,
+                BD.PRICE      AS OriginPrice,
+                BD.AVG_RATE   AS AvgRate,
+                BD.NUM_RATE   AS NumRate,
                 BD.CREATED_AT AS CreatedAt
-			FROM PRODUCT_DETAIL PD
-			JOIN BATCH_DETAIL   BD
-				ON PD.PRODUCT_GENERAL_ID = BD.PRODUCT_GENERAL_ID
+			FROM BATCH_DETAIL BD
+			LEFT JOIN PRODUCT_GENERAL PG
+				ON BD.PRODUCT_GENERAL_ID = PG.PRODUCT_GENERAL_ID 
 			WHERE
-				(:categoryId = 0 OR BD.CATEGORY_ID = :categoryId)
+				(:categoryId = 0 OR PG.CATEGORY_ID = :categoryId)
 				AND (:productGeneralId = 0 OR BD.PRODUCT_GENERAL_ID = :productGeneralId)
 				AND (
 					:searchString = '' OR
@@ -78,10 +76,10 @@ public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, 
 				CASE WHEN :createdSortOption = 'ASC'  THEN BD.CREATED_AT END ASC,
 				CASE WHEN :createdSortOption = 'DESC' THEN BD.CREATED_AT END DESC,
 				CASE WHEN :ratingSortOption  = 'ASC'  THEN BD.AVG_RATE   END ASC,
-				CASE WHEN :ratingSortOption  = 'DESC' THEN BD.AVG_RATE   END DESC
+				CASE WHEN :ratingSortOption  = 'DESC' THEN BD.AVG_RATE   END DESC,
                 CASE WHEN :numRateSortOption = 'ASC'  THEN BD.NUM_RATE   END ASC,
 				CASE WHEN :numRateSortOption = 'DESC' THEN BD.NUM_RATE   END DESC
-			LIMIT :size OFFSET (:page - 1) * :size
+			LIMIT :size OFFSET (:page - 1) * :size;
 			""", nativeQuery = true)
 	List<DetailGeneralDTO> aggregatedSearch(
 		@Param("categoryId") Long categoryId,

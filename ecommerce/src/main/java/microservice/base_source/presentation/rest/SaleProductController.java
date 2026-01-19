@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.SaleProduct;
-import microservice.base_source.domain.use_case.CategoryUseCase;
 import microservice.base_source.domain.use_case.SaleProductUseCase;
 import microservice.base_source.presentation.request.SaleProductRequest;
 import microservice.base_source.presentation.response.global.ApiResponse;
@@ -32,12 +31,13 @@ public class SaleProductController {
     @PostMapping
     public ApiResponse<SaleProduct> create(@Valid @RequestBody SaleProductRequest req) {
         SaleProduct created = saleProductUseCase.create(req.toEntity());
+        System.out.println("THIS APUI RUNNING");
         return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create success" , created);
     }
 
-    @GetMapping("/{id}")
-    public ApiResponse<SaleProduct> getById(@PathVariable Long id) {
-        SaleProduct opt = saleProductUseCase.get(id);
+    @GetMapping("/{saleEventId}/{batchId}")
+    public ApiResponse<SaleProduct> getById(@PathVariable(name = "saleEventId") Long saleEventid, @PathVariable(name = "batchId") String batchId) {
+        SaleProduct opt = saleProductUseCase.get(saleEventid, batchId);
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get saleProduct success", opt);
     }
 
