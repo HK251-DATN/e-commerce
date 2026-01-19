@@ -2,12 +2,15 @@ package microservice.base_source.domain.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreRemove;
@@ -24,6 +27,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "FEED_BACK")
 public class FeedBack {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "feedback_id")
 	private Long feedbackId;
 
@@ -47,7 +51,7 @@ public class FeedBack {
 
 	@JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "detail")
-    private Object detail; // HTML, CSS, FILE, VIDEO
+    private Map<String, Object> detail; // HTML, CSS, FILE, VIDEO
 
 	@Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

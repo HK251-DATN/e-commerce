@@ -25,7 +25,7 @@ public class BatchDetail {
 	private String batchDetailId; // batch_id
 
 	@Column(name = "product_general_id")
-	private String productGeneralId;
+	private Long productGeneralId;
 
 	@Column(name = "quantity")
 	private int quantity;

@@ -5,8 +5,6 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreRemove;
@@ -23,7 +21,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "SALE_PRODUCT")
 public class SaleProduct {
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "sale_event_id")
     private Long saleEventId;
 
