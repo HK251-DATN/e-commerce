@@ -1,6 +1,7 @@
 package microservice.base_source.presentation.request;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,7 +25,7 @@ public class FeedBackRequest {
 
 	private String img;
 
-    private Object detail;
+    private Map<String, Object> detail;
 
     public FeedBack toEntity() {
         FeedBack f = new FeedBack();

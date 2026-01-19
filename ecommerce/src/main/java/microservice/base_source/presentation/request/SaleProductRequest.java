@@ -2,7 +2,7 @@ package microservice.base_source.presentation.request;
 
 import java.math.BigDecimal;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,7 @@ import microservice.base_source.domain.entity.SaleProduct;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SaleProductRequest {
-    @NotBlank
+    @NotNull
 	private Long saleEventId;
 
 	private String batchId;

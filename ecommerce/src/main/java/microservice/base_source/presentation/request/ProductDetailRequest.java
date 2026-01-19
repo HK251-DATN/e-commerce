@@ -1,6 +1,6 @@
 package microservice.base_source.presentation.request;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,10 +10,10 @@ import microservice.base_source.domain.entity.ProductDetail;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDetailRequest {
-	@NotBlank
+	@NotNull
 	private Long productGeneralId;
 
-	@NotBlank
+	@NotNull
 	private String batchId;
 
 	private Object detail;
