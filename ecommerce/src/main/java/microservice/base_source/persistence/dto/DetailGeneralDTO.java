@@ -13,10 +13,10 @@ public interface DetailGeneralDTO {
 	String 		  getImg();
 
 	// batch detail info
-	Long 		  getBatchId();
+	String 		  getBatchId();
 	Integer 	  getQuantity();  // status AVAILABLE, OUT_OF_STOCK when quantity = 0
 	BigDecimal 	  getOriginPrice();
-	// BigDecimal 	  getSalePrice(); // when sale event, default: 0 //TODO: sale price handle logic
+	BigDecimal 	  getDisVal();    // discount percent, null if not in sale
 	BigDecimal 	  getAvgRate();   // default: 0 
 	int 		  getNumRate();	  // default: 0
 	LocalDateTime getCreatedAt(); // sort ASC/DESC

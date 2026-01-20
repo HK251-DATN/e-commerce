@@ -12,6 +12,7 @@ public interface SaleProductUseCase {
 	 */
 	List<SaleProduct> getAll(Integer page, Integer size);
 	SaleProduct get(Long saleEventid, String batchId);
+	SaleProduct get(String batchId);
 	SaleProduct create(SaleProduct saleProduct);
 	SaleProduct update(Long saleEventid, String batchId, SaleProduct saleProduct);
 	void delete(Long saleEventid, String batchId);

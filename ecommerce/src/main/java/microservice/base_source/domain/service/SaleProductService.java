@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import microservice.base_source.domain.entity.SaleProduct;
 import microservice.base_source.domain.exception.type.WarnException;
-// import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.domain.use_case.SaleProductUseCase;
 import microservice.base_source.persistence.repository.SaleProductRepository;
 
@@ -29,9 +28,11 @@ public class SaleProductService implements SaleProductUseCase {
 
 	@Override
 	public SaleProduct get(Long saleEventid, String batchId) {
-		// return saleProductRepository.findById(batchId)
-		// 		.orElseThrow(() -> new NotFoundException("SaleProduct not found"));
-		return null;
+		Optional<SaleProduct> existingSaleProduct = saleProductRepository.findOneByEventAndBatch(saleEventid, batchId);
+		if (existingSaleProduct.isEmpty()) {
+			throw new WarnException("SaleProduct not found");
+		}
+		return existingSaleProduct.get();
 	}
 
 	@Override
@@ -58,11 +59,20 @@ public class SaleProductService implements SaleProductUseCase {
 
 	@Override
 	public void delete(Long saleEventid, String batchId) {
-		// saleProductRepository.findById(batchId)
-		// 	.ifPresentOrElse(
-		// 		saleProductRepository::delete,
-		// 		() -> {}
-		// 	);
+		Optional<SaleProduct> existingSaleProduct = saleProductRepository.findOneByEventAndBatch(saleEventid, batchId);
+		if (existingSaleProduct.isEmpty()) {
+			System.out.println("SaleProduct not found, skip delete");
+		}
+		saleProductRepository.delete(existingSaleProduct.get());
+	}
+
+	@Override
+	public SaleProduct get(String batchId) {
+		Optional<SaleProduct> existingSaleProduct = saleProductRepository.findOneByBatch(batchId);
+		if (existingSaleProduct.isEmpty()) {
+			throw new WarnException("SaleProduct not found");
+		}
+		return existingSaleProduct.get();
 	}
 
 }

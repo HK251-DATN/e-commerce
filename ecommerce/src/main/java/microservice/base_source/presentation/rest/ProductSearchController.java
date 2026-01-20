@@ -1,6 +1,7 @@
 package microservice.base_source.presentation.rest;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.use_case.SearchUseCase;
 import microservice.base_source.persistence.dto.DetailGeneralDTO;
 import microservice.base_source.presentation.response.global.ApiResponse;
+import microservice.base_source.presentation.response.searchProduct.ProductSearchResponse;
 
 @RestController
 @RequestMapping("/api/product-search")
@@ -23,7 +25,7 @@ public class ProductSearchController {
 	private SearchUseCase searchUseCase;
 
 	@GetMapping("/")
-	public ApiResponse<List<DetailGeneralDTO>> search(
+	public ApiResponse<List<ProductSearchResponse>> search(
 		@RequestParam(defaultValue = "0") Long categoryId, 
 		@RequestParam(defaultValue = "0") Long productGeneralId, 
 		@RequestParam(defaultValue = "") String searchString, 
@@ -43,6 +45,14 @@ public class ProductSearchController {
 		if (results.isEmpty()) {
 			return ApiResponse.SKIP_AS_GOOD(HttpStatus.NO_CONTENT.toString(), "No products found", null);
 		}
-		return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Search products success", results);
+
+		// convert to ProductSearchResponse
+		List<ProductSearchResponse> listResponse = new ArrayList<ProductSearchResponse>();
+		results.forEach(
+			dto -> {
+				listResponse.add(ProductSearchResponse.toResponse(dto));
+			}
+		);
+		return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Search products success", listResponse);
 	}
 }

@@ -29,4 +29,12 @@ public interface SaleProductRepository extends JpaRepository<SaleProduct, Long> 
 				LIMIT 1
 			""", nativeQuery = true)
 	Optional<SaleProduct> findOneByEventAndBatch(@Param("saleEventId") Long saleEventId, @Param("batchId") String batchId);
+
+	@Query(value = """
+				SELECT *
+				FROM SALE_PRODUCT
+				WHERE BATCH_ID = :batchId
+				LIMIT 1
+			""", nativeQuery = true)
+	Optional<SaleProduct> findOneByBatch(@Param("batchId") String batchId);
 }

@@ -38,21 +38,24 @@ public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, 
 
 	@Query(value = """
 			SELECT
-				PG.PRODUCT_GENERAL_ID AS productGeneralId,
-				PG.CATEGORY_ID AS categoryId,
-				PG.PROVIDER_ID AS providerId,
-				PG.NAME        AS name,
-				PG.DESCRIPTION AS description,
-                PG.IMG         AS img,
-                BD.BATCH_DETAIL_ID   AS BatchId,
-                BD.QUANTITY   AS Quantity,
-                BD.PRICE      AS OriginPrice,
-                BD.AVG_RATE   AS AvgRate,
-                BD.NUM_RATE   AS NumRate,
-                BD.CREATED_AT AS CreatedAt
+				PG.PRODUCT_GENERAL_ID 	AS productGeneralId,
+				PG.CATEGORY_ID 			AS categoryId,
+				PG.PROVIDER_ID 			AS providerId,
+				PG.NAME        			AS name,
+				PG.DESCRIPTION 			AS description,
+                PG.IMG         			AS img,
+                BD.BATCH_DETAIL_ID		AS BatchId,
+                BD.QUANTITY   			AS Quantity,
+                BD.PRICE      			AS OriginPrice,
+                BD.AVG_RATE   			AS AvgRate,
+                BD.NUM_RATE   			AS NumRate,
+                BD.CREATED_AT 			AS CreatedAt,
+				COALESCE(SP.DIS_VAL, 0) AS disVal
 			FROM BATCH_DETAIL BD
 			LEFT JOIN PRODUCT_GENERAL PG
-				ON BD.PRODUCT_GENERAL_ID = PG.PRODUCT_GENERAL_ID 
+				ON BD.PRODUCT_GENERAL_ID = PG.PRODUCT_GENERAL_ID
+			LEFT JOIN SALE_PRODUCT SP
+				ON SP.BATCH_ID = BD.BATCH_DETAIL_ID
 			WHERE
 				(:categoryId = 0 OR PG.CATEGORY_ID = :categoryId)
 				AND (:productGeneralId = 0 OR BD.PRODUCT_GENERAL_ID = :productGeneralId)
