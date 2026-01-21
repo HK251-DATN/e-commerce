@@ -24,10 +24,12 @@ public class OrderRequest {
 	private String note;
 
 	@NotBlank
-	private OrderType type; // DEFAULT, PREORDER, CART
+	private OrderType type; // DEFAULT, PREORDER, CART //TODO create cart entity not put in order
 
 	@NotEmpty
 	List<OrderItemRequest> orderItems;
+
+	private String couponId;
 
 	public Order toOrderEntity() {
 		Order order = new Order();
@@ -35,11 +37,11 @@ public class OrderRequest {
 		order.setStatus(OrderStatus.PENDING);
 		order.setNote(this.note);
 		order.setType(this.type);
-		
+		order.setCouponId(couponId);
 		return order;
 	}
 
-	public List<OrderItem> toEntity() {
+	public List<OrderItem> toListOrderItemEntity() {
 		// Convert OrderItemRequest to OrderItem entities
 		List<OrderItem> items = this.orderItems.stream()
 			.map(OrderItemRequest::toEntity)

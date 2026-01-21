@@ -44,6 +44,9 @@ public class Order {
 	@Column(name = "total_price")
 	private Long   totalPrice;
 
+	@Column(name = "coupon_id")
+	private String couponId;
+
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 
