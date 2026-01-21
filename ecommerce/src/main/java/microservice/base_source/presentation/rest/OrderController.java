@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.Order;
+import microservice.base_source.domain.entity.OrderItem;
 import microservice.base_source.domain.entity.Order.OrderStatus;
 import microservice.base_source.domain.use_case.OrderUseCase;
 import microservice.base_source.presentation.request.OrderRequest;
@@ -33,7 +34,15 @@ public class OrderController {
 
     @PostMapping
     public ApiResponse<Order> create(@Valid @RequestBody OrderRequest req) {
-        // Order createdOrder = orderUseCase.create(req.toOrderEntity());
+        // extract order request
+        Order newOrder = req.toOrderEntity();
+        List<OrderItem> listOrderItem = req.toListOrderItemEntity();
+
+        // call api valid when have coupon (default couponId = 0)
+
+        // check valid order internal
+        orderUseCase.create(newOrder, listOrderItem);
+
         return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create success" , null);
     }
 
