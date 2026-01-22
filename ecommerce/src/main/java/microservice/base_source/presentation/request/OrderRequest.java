@@ -23,7 +23,7 @@ public class OrderRequest {
 	@NotNull
 	private String note;
 
-	@NotBlank
+	@NotNull
 	private OrderType type; // DEFAULT, PREORDER, CART //TODO create cart entity not put in order
 
 	@NotEmpty

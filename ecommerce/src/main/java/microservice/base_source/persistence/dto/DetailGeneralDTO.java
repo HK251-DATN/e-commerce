@@ -19,5 +19,6 @@ public interface DetailGeneralDTO {
 	BigDecimal 	  getDisVal();    // discount percent, null if not in sale
 	BigDecimal 	  getAvgRate();   // default: 0 
 	int 		  getNumRate();	  // default: 0
+	Long		  getSaleEventId();
 	LocalDateTime getCreatedAt(); // sort ASC/DESC
 }

@@ -50,7 +50,8 @@ public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, 
                 BD.AVG_RATE   			AS AvgRate,
                 BD.NUM_RATE   			AS NumRate,
                 BD.CREATED_AT 			AS CreatedAt,
-				COALESCE(SP.DIS_VAL, 0) AS disVal
+				COALESCE(SP.DIS_VAL, 0) AS disVal,
+				COALESCE(SP.SALE_EVENT_ID, 0) AS saleEventId,
 			FROM BATCH_DETAIL BD
 			LEFT JOIN PRODUCT_GENERAL PG
 				ON BD.PRODUCT_GENERAL_ID = PG.PRODUCT_GENERAL_ID
