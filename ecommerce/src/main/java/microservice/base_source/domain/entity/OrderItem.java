@@ -1,5 +1,6 @@
 package microservice.base_source.domain.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -41,10 +42,10 @@ public class OrderItem {
 	private String quantity;
 
 	@Column(name = "original_price")
-	private String originalPrice;
+	private BigDecimal originalPrice;
 
 	@Column(name = "sale_price")
-	private String salePrice;
+	private BigDecimal salePrice;
 
 	@Column(name = "temp_yn")
 	private String tempYn;

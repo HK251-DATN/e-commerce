@@ -24,6 +24,7 @@ public class ProductSearchResponse {
     private BigDecimal 	  disVal;
     private BigDecimal 	  avgRate; 
     private int 	      numRate;
+    private Long          saleEventId;
     private LocalDateTime createdAt;
 
     public static ProductSearchResponse toResponse(DetailGeneralDTO dto) {
@@ -41,6 +42,7 @@ public class ProductSearchResponse {
         response.setSalePrice(calculateSalePrice(dto.getOriginPrice(), dto.getDisVal()));
         response.setAvgRate(dto.getAvgRate());
         response.setNumRate(dto.getNumRate());
+        response.setSaleEventId(dto.getSaleEventId());
         response.setCreatedAt(dto.getCreatedAt());
         return response;
     }

@@ -1,6 +1,9 @@
 package microservice.base_source.presentation.request;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,13 +13,13 @@ import microservice.base_source.domain.entity.OrderItem;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderItemRequest {
-	@NotBlank
+	@NotNull
 	private Long orderId;
 
 	@NotBlank
 	private String batchId;
-	
-	@NotBlank
+
+	@NotNull
 	private Long productGeneralId;
 	
 	private Long productDetailId;
@@ -24,11 +27,12 @@ public class OrderItemRequest {
 	@NotBlank
 	private String quantity;
 	
-	@NotBlank
-	private String originalPrice;
+	@NotNull
+	private BigDecimal originalPrice;
 	
-	@NotBlank
-	private String salePrice;
+	private BigDecimal salePrice;
+
+	private Long saleEventId;
 
 	public OrderItem toEntity() {
 		OrderItem item = new OrderItem();
