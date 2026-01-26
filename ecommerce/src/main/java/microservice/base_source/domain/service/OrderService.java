@@ -9,7 +9,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import microservice.base_source.domain.entity.Order;
 import microservice.base_source.domain.entity.OrderItem;
 import microservice.base_source.domain.entity.Order.OrderStatus;
@@ -22,6 +26,9 @@ public class OrderService implements OrderUseCase {
 	@Autowired
 	private OrderRepository orderRepository;
 
+	@PersistenceContext
+    EntityManager entityManager;
+
 	@Override
 	public List<Order> search(String buyerId, String searchString, OrderStatus status, BigDecimal minPrice,
 			BigDecimal maxPrice, LocalDateTime minTime, LocalDateTime maxTime, String sortByStatus, String sortByPrice,
@@ -31,15 +38,24 @@ public class OrderService implements OrderUseCase {
 	}
 
 	@Override
+	@Transactional(
+		rollbackFor = Exception.class,
+		propagation = Propagation.REQUIRED
+	)
 	public Order create(Order order, List<OrderItem> orderItems) {
-		// check valid coupon
-
 		// check product in stocks
 
+		// insert order
+		Order insertedOrder = orderRepository.save(order);
+
 		// insert order item
+		orderItems.forEach(orderItem -> {
+			orderItem.setOrderId(insertedOrder.getOrderId());
+		});
+		saveBatch(orderItems);
 
 		// update quantity batch detail & status product detail
-		return orderRepository.save(order);
+		return insertedOrder;
 	}
 
 	@Override
@@ -68,5 +84,18 @@ public class OrderService implements OrderUseCase {
 				() -> {}	
 			);
 	}
-	
+
+	@Transactional(propagation = Propagation.MANDATORY)
+	public void saveBatch(List<OrderItem> items) {
+		int batchSize = 50;
+
+		for (int i = 0; i < items.size(); i++) {
+			entityManager.persist(items.get(i));
+
+			if (i > 0 && i % batchSize == 0) {
+				entityManager.flush();
+				entityManager.clear();
+			}
+		}
+	}
 }
