@@ -13,7 +13,6 @@ import microservice.base_source.domain.entity.OrderItem;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderItemRequest {
-	@NotNull
 	private Long orderId;
 
 	@NotBlank
@@ -25,7 +24,7 @@ public class OrderItemRequest {
 	private Long productDetailId;
 	
 	@NotBlank
-	private String quantity;
+	private Long quantity;
 	
 	@NotNull
 	private BigDecimal originalPrice;

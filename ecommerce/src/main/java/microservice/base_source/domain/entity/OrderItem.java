@@ -39,7 +39,7 @@ public class OrderItem {
 	private Long productDetailId;
 
 	@Column(name = "quantity")
-	private String quantity;
+	private Long quantity;
 
 	@Column(name = "original_price")
 	private BigDecimal originalPrice;

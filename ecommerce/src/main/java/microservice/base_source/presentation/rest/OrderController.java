@@ -38,7 +38,10 @@ public class OrderController {
         Order newOrder = req.toOrderEntity();
         List<OrderItem> listOrderItem = req.toListOrderItemEntity();
 
-        // call api valid when have coupon (default couponId = 0)
+        // call api valid when have coupon (default couponId = "")
+        if (!req.getCouponId().equals("")) {
+            // TODO: call api valid coupon
+        }
 
         // check valid order internal
         orderUseCase.create(newOrder, listOrderItem);
