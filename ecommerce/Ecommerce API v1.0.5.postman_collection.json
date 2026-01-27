@@ -22,7 +22,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"categoryName\": \"Electronics\",\n  \"displayOrder\": 1,\n  \"description\": \"Electronic products\",\n  \"iconUrl\": \"https://example.com/icon.png\",\n  \"isSubCategory\": \"Y\",\n  \"belongToCategory\": null\n}"
+              "raw": "{\n  \"categoryName\": \"Electronics 3\",\n  \"displayOrder\": 2,\n  \"description\": \"Electronic products\",\n  \"iconUrl\": \"https://example.com/icon.png\",\n  \"isSubCategory\": \"Y\",\n  \"belongToCategory\": 1\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/categories",
@@ -135,7 +135,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"categoryName\": \"Electronics Updated\",\n  \"displayOrder\": 1,\n  \"description\": \"Updated electronic products\",\n  \"iconUrl\": \"https://example.com/icon-updated.png\",\n  \"isSubCategory\": \"Y\",\n  \"belongToCategory\": null\n}"
+              "raw": "{\n  \"categoryName\": \"Electronics Updated\",\n  \"displayOrder\": 1,\n  \"description\": \"Updated electronic products\",\n  \"iconUrl\": \"https://example.com/icon-updated.png\",\n  \"isSubCategory\": \"N\",\n  \"belongToCategory\": 0\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/categories/:id",
