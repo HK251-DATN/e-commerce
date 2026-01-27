@@ -3,6 +3,7 @@ package microservice.base_source.domain.use_case;
 import java.util.List;
 
 import microservice.base_source.domain.entity.Category;
+import microservice.base_source.presentation.response.category.CategoryResponse;
 
 public interface CategoryUseCase {
 	/**
@@ -15,7 +16,7 @@ public interface CategoryUseCase {
 	 * Lấy danh sách category
 	 * @return List category
 	 */
-	List<Category> getAll(Integer page, Integer size);
+	List<CategoryResponse> getAll(Integer page, Integer size);
 	Category get(Long id);
 	Category create(Category category);
 	Category update(Long id, Category category);

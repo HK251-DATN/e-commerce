@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.Category;
 import microservice.base_source.domain.use_case.CategoryUseCase;
 import microservice.base_source.presentation.request.CategoryRequest;
+import microservice.base_source.presentation.response.category.CategoryResponse;
 import microservice.base_source.presentation.response.global.ApiResponse;
 
 @RestController
@@ -41,7 +42,7 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ApiResponse<List<Category>> getAll(
+    public ApiResponse<List<CategoryResponse>> getAll(
         @RequestParam(defaultValue = "1") Integer page, 
         @RequestParam(defaultValue = "20") Integer size) {
         if (categoryUseCase.getAll(page, size).isEmpty()) {
