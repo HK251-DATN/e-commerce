@@ -1,18 +1,18 @@
 package microservice.base_source.domain.service;
 
+import java.util.Collections;
 import java.util.List;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import microservice.base_source.domain.entity.Category;
 import microservice.base_source.domain.exception.type.CategoryNotFoundException;
 import microservice.base_source.domain.use_case.CategoryUseCase;
+import microservice.base_source.persistence.dto.CategoryDTO;
 import microservice.base_source.persistence.repository.CategoryRepository;
-
-import org.springframework.beans.BeanUtils;
+import microservice.base_source.presentation.response.category.CategoryResponse;
 
 @Service
 public class CategoryService implements CategoryUseCase {
@@ -20,10 +20,28 @@ public class CategoryService implements CategoryUseCase {
 	private CategoryRepository categoryRepository;
 
 	@Override
-	public List<Category> getAll(Integer page, Integer size) {
-		Pageable pageable = PageRequest.of(page - 1, size);
-		Page<Category> categoryPage = categoryRepository.findAll(pageable);
-		return categoryPage.getContent();
+	public List<CategoryResponse> getAll(Integer page, Integer size) {
+		List<CategoryDTO> rows =
+            categoryRepository.getAll();
+
+		if (rows.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		return rows.stream()
+				.map(r -> new CategoryResponse(
+					r.getParentId(),
+					r.getParentName(),
+					r.getParentDescription(),
+					r.getParenticonUrl(),
+					r.getParentDisplayOrder(),
+					r.getSubId(),
+					r.getSubName(),
+					r.getSubparentDescription(),
+					r.getSubiconUrl(),
+					r.getSubDisplayOrder()
+				))
+				.toList();
 	}
 
 	@Override

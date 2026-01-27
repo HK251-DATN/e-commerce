@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import microservice.base_source.domain.entity.Category;
+import microservice.base_source.persistence.dto.CategoryDTO;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
@@ -31,4 +32,30 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 		@Param("page") Integer page, 
 		@Param("size") Integer size
 	);
+
+	@Query(
+		value = """
+            WITH LIST_CATEGORY AS (
+				SELECT *
+				FROM CATEGORY
+				WHERE IS_SUB_CATEGORY = 'N'
+			)
+			SELECT
+				LS.CATEGORY_ID   AS parentId,
+				LS.CATEGORY_NAME AS parentName,
+				LS.DESCRIPTION 	 AS parentDescription,
+				LS.ICON_URL 	 AS parenticonUrl,
+				LS.DISPLAY_ORDER AS parentDisplayOrder,
+				C.CATEGORY_ID    AS subId,
+				C.CATEGORY_NAME  AS subName,
+				C.DESCRIPTION 	 AS subparentDescription,
+				C.ICON_URL 		 AS subiconUrl,
+				C.DISPLAY_ORDER  AS subDisplayOrder
+			FROM LIST_CATEGORY LS
+			JOIN CATEGORY C
+				ON LS.CATEGORY_ID = C.BELONG_TO_CATEGORY;
+            """,
+		nativeQuery = true
+	)
+	List<CategoryDTO> getAll();
 }
