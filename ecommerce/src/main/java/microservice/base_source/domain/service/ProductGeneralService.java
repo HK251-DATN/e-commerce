@@ -12,12 +12,17 @@ import org.springframework.stereotype.Service;
 import microservice.base_source.domain.entity.ProductGeneral;
 import microservice.base_source.domain.exception.type.ProductNotFoundException;
 import microservice.base_source.domain.use_case.ProductGeneralUseCase;
+import microservice.base_source.infrastructure.messaging.user.ProductGeneralCreatedEvent;
+import microservice.base_source.infrastructure.messaging.user.ProductGeneralProducer;
 import microservice.base_source.persistence.repository.ProductGeneralRepository;
 
 @Service
 public class ProductGeneralService implements ProductGeneralUseCase {
 	@Autowired
 	private ProductGeneralRepository productGeneralRepository;
+
+	@Autowired
+	private ProductGeneralProducer productGeneralProducer;
 
 	@Override
 	public List<ProductGeneral> getAll(Integer page, Integer size) {
@@ -33,14 +38,26 @@ public class ProductGeneralService implements ProductGeneralUseCase {
 
 	@Override
 	public ProductGeneral create(ProductGeneral productGeneral) {
-		return productGeneralRepository.save(productGeneral);
+		ProductGeneral newProductGeneral = productGeneralRepository.save(productGeneral);
+
+		ProductGeneralCreatedEvent event = new ProductGeneralCreatedEvent(
+			newProductGeneral.getProductGeneralId(),
+			newProductGeneral.getName(),
+			newProductGeneral.getImg(),
+			newProductGeneral.getDescription(),
+			newProductGeneral.getCategoryId()
+		);
+
+		productGeneralProducer.publishProductGeneralCreated(event);
+
+		return newProductGeneral;
 	}
 
 	@Override
 	public ProductGeneral update(Long id, ProductGeneral productGeneral) {
 		ProductGeneral existingProductGeneral = productGeneralRepository.findById(id)
 				.orElseThrow(() -> new ProductNotFoundException("ProductGeneral not found"));
-		
+
 		// copy properties from productGeneral to existingProductGeneral
 		BeanUtils.copyProperties(
 				productGeneral,

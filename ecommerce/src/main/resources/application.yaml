@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: ecommerce_service
+
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/ecommerce_db?stringtype=unspecified
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+server:
+  port: 9300
+
+cloudflare:
+  r2:
+    account-id: ${R2_ACCOUNT_ID}
+    endpoint: https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+    access-key: ${R2_ACCESS_KEY}
+    secret-key: ${R2_SECRET_KEY}
+    region: auto
+
+app:
+  kafka-url:
+    ${KAFKA_HOST}:${KAFKA_PORT}
+  user-avater-bucket:
+    back-office-user-avts
+  product-general-img-bucket:
+    product-general-img
+  user-avatar-public-bucket-url:
+    ${USER_AVATER_PUBLIC_BUCKET_URL}
