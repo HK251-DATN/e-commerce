@@ -3,6 +3,8 @@ package microservice.base_source.domain.service;
 import java.util.Collections;
 import java.util.List;
 
+import microservice.base_source.infrastructure.messaging.category.CategoryCreatedEvent;
+import microservice.base_source.infrastructure.messaging.category.CategoryProducer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,9 @@ import microservice.base_source.presentation.response.category.CategoryResponse;
 public class CategoryService implements CategoryUseCase {
 	@Autowired
 	private CategoryRepository categoryRepository;
+
+	@Autowired
+	private CategoryProducer  categoryProducer;
 
 	@Override
 	public List<CategoryResponse> getAll(Integer page, Integer size) {
@@ -51,7 +56,17 @@ public class CategoryService implements CategoryUseCase {
 
 	@Override
 	public Category create(Category category) {
-		return categoryRepository.save(category);
+		Category newCategory = categoryRepository.save(category);
+
+		CategoryCreatedEvent event = new CategoryCreatedEvent(
+				newCategory.getCategoryId(),
+				newCategory.getCategoryName(),
+				newCategory.getDescription()
+		);
+
+		categoryProducer.publishCategoryCreated(event);
+
+		return newCategory;
 	}
 
 	@Override

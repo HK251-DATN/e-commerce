@@ -1,4 +1,4 @@
-package microservice.base_source.infrastructure.messaging.user;
+package microservice.base_source.infrastructure.messaging.productgeneral;
 
 public record ProductGeneralCreatedEvent(
                 Long prodGenId,

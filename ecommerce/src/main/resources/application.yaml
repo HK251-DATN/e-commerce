@@ -33,4 +33,4 @@ app:
   product-general-img-bucket:
     product-general-img
   user-avatar-public-bucket-url:
-    ${USER_AVATER_PUBLIC_BUCKET_URL}
+    ${USER_AVATAR_PUBLIC_BUCKET_URL}

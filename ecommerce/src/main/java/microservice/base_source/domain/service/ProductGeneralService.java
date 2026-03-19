@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 import microservice.base_source.domain.entity.ProductGeneral;
 import microservice.base_source.domain.exception.type.ProductNotFoundException;
 import microservice.base_source.domain.use_case.ProductGeneralUseCase;
-import microservice.base_source.infrastructure.messaging.user.ProductGeneralCreatedEvent;
-import microservice.base_source.infrastructure.messaging.user.ProductGeneralProducer;
+import microservice.base_source.infrastructure.messaging.productgeneral.ProductGeneralCreatedEvent;
+import microservice.base_source.infrastructure.messaging.productgeneral.ProductGeneralProducer;
 import microservice.base_source.persistence.repository.ProductGeneralRepository;
 
 @Service

@@ -1,4 +1,4 @@
-package microservice.base_source.infrastructure.messaging.user;
+package microservice.base_source.infrastructure.messaging.productgeneral;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
