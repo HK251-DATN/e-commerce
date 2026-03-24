@@ -1,5 +1,7 @@
 package microservice.base_source.presentation.request;
 
+import java.util.Map;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,7 +18,7 @@ public class ProductDetailRequest {
 	@NotNull
 	private String batchId;
 
-	private Object detail;
+	private Map<String, Object> detail;
 
 	private String img;
 
@@ -24,11 +26,11 @@ public class ProductDetailRequest {
 
     public ProductDetail toEntity() {
         ProductDetail d = new ProductDetail();
-        d.setProductGeneralId(this.productGeneralId);
-		d.setBatchId(this.batchId);
-		d.setDetail(this.detail);
-		d.setImg(this.img);
-		d.setStatus(this.status);
+        d.setProductGeneralId(this.getProductGeneralId());
+		d.setBatchId(this.getBatchId());
+		d.setDetail(this.getDetail());
+		d.setImg(this.getImg());
+		d.setStatus(this.getStatus());
         return d;
     }
 }
