@@ -2,6 +2,7 @@ package microservice.base_source.domain.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -39,7 +40,7 @@ public class ProductDetail {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "detail")
-    private Object detail; // HTML, CSS
+    private Map<String, Object> detail; // HTML, CSS
     
     @Column(name = "img", columnDefinition = "TEXT")
     private String img; // content detail info: HTML, CSS

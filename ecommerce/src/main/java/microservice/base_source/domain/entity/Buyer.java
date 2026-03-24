@@ -2,6 +2,7 @@ package microservice.base_source.domain.entity;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.annotations.JdbcTypeCode;
 // import org.hibernate.annotations.Type;
@@ -60,7 +61,7 @@ public class Buyer {
 	
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "detail", columnDefinition = "jsonb")
-	private Object detail;
+	private Map<String, Object> detail;
 	
 	@Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
