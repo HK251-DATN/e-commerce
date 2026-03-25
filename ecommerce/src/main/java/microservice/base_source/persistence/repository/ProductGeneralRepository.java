@@ -49,41 +49,12 @@ public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, 
                 BD.PRICE      			AS OriginPrice,
                 BD.AVG_RATE   			AS AvgRate,
                 BD.NUM_RATE   			AS NumRate,
-                BD.CREATED_AT 			AS CreatedAt,
-				COALESCE(SP.DIS_VAL, 0) AS disVal,
-				COALESCE(SP.SALE_EVENT_ID, 0) AS saleEventId,
+                BD.CREATED_AT 			AS CreatedAt
 			FROM BATCH_DETAIL BD
 			LEFT JOIN PRODUCT_GENERAL PG
 				ON BD.PRODUCT_GENERAL_ID = PG.PRODUCT_GENERAL_ID
-			LEFT JOIN SALE_PRODUCT SP
-				ON SP.BATCH_ID = BD.BATCH_DETAIL_ID
-			WHERE
-				(:categoryId = 0 OR PG.CATEGORY_ID = :categoryId)
-				AND (:productGeneralId = 0 OR BD.PRODUCT_GENERAL_ID = :productGeneralId)
-				AND (
-					:searchString = '' OR
-					LOWER(PG.NAME)        LIKE LOWER(CONCAT('%', :searchString, '%')) OR
-					LOWER(PG.DESCRIPTION) LIKE LOWER(CONCAT('%', :searchString, '%'))
-				)
-				AND (:minPrice   = 0 OR BD.PRICE    >= :minPrice)
-				AND (:maxPrice   = 0 OR BD.PRICE    <= :maxPrice)
-				AND (:minRating  = 0 OR BD.AVG_RATE >= :minRating)
-				AND (:maxRating  = 0 OR BD.AVG_RATE <= :maxRating)
-                AND (:minNumRate = 0 OR BD.NUM_RATE >= :minNumRate)
-				AND (:maxNumRate = 0 OR BD.NUM_RATE <= :maxNumRate)
-				AND (
-					:searchTags IS NULL OR
-					cardinality(:searchTags) = 0 OR
-					PG.TAGS && CAST(:searchTags AS text[])
-				)
-			ORDER BY
-				CASE WHEN :createdSortOption = 'ASC'  THEN BD.CREATED_AT END ASC,
-				CASE WHEN :createdSortOption = 'DESC' THEN BD.CREATED_AT END DESC,
-				CASE WHEN :ratingSortOption  = 'ASC'  THEN BD.AVG_RATE   END ASC,
-				CASE WHEN :ratingSortOption  = 'DESC' THEN BD.AVG_RATE   END DESC,
-                CASE WHEN :numRateSortOption = 'ASC'  THEN BD.NUM_RATE   END ASC,
-				CASE WHEN :numRateSortOption = 'DESC' THEN BD.NUM_RATE   END DESC
-			LIMIT :size OFFSET (:page - 1) * :size;
+			WHERE (:categoryId = 0 OR PG.CATEGORY_ID = :categoryId)
+			;
 			""", nativeQuery = true)
 	List<DetailGeneralDTO> aggregatedSearch(
 		@Param("categoryId") Long categoryId,

@@ -2,8 +2,10 @@ package microservice.base_source.presentation.rest;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,11 +22,12 @@ import microservice.base_source.presentation.response.searchProduct.ProductSearc
 @RestController
 @RequestMapping("/api/product-search")
 @RequiredArgsConstructor
+@Slf4j
 public class ProductSearchController {
 	@Autowired
 	private SearchUseCase searchUseCase;
 
-	@GetMapping("/")
+	@GetMapping
 	public ApiResponse<List<ProductSearchResponse>> search(
 		@RequestParam(defaultValue = "0") Long categoryId, 
 		@RequestParam(defaultValue = "0") Long productGeneralId, 
@@ -41,6 +44,23 @@ public class ProductSearchController {
 		@RequestParam(defaultValue = "") String numRateSortOption, 
 		@RequestParam(defaultValue = "1") Integer page, 
 		@RequestParam(defaultValue = "20") Integer size) {
+
+		log.info(String.valueOf(categoryId));
+		log.info(String.valueOf(productGeneralId));
+		log.info(searchString);
+		log.info(String.valueOf(minPrice));
+		log.info(String.valueOf(maxPrice));
+		log.info(String.valueOf(minRating));
+		log.info(String.valueOf(maxRating));
+		log.info(String.valueOf(minNumRate));
+		log.info(String.valueOf(maxNumRate));
+		log.info(Arrays.toString(searchTags));
+		log.info(createdSortOption);
+		log.info(ratingSortOption);
+		log.info(numRateSortOption);
+		log.info(String.valueOf(page));
+		log.info(String.valueOf(size));
+
 		List<DetailGeneralDTO> results = searchUseCase.searchBatch(categoryId, productGeneralId, searchString, minPrice, maxPrice, minRating, maxRating, minNumRate, maxNumRate, searchTags, createdSortOption, ratingSortOption, numRateSortOption, page, size);
 		if (results.isEmpty()) {
 			return ApiResponse.SKIP_AS_GOOD(HttpStatus.NO_CONTENT.toString(), "No products found", null);
