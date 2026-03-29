@@ -30,46 +30,20 @@ public class Buyer {
 	@Column(name = "buyer_id", nullable = false)
 	private String buyerId;
 
-	@Column(name = "name")
-	private String name;
-
-	@Column(name = "phone")
-	private String phone;
-
-	@Column(name = "alias_nm")
-	private String aliasNm;
-
-	@Column(name = "avatar")
-	private String avatar;
-
-	@Column(name = "sex")
-	private String sex;
-
-	@Column(name = "back_ground")
-	private String backGround;
-
-	@Column(name = "email")
-	private String email;
-	
-	@Column(name = "active_yn")
-	private String activeYn; // Y or N
-	
-	@JdbcTypeCode(SqlTypes.JSON)
-	@Column(name = "list_address", columnDefinition = "jsonb")
-	private List<Address> listAddress;
-	
-	@JdbcTypeCode(SqlTypes.JSON)
-	@Column(name = "detail", columnDefinition = "jsonb")
-	private Object detail;
-	
+	@Column(name = "f_name")
+    private String fName;
+    
+    @Column(name = "l_name")
+    private String lName;
+    
+    @Column(name = "email")
+    private String email;
+    
 	@Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Column(name = "delete_at")
-    private LocalDateTime deletedAt;
 
 	@PrePersist
     public void prePersist() {
@@ -79,10 +53,5 @@ public class Buyer {
     @PreUpdate
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
-    }
-
-    @PreRemove
-    public void preRemove() {
-        deletedAt = LocalDateTime.now();
     }
 }
