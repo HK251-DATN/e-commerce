@@ -13,6 +13,23 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+      multiline: true
+      logging: slf4j
+      tracing:
+        include-parameter-values: true
+
+logging:
+  level:
+    p6spy: INFO
 
 server:
   port: 9300

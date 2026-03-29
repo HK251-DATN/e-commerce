@@ -27,41 +27,59 @@ public class ProductSearchController {
 	@Autowired
 	private SearchUseCase searchUseCase;
 
-	@GetMapping
+
+//		log.info(String.valueOf(categoryId));
+//		log.info(String.valueOf(productGeneralId));
+//		log.info(searchString);
+//		log.info(String.valueOf(minPrice));
+//		log.info(String.valueOf(maxPrice));
+//		log.info(String.valueOf(minRating));
+//		log.info(String.valueOf(maxRating));
+//		log.info(String.valueOf(minNumRate));
+//		log.info(String.valueOf(maxNumRate));
+//		log.info(Arrays.toString(searchTags));
+//		log.info(createdSortOption);
+//		log.info(ratingSortOption);
+//		log.info(numRateSortOption);
+//		log.info(String.valueOf(page));
+//		log.info(String.valueOf(size));
+    
+    
+    @GetMapping
 	public ApiResponse<List<ProductSearchResponse>> search(
-		@RequestParam(defaultValue = "0") Long categoryId, 
-		@RequestParam(defaultValue = "0") Long productGeneralId, 
-		@RequestParam(defaultValue = "") String searchString, 
-		@RequestParam(defaultValue = "0") BigDecimal minPrice, 
-		@RequestParam(defaultValue = "0") BigDecimal maxPrice, 
-		@RequestParam(defaultValue = "0") BigDecimal minRating, 
-		@RequestParam(defaultValue = "0") BigDecimal maxRating, 
-		@RequestParam(defaultValue = "0") int minNumRate, 
-		@RequestParam(defaultValue = "0") int maxNumRate, 
-		@RequestParam(defaultValue = "") String[] searchTags, 
-		@RequestParam(defaultValue = "") String createdSortOption, 
-		@RequestParam(defaultValue = "") String ratingSortOption, 
-		@RequestParam(defaultValue = "") String numRateSortOption, 
-		@RequestParam(defaultValue = "1") Integer page, 
+		@RequestParam(defaultValue = "0", name = "categoryId") Long categoryId,
+		@RequestParam(defaultValue = "0", name = "productGeneralId") Long productGeneralId,
+		@RequestParam(defaultValue = "") String searchString,
+		@RequestParam(defaultValue = "0") BigDecimal minPrice,
+		@RequestParam(defaultValue = "0") BigDecimal maxPrice,
+		@RequestParam(defaultValue = "0") BigDecimal minRating,
+		@RequestParam(defaultValue = "0") BigDecimal maxRating,
+		@RequestParam(defaultValue = "0") int minNumRate,
+		@RequestParam(defaultValue = "0") int maxNumRate,
+		@RequestParam(defaultValue = "") String searchTags,
+		@RequestParam(defaultValue = "") String createdSortOption,
+		@RequestParam(defaultValue = "") String ratingSortOption,
+		@RequestParam(defaultValue = "") String numRateSortOption,
+		@RequestParam(defaultValue = "1") Integer page,
 		@RequestParam(defaultValue = "20") Integer size) {
 
-		log.info(String.valueOf(categoryId));
-		log.info(String.valueOf(productGeneralId));
-		log.info(searchString);
-		log.info(String.valueOf(minPrice));
-		log.info(String.valueOf(maxPrice));
-		log.info(String.valueOf(minRating));
-		log.info(String.valueOf(maxRating));
-		log.info(String.valueOf(minNumRate));
-		log.info(String.valueOf(maxNumRate));
-		log.info(Arrays.toString(searchTags));
-		log.info(createdSortOption);
-		log.info(ratingSortOption);
-		log.info(numRateSortOption);
-		log.info(String.valueOf(page));
-		log.info(String.valueOf(size));
-
-		List<DetailGeneralDTO> results = searchUseCase.searchBatch(categoryId, productGeneralId, searchString, minPrice, maxPrice, minRating, maxRating, minNumRate, maxNumRate, searchTags, createdSortOption, ratingSortOption, numRateSortOption, page, size);
+		List<DetailGeneralDTO> results = searchUseCase.searchBatch(
+                categoryId,
+                productGeneralId,
+                searchString,
+                minPrice,
+                maxPrice,
+                minRating,
+                maxRating,
+                minNumRate,
+                maxNumRate,
+                searchTags,
+                createdSortOption,
+                ratingSortOption,
+                numRateSortOption,
+                page,
+                size
+        );
 		if (results.isEmpty()) {
 			return ApiResponse.SKIP_AS_GOOD(HttpStatus.NO_CONTENT.toString(), "No products found", null);
 		}

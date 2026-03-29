@@ -24,10 +24,22 @@ public class SearchService implements SearchUseCase {
 	// }
 
 	@Override
-	public List<DetailGeneralDTO> searchBatch(Long categoryId, Long productGeneralId, String searchString,
-			BigDecimal minPrice, BigDecimal maxPrice, BigDecimal minRating, BigDecimal maxRating, int minNumRate,
-			int maxNumRate, String[] searchTags, String createdSortOption, String ratingSortOption,
-			String numRateSortOption, Integer page, Integer size) {
+	public List<DetailGeneralDTO> searchBatch(
+            Long categoryId,
+            Long productGeneralId,
+            String searchString,
+			BigDecimal minPrice,
+            BigDecimal maxPrice,
+            BigDecimal minRating,
+            BigDecimal maxRating,
+            int minNumRate,
+			int maxNumRate,
+            String searchTags,
+            String createdSortOption,
+            String ratingSortOption,
+			String numRateSortOption,
+            Integer page,
+            Integer size) {
 		return productGeneralRepository.aggregatedSearch(
 			categoryId,
 			productGeneralId,
