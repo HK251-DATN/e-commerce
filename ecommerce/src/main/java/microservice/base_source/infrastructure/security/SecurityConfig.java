@@ -38,11 +38,8 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user/buyer-register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user/upload-avt-img").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers("/api/address").authenticated()
+                        .anyRequest().permitAll())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
