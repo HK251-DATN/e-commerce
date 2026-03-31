@@ -1,0 +1,13 @@
+package microservice.base_source.persistence.repository;
+
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import microservice.base_source.domain.entity.CartItem;
+
+@Repository
+public interface CartItemRepository extends JpaRepository<CartItem, UUID>  {
+	
+}

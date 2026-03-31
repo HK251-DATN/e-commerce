@@ -1,7 +1,7 @@
 {
   "info": {
     "_postman_id": "a458b7be-a6e5-4094-be42-4dc9e4cd5444",
-    "name": "Ecommerce API v1.0.1",
+    "name": "Ecommerce API v1.0.6",
     "description": "API documentation for Ecommerce Application",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "39757495"
@@ -1407,6 +1407,174 @@
                   "key": "id",
                   "value": "1"
                 }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Create Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"buyerId\": \"string\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cart"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/c1becf09-a21f-48ad-849b-0b9ff14a1504",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cart",
+                "c1becf09-a21f-48ad-849b-0b9ff14a1504"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/c1becf09-a21f-48ad-849b-0b9ff14a1504",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cart",
+                "c1becf09-a21f-48ad-849b-0b9ff14a1504"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "CartItem",
+      "item": [
+        {
+          "name": "Add cart item",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"cartId\": \"ff5a92d0-4c9d-4eb0-98b2-d9d92beddf16\",\r\n  \"batchDetailId\": \"BATCH002\",\r\n  \"quantity\": 2,\r\n  \"isSelected\": 1\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart-item",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cart-item"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get cart item",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart-item/cece0cfe-a69b-49bc-8ca3-9f1f3ecaae77",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cart-item",
+                "cece0cfe-a69b-49bc-8ca3-9f1f3ecaae77"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update cart item",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"cartId\": \"f32cd82c-b085-4d57-8517-49d586321f36\",\r\n  \"batchDetailId\": \"BATCH002\",\r\n  \"quantity\": 5,\r\n  \"isSelected\": 0\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart-item/cece0cfe-a69b-49bc-8ca3-9f1f3ecaae77",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cart-item",
+                "cece0cfe-a69b-49bc-8ca3-9f1f3ecaae77"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete cart item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart-item/cece0cfe-a69b-49bc-8ca3-9f1f3ecaae77",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cart-item",
+                "cece0cfe-a69b-49bc-8ca3-9f1f3ecaae77"
               ]
             }
           },
