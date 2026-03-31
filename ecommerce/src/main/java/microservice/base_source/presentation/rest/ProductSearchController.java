@@ -1,7 +1,6 @@
 package microservice.base_source.presentation.rest;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +24,7 @@ public class ProductSearchController {
 	private SearchUseCase searchUseCase;
 
 	@GetMapping("/")
-	public ApiResponse<List<ProductSearchResponse>> search(
+	public ApiResponse<List<?>> search(
 		@RequestParam(defaultValue = "0") Long categoryId, 
 		@RequestParam(defaultValue = "0") Long productGeneralId, 
 		@RequestParam(defaultValue = "") String searchString, 
@@ -47,12 +46,8 @@ public class ProductSearchController {
 		}
 
 		// convert to ProductSearchResponse
-		List<ProductSearchResponse> listResponse = new ArrayList<ProductSearchResponse>();
-		results.forEach(
-			dto -> {
-				listResponse.add(ProductSearchResponse.toResponse(dto));
-			}
-		);
+		List<ProductSearchResponse> listResponse = ProductSearchResponse.toResponse(results);
+		
 		return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Search products success", listResponse);
 	}
 }
