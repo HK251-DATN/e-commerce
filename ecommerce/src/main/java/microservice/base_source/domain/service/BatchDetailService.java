@@ -28,7 +28,7 @@ public class BatchDetailService implements BatchDetailUseCase {
 
 	@Override
 	public BatchDetail get(Long id) {
-		return batchDetailRepository.findById(id).orElseThrow(() -> new NotFoundException("BatchDetail not found"));
+		return batchDetailRepository.findById(id.toString()).orElseThrow(() -> new NotFoundException("BatchDetail not found"));
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class BatchDetailService implements BatchDetailUseCase {
 
 	@Override
 	public BatchDetail update(Long id, BatchDetail batchDetail) {
-		BatchDetail existingCategory = batchDetailRepository.findById(id)
+		BatchDetail existingCategory = batchDetailRepository.findById(id.toString())
 				.orElseThrow(() -> new NotFoundException("BatchDetail not found"));
 		// Update all fields 
 		BeanUtils.copyProperties(batchDetail, existingCategory, "id");
@@ -47,7 +47,7 @@ public class BatchDetailService implements BatchDetailUseCase {
 
 	@Override
 	public void delete(Long id) {
-		batchDetailRepository.findById(id)
+		batchDetailRepository.findById(id.toString())
 			.ifPresentOrElse(
 				batchDetailRepository::delete,
 				() -> {}	

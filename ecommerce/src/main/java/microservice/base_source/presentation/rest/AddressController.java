@@ -45,7 +45,7 @@ public class AddressController {
     
     @GetMapping("/{addressId}")
     public ResponseEntity<ApiResponse<Address>> read(
-            @PathVariable String addressId,
+            @PathVariable Long addressId,
             @AuthenticationPrincipal AuthenticatedUser principal
     ) {
         
@@ -94,7 +94,7 @@ public class AddressController {
     
     @PutMapping("/{addressId}")
     public ResponseEntity<ApiResponse<Address>> update(
-            @PathVariable String addressId,
+            @PathVariable Long addressId,
             @RequestBody AddressRequest request,
             @AuthenticationPrincipal AuthenticatedUser principal
     ) {
@@ -122,7 +122,7 @@ public class AddressController {
     
     @DeleteMapping("/{addressId}")
     public ResponseEntity<ApiResponse<Void>> delete(
-            @PathVariable String addressId,
+            @PathVariable Long addressId,
             @AuthenticationPrincipal AuthenticatedUser principal
     ) {
         

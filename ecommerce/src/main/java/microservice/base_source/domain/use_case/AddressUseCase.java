@@ -7,11 +7,11 @@ import java.util.List;
 public interface AddressUseCase {
     Address create(Address address);
     
-    Address read(String addressId);
+    Address read(Long addressId);
     
     List<Address> readBuyerAddresses(String buyerId);
     
-    Address update(String addressId, Address address);
+    Address update(Long addressId, Address address);
     
-    void delete(String addressId);
+    void delete(Long addressId);
 }

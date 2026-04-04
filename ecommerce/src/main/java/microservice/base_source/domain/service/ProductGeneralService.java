@@ -12,17 +12,13 @@ import org.springframework.stereotype.Service;
 import microservice.base_source.domain.entity.ProductGeneral;
 import microservice.base_source.domain.exception.type.ProductNotFoundException;
 import microservice.base_source.domain.use_case.ProductGeneralUseCase;
-import microservice.base_source.infrastructure.messaging.productgeneral.ProductGeneralCreatedEvent;
-import microservice.base_source.infrastructure.messaging.productgeneral.ProductGeneralProducer;
 import microservice.base_source.persistence.repository.ProductGeneralRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ProductGeneralService implements ProductGeneralUseCase {
 	@Autowired
 	private ProductGeneralRepository productGeneralRepository;
-
-	@Autowired
-	private ProductGeneralProducer productGeneralProducer;
 
 	@Override
 	public List<ProductGeneral> getAll(Integer page, Integer size) {
@@ -38,19 +34,20 @@ public class ProductGeneralService implements ProductGeneralUseCase {
 
 	@Override
 	public ProductGeneral create(ProductGeneral productGeneral) {
-		ProductGeneral newProductGeneral = productGeneralRepository.save(productGeneral);
-
-		ProductGeneralCreatedEvent event = new ProductGeneralCreatedEvent(
-			newProductGeneral.getProductGeneralId(),
-			newProductGeneral.getName(),
-			newProductGeneral.getImg(),
-			newProductGeneral.getDescription(),
-			newProductGeneral.getCategoryId()
-		);
-
-		productGeneralProducer.publishProductGeneralCreated(event);
-
-		return newProductGeneral;
+//		ProductGeneral newProductGeneral = productGeneralRepository.save(productGeneral);
+//
+//		ProductGeneralCreatedEvent event = new ProductGeneralCreatedEvent(
+//			newProductGeneral.getProductGeneralId(),
+//			newProductGeneral.getName(),
+//			newProductGeneral.getImg(),
+//			newProductGeneral.getDescription(),
+//			newProductGeneral.getCategoryId()
+//		);
+//
+//		productGeneralProducer.publishProductGeneralCreated(event);
+//
+//		return newProductGeneral;
+        return null;
 	}
 
 	@Override
@@ -80,4 +77,11 @@ public class ProductGeneralService implements ProductGeneralUseCase {
 	public List<ProductGeneral> search(Long categoryId, String searchString, Integer page, Integer size) {
 		return productGeneralRepository.search(categoryId, searchString, page, size);
 	}
+    
+    @Override
+    @Transactional
+    public ProductGeneral createFromEvent(ProductGeneral productGeneral) {
+        // Create product general from event with pre-assigned ID
+        return productGeneralRepository.save(productGeneral);
+    }
 }

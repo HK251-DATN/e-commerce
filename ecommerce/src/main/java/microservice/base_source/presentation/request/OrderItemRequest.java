@@ -35,13 +35,13 @@ public class OrderItemRequest {
 
 	public OrderItem toEntity() {
 		OrderItem item = new OrderItem();
-		item.setOrderId(this.orderId);
-		item.setBatchId(this.batchId);
-		item.setProductGeneralId(this.productGeneralId);
-		item.setProductDetailId(this.productDetailId);
-		item.setQuantity(this.quantity);
-		item.setOriginalPrice(this.originalPrice);
-		item.setSalePrice(this.salePrice);
+//		item.setOrderId(this.orderId);
+//		item.setBatchId(this.batchId);
+//		item.setProductGeneralId(this.productGeneralId);
+//		item.setProductDetailId(this.productDetailId);
+//		item.setQuantity(this.quantity);
+//		item.setOriginalPrice(this.originalPrice);
+//		item.setSalePrice(this.salePrice);
 		return item;
 	}
 }

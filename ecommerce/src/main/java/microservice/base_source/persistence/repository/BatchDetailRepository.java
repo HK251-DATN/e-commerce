@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import microservice.base_source.domain.entity.BatchDetail;
 
 @Repository
-public interface BatchDetailRepository extends JpaRepository<BatchDetail, Long> {
+public interface BatchDetailRepository extends JpaRepository<BatchDetail, String> {
 	
 }

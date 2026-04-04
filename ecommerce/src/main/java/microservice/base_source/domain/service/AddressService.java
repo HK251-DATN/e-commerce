@@ -31,7 +31,7 @@ public class AddressService implements AddressUseCase {
     }
     
     @Override
-    public Address read (String addressId) {
+    public Address read (Long addressId) {
         return addressRepository.findById(addressId).orElseThrow(
                 () -> new RuntimeException("Not found address with id: " + addressId)
         );
@@ -44,7 +44,7 @@ public class AddressService implements AddressUseCase {
     
     @Override
     @Transactional
-    public Address update (String addressId, Address address) {
+    public Address update (Long addressId, Address address) {
         Address curAddr = read(addressId);
         
         if (address.getCommune() != null && !curAddr.getCommune().equals(address.getCommune())) {
@@ -70,8 +70,12 @@ public class AddressService implements AddressUseCase {
         if (address.getDetail() != null && !curAddr.getDetail().equals(address.getDetail())) {
             curAddr.setDetail(address.getDetail());
         }
-        
-        if (address.getIsDefault() != null && address.getIsDefault() && !curAddr.getIsDefault().equals(address.getIsDefault())) {
+
+        // Update is_default only if:
+        // is_default is not null
+        // AND the new is_default is true
+        // AND the old is_default is false
+        if (address.getIsDefault() != null && address.getIsDefault() && !curAddr.getIsDefault()) {
             // Set all other user's address isDefault to false
             List<Address> userAddrs = readBuyerAddresses(curAddr.getBuyerId());
             
@@ -92,7 +96,7 @@ public class AddressService implements AddressUseCase {
     }
     
     @Override
-    public void delete (String addressId) {
+    public void delete (Long addressId) {
         Address addr = read(addressId);
         
         addressRepository.delete(addr);

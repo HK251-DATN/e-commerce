@@ -16,4 +16,5 @@ public interface ProductGeneralUseCase {
 	ProductGeneral create(ProductGeneral productGeneral);
 	ProductGeneral update(Long id, ProductGeneral productGeneral);
 	void delete(Long id);
+    ProductGeneral createFromEvent(ProductGeneral productGeneral);
 }

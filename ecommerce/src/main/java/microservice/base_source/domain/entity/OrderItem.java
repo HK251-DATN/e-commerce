@@ -29,14 +29,8 @@ public class OrderItem {
 	@Column(name = "order_id")
 	private Long orderId;
 
-	@Column(name = "batch_id")
-	private String batchId;
-
-	@Column(name = "product_general_id")
-	private Long productGeneralId;
-
-	@Column(name = "product_detail_id")
-	private Long productDetailId;
+	@Column(name = "batch_detail_id")
+	private String batchDetailId;
 
 	@Column(name = "quantity")
 	private Long quantity;
@@ -44,11 +38,8 @@ public class OrderItem {
 	@Column(name = "original_price")
 	private BigDecimal originalPrice;
 
-	@Column(name = "sale_price")
-	private BigDecimal salePrice;
-
-	@Column(name = "temp_yn")
-	private String tempYn;
+	@Column(name = "unit_price_at_purchase")
+	private BigDecimal unitPriceAtPurchase;
 
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;

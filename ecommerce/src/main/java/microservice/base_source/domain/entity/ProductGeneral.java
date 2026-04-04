@@ -22,7 +22,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "PRODUCT_GENERAL")
 public class ProductGeneral {
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_general_id")
     private Long productGeneralId;
 
