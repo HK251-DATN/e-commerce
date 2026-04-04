@@ -4,6 +4,8 @@ package microservice.base_source.presentation.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 // import org.springframework.web.bind.annotation.DeleteMapping;
 // import org.springframework.web.bind.annotation.GetMapping;
 // import org.springframework.web.bind.annotation.PathVariable;
@@ -40,11 +42,11 @@ public class CartController {
         return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create Cart success", created);
     }
 
-    // @GetMapping("/{id}")
-    // public ApiResponse<Cart> getById(@PathVariable Long id) {
-    //     Cart p = cartService.get(id);
-    //     return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get Cart success", p);
-    // }
+    @GetMapping("/{userId}")
+    public ApiResponse<Cart> getById(@PathVariable String userId) {
+        Cart p = cartService.getByBuyerId(userId);
+        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get Cart success", p);
+    }
 
     // @PutMapping("/{id}")
     // public ApiResponse<Cart> update(@Valid @RequestBody CartRequest req, @PathVariable Long id) {
