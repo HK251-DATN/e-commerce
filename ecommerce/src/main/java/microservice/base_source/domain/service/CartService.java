@@ -25,4 +25,13 @@ public class CartService implements CartUseCase {
         return cartRepository.findByBuyerId(buyerId)
                 .orElseThrow(() -> new NotFoundException("Cart not found for buyer: " + buyerId));
     }
+
+	// @Override
+    // @Transactional
+    // public Cart delete(Long id) {
+    //     Cart existingCart = cartRepository.findById(id)
+	// 			.orElseThrow(() -> new NotFoundException("Cart not found with id: " + id));
+	// 	cartRepository.delete(existingCart);
+	// 	return existingCart;
+    // }
 }

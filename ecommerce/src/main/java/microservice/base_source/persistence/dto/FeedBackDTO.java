@@ -1,6 +1,7 @@
 package microservice.base_source.persistence.dto;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 public interface FeedBackDTO {
 	// buyer short info
@@ -15,6 +16,6 @@ public interface FeedBackDTO {
 	// feedback content
 	String getContent();
 	String getImg();
-	Object getDetail();
+	Map<String, Object> getDetail();
 	LocalDateTime getCreatedAt();
 }

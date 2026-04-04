@@ -2,6 +2,7 @@ package microservice.base_source.presentation.request;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Map;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -34,7 +35,7 @@ public class SaleEventRequest {
 
 	private LocalDateTime endDate;
 
-	private Object detail; 
+	private Map<String, Object> detail; 
 
     public SaleEvent toEntity() {
         SaleEvent s = new SaleEvent();
@@ -48,6 +49,7 @@ public class SaleEventRequest {
         s.setEndTime(this.endTime);
         s.setBeginDate(this.beginDate);
         s.setEndDate(this.endDate);
+        s.setDetail(this.detail);
         return s;
     }
 }

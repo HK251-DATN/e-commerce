@@ -13,11 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.FeedBack;
 import microservice.base_source.domain.use_case.FeedBackUseCase;
+import microservice.base_source.infrastructure.security.AuthenticatedUser;
 import microservice.base_source.persistence.dto.FeedBackDTO;
 import microservice.base_source.presentation.request.FeedBackRequest;
 import microservice.base_source.presentation.response.global.ApiResponse;
@@ -30,7 +32,12 @@ public class FeedBackController {
 	private FeedBackUseCase feedBackUseCase;
 
     @PostMapping
-    public ApiResponse<FeedBack> create(@Valid @RequestBody FeedBackRequest req) {
+    public ApiResponse<FeedBack> create(@Valid @RequestBody FeedBackRequest req,
+        @AuthenticationPrincipal AuthenticatedUser principal
+    ) {
+        String buyerId = principal.getId().toString();
+        req.setBuyerId(buyerId);
+
         FeedBack created = feedBackUseCase.create(req.toEntity());
         return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create success" , created);
     }
@@ -63,7 +70,12 @@ public class FeedBackController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<FeedBack> update(@PathVariable Long id, @Valid @RequestBody FeedBackRequest req) {
+    public ApiResponse<FeedBack> update(@PathVariable Long id, @Valid @RequestBody FeedBackRequest req,
+        @AuthenticationPrincipal AuthenticatedUser principal
+    ) {
+        String buyerId = principal.getId().toString();
+        req.setBuyerId(buyerId);
+
         FeedBack toUpdate = req.toEntity();
         FeedBack updated = feedBackUseCase.update(id, toUpdate);
 		return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Update success", updated);
