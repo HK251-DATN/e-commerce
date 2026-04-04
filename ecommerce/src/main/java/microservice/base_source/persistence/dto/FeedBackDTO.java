@@ -1,14 +1,14 @@
 package microservice.base_source.persistence.dto;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 public interface FeedBackDTO {
 	// buyer short info
 	String getBuyerId();
-	String getName();
-	String getAvatar();
-	String getAliasNm();
+	String getFname();
+	String getLname();
+	// String getAvatar();
+	// String getAliasNm();
 
 	//product detail when hover or click
 	Long   getProductDetailId();
@@ -16,6 +16,6 @@ public interface FeedBackDTO {
 	// feedback content
 	String getContent();
 	String getImg();
-	Map<String, Object> getDetail();
+	String getDetail();
 	LocalDateTime getCreatedAt();
 }

@@ -12,40 +12,61 @@ import microservice.base_source.persistence.dto.FeedBackDTO;
 @Repository
 public interface FeedBackRepository extends JpaRepository<FeedBack, Long> {
 
+	// @Query(
+	// 	value = """
+	// 		WITH LIST_DETAIL AS (
+	// 			SELECT PRODUCT_DETAIL_ID, rating 
+	// 			FROM PRODUCT_DETAIL
+	// 			WHERE batch_id = :batchId
+	// 		),
+	// 		LIST_FEEDBACK AS (
+	// 			SELECT 	FB.BUYER_ID,
+	// 					FB.PRODUCT_DETAIL_ID,
+	// 					FB.CONTENT,
+	// 					FB.IMG,
+	// 					FB.DETAIL,
+	// 					FB.created_at
+	// 			FROM LIST_DETAIL LPD
+	// 			INNER JOIN FEED_BACK FB
+	// 				ON LPD.PRODUCT_DETAIL_ID = FB.PRODUCT_DETAIL_ID
+	// 		)
+	// 		SELECT 	B.NAME 					AS name,
+	// 				B.AVATAR 				AS avatar,
+	// 				B.ALIAS_NM 				AS aliasNm,
+	// 				LFB.BUYER_ID 			AS buyerId,
+	// 				LFB.PRODUCT_DETAIL_ID 	AS productDetailId,
+	// 				LFB.CONTENT 			AS content,
+	// 				LFB.IMG 				AS img,
+	// 				LFB.DETAIL 				AS detail,
+	// 				LFB.created_at 			AS createdAt
+	// 		FROM LIST_FEEDBACK LFB
+	// 		INNER JOIN BUYER B
+	// 			ON B.BUYER_ID = LFB.BUYER_ID
+	// 		LIMIT :size 
+	// 		OFFSET ((:page - 1) * :size);
+	// 		""",
+	// 	nativeQuery = true
+	// )
+	// List<FeedBackDTO> getByBatchId(Long batchId, Integer page, Integer size);
+
 	@Query(
 		value = """
-			WITH LIST_DETAIL AS (
-				SELECT PRODUCT_DETAIL_ID, rating 
-				FROM PRODUCT_DETAIL
-				WHERE batch_id = :batchId
-			),
-			LIST_FEEDBACK AS (
-				SELECT 	FB.BUYER_ID,
-						FB.PRODUCT_DETAIL_ID,
-						FB.CONTENT,
-						FB.IMG,
-						FB.DETAIL,
-						FB.created_at
-				FROM LIST_DETAIL LPD
-				INNER JOIN FEED_BACK FB
-					ON LPD.PRODUCT_DETAIL_ID = FB.PRODUCT_DETAIL_ID
-			)
-			SELECT 	B.NAME 					AS name,
-					B.AVATAR 				AS avatar,
-					B.ALIAS_NM 				AS aliasNm,
-					LFB.BUYER_ID 			AS buyerId,
-					LFB.PRODUCT_DETAIL_ID 	AS productDetailId,
-					LFB.CONTENT 			AS content,
-					LFB.IMG 				AS img,
-					LFB.DETAIL 				AS detail,
-					LFB.created_at 			AS createdAt
-			FROM LIST_FEEDBACK LFB
-			INNER JOIN BUYER B
-				ON B.BUYER_ID = LFB.BUYER_ID
-			LIMIT :size 
+			SELECT 	B.F_NAME 				AS fname,
+					B.L_NAME 				AS lname,
+					FB.BUYER_ID 			AS buyerId,
+					FB.PRODUCT_DETAIL_ID 	AS productDetailId,
+					FB.CONTENT 				AS content,
+					FB.IMG 					AS img,
+					FB.DETAIL		 		AS detail,
+					FB.created_at 			AS createdAt
+			FROM FEED_BACK FB
+			JOIN BUYER B
+				ON B.BUYER_ID = FB.BUYER_ID
+			WHERE FB.BATCH_DETAIL_ID = :batchId
+			LIMIT :size
 			OFFSET ((:page - 1) * :size);
 			""",
 		nativeQuery = true
 	)
-	List<FeedBackDTO> getByBatchId(Long batchId, Integer page, Integer size);
+	List<FeedBackDTO> getByBatchId(String batchId, Integer page, Integer size);
 }

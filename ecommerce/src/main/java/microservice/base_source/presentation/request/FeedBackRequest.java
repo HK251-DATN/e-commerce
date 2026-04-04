@@ -19,6 +19,8 @@ public class FeedBackRequest {
 
 	private Long productDetailId;
 
+	private String batchDetailId;
+
 	private BigDecimal rating;
 
 	private String content;
@@ -32,6 +34,7 @@ public class FeedBackRequest {
         f.setReplyId(this.replyId);
         f.setBuyerId(this.buyerId);
         f.setProductDetailId(this.productDetailId);
+        f.setBatchDetailId(this.batchDetailId);
         f.setRating(this.rating);
         f.setContent(this.content);
         f.setImg(this.img);

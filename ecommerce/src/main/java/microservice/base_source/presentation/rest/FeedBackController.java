@@ -22,6 +22,7 @@ import microservice.base_source.domain.use_case.FeedBackUseCase;
 import microservice.base_source.infrastructure.security.AuthenticatedUser;
 import microservice.base_source.persistence.dto.FeedBackDTO;
 import microservice.base_source.presentation.request.FeedBackRequest;
+import microservice.base_source.presentation.response.feedback.FeedBackResponse;
 import microservice.base_source.presentation.response.global.ApiResponse;
 
 @RestController
@@ -42,11 +43,11 @@ public class FeedBackController {
         return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create success" , created);
     }
 
-    @GetMapping("/{id}")
-    public ApiResponse<FeedBack> getById(@PathVariable Long id) {
-        FeedBack opt = feedBackUseCase.get(id);
-        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get feed back success", opt);
-    }
+    // @GetMapping("/{id}")
+    // public ApiResponse<FeedBack> getById(@PathVariable Long id) {
+    //     FeedBack opt = feedBackUseCase.get(id);
+    //     return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get feed back success", opt);
+    // }
 
     @GetMapping
     public ApiResponse<List<FeedBack>> getAll(
@@ -59,14 +60,19 @@ public class FeedBackController {
     }
 
     @GetMapping("/{batchId}")
-    public ApiResponse<List<FeedBackDTO>> search(
-        @PathVariable(name = "batchId") Long batchId, 
+    public ApiResponse<List<FeedBackResponse>> search(
+        @PathVariable(name = "batchId") String batchId, 
         @RequestParam(defaultValue = "1") Integer page, 
         @RequestParam(defaultValue = "20") Integer size) {
-        if (feedBackUseCase.getByBatchId(batchId, page, size).isEmpty()) {
+        List<FeedBackDTO> listFeedBackDto = feedBackUseCase.getByBatchId(batchId, page, size);
+        if (listFeedBackDto.isEmpty()) {
             return ApiResponse.SKIP_AS_GOOD(HttpStatus.NO_CONTENT.toString(), "No feed backs found", null);
         }
-        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Search feed backs success", feedBackUseCase.getByBatchId(batchId, page, size));
+
+        List<FeedBackResponse> listFeedBackResponse = listFeedBackDto.stream()
+            .map(FeedBackResponse::dtoToResponse)
+            .toList();
+        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Search feed backs success", listFeedBackResponse);
     }
 
     @PutMapping("/{id}")
