@@ -56,4 +56,7 @@ public interface OrderUseCase {
 	Order get(Long id);
 	// Order update(Long id, Order order);
 	void delete(Long id);
+
+	// Add this method to OrderUseCase.java
+	Order createFromCart(String buyerId, Long addressId);
 }

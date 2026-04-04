@@ -28,12 +28,17 @@ import microservice.base_source.presentation.response.global.ApiResponse;
 public class CategoryController {
     @Autowired
 	private CategoryUseCase categoryUseCase;
-
-    @PostMapping
-    public ApiResponse<Category> create(@Valid @RequestBody CategoryRequest req) {
-        Category created = categoryUseCase.create(req.toEntity());
-        return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create success" , created);
-    }
+    
+    /**
+     * NOTE: Category creation is now handled by back-office service.
+     * Categories are created via Kafka events from back-office.
+     * This endpoint has been removed.
+     */
+//    @PostMapping
+//    public ApiResponse<Category> create(@Valid @RequestBody CategoryRequest req) {
+//        Category created = categoryUseCase.create(req.toEntity());
+//        return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create success" , created);
+//    }
 
     @GetMapping("/{id}")
     public ApiResponse<Category> getById(@PathVariable Long id) {

@@ -13,6 +13,7 @@ import microservice.base_source.domain.use_case.CategoryUseCase;
 import microservice.base_source.persistence.dto.CategoryDTO;
 import microservice.base_source.persistence.repository.CategoryRepository;
 import microservice.base_source.presentation.response.category.CategoryResponse;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CategoryService implements CategoryUseCase {
@@ -49,10 +50,20 @@ public class CategoryService implements CategoryUseCase {
 		return categoryRepository.findById(id).orElseThrow(() -> new CategoryNotFoundException("Category not found"));
 	}
 
-	@Override
-	public Category create(Category category) {
-		return categoryRepository.save(category);
-	}
+//	@Override
+//	public Category create(Category category) {
+//		Category newCategory = categoryRepository.save(category);
+//
+//		CategoryCreatedEvent event = new CategoryCreatedEvent(
+//				newCategory.getCategoryId(),
+//				newCategory.getCategoryName(),
+//				newCategory.getDescription()
+//		);
+//
+//		categoryProducer.publishCategoryCreated(event);
+//
+//		return newCategory;
+//	}
 
 	@Override
 	public Category update(Long id, Category category) {
@@ -76,5 +87,13 @@ public class CategoryService implements CategoryUseCase {
 	public List<Category> search(String searchName, Integer page, Integer size) {
 		return categoryRepository.search(searchName, page, size);
 	}
-	
+    
+    @Override
+    @Transactional
+    public Category createFromEvent(Category category) {
+        // This method is called by Kafka consumer
+        // The category already has an ID assigned from back-office
+        return categoryRepository.save(category);
+    }
+ 
 }

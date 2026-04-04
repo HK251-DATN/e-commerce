@@ -1,7 +1,5 @@
 package microservice.base_source.domain.service;
 
-import java.util.UUID;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +13,7 @@ public class CartItemService {
 	@Autowired
 	private CartItemRepository cartItemRepository;
 
-	public CartItem get(UUID id) {
+	public CartItem get(Long id) {
 		return cartItemRepository.findById(id).orElseThrow(() -> new NotFoundException("CartItem not found"));
 	}
 
@@ -23,7 +21,7 @@ public class CartItemService {
 		return cartItemRepository.save(cartItem);
 	}
 
-	public CartItem update(UUID id, CartItem cartItem) {
+	public CartItem update(Long id, CartItem cartItem) {
 		CartItem existingCategory = cartItemRepository.findById(id)
 				.orElseThrow(() -> new NotFoundException("CartItem not found"));
 		// Update all fields 
@@ -31,7 +29,7 @@ public class CartItemService {
 		return cartItemRepository.save(existingCategory);
 	}
 
-	public void delete(UUID id) {
+	public void delete(Long id) {
 		cartItemRepository.findById(id)
 			.ifPresentOrElse(
 				cartItemRepository::delete,

@@ -39,7 +39,7 @@ public interface SearchUseCase {
 		BigDecimal maxRating,
 		int minNumRate,
 		int maxNumRate,
-		String[] searchTags,
+		String searchTags,
 		String createdSortOption,
 		String ratingSortOption,
 		String numRateSortOption,

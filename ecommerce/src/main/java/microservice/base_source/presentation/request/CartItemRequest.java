@@ -1,19 +1,17 @@
 package microservice.base_source.presentation.request;
 
-import java.util.UUID;
-
 import lombok.Data;
 import microservice.base_source.domain.entity.CartItem;
 
 @Data
 public class CartItemRequest {
-	private UUID cartId;
+	private Long cartId;
 
 	private String batchDetailId;
 
-	private Integer quantity;
+	private Long quantity;
 
-	private Integer isSelected;
+	private Boolean isSelected;
 
 	public CartItem toEntity() {
 		CartItem cartItem = new CartItem();

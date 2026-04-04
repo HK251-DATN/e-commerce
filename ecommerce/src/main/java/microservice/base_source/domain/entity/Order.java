@@ -31,6 +31,9 @@ public class Order {
 	@Column(name = "buyer_id")
 	private String buyerId;
 
+	@Column(name = "address_id")
+	private Long addressId;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status")
 	private OrderStatus status; // PENDING, PAID, CONFIRMED, PACKAGED, SHIPPED, COMPLETED, CANCELLED
@@ -42,7 +45,7 @@ public class Order {
 	private OrderType type; // DEFAULT, PREORDER, CART
 
 	@Column(name = "total_price")
-	private Long   totalPrice;
+	private Long totalPrice;
 
 	@Column(name = "coupon_id")
 	private String couponId;
@@ -53,9 +56,6 @@ public class Order {
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 
-	@Column(name = "deleted_at")
-	private LocalDateTime deletedAt;
-
 	@PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
@@ -65,11 +65,6 @@ public class Order {
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-	@PreRemove
-	public void preRemove() {
-		deletedAt = LocalDateTime.now();
-	}
 
 	public enum OrderStatus {
 		PENDING,

@@ -31,4 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
-/src/main/resources
+
+### Local environment ###
+**/**/.env
+
+### SonarQube ###
+.sonarlint/
+
+### Log files ###
+**/**/*.log

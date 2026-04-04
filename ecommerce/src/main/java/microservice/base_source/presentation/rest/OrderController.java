@@ -4,8 +4,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import microservice.base_source.domain.exception.type.BadRequestException;
+import microservice.base_source.domain.exception.type.NotFoundException;
+import microservice.base_source.domain.exception.type.UnauthorizedException;
+import microservice.base_source.infrastructure.security.AuthenticatedUser;
+import microservice.base_source.presentation.request.CreateOrderFromCartRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,21 +39,53 @@ public class OrderController {
     @Autowired
 	private OrderUseCase orderUseCase;
 
+//    @PostMapping
+//    public ApiResponse<Order> create(@Valid @RequestBody OrderRequest req) {
+//        // extract order request
+//        Order newOrder = req.toOrderEntity();
+//        List<OrderItem> listOrderItem = req.toListOrderItemEntity();
+//
+//        // call api valid when have coupon (default couponId = "")
+//        if (!req.getCouponId().equals("")) {
+//            // TODO: call api valid coupon
+//        }
+//
+//        // check valid order internal
+//        orderUseCase.create(newOrder, listOrderItem);
+//
+//        return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create success" , null);
+//    }
+
     @PostMapping
-    public ApiResponse<Order> create(@Valid @RequestBody OrderRequest req) {
-        // extract order request
-        Order newOrder = req.toOrderEntity();
-        List<OrderItem> listOrderItem = req.toListOrderItemEntity();
+    public ResponseEntity<ApiResponse<Order>> createOrderFromCart(
+            @RequestBody @Valid CreateOrderFromCartRequest request,
+            @AuthenticationPrincipal AuthenticatedUser principal) {
+        try {
+            String buyerId = principal.getId().toString();
 
-        // call api valid when have coupon (default couponId = "")
-        if (!req.getCouponId().equals("")) {
-            // TODO: call api valid coupon
+            Order order = orderUseCase.createFromCart(buyerId, request.getAddressId());
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.CREATED.toString(),
+                            "Order created successfully",
+                            order
+                    ));
+        } catch (NotFoundException | BadRequestException | UnauthorizedException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.INTERNAL_SERVER_ERROR.toString(),
+                            "An error occurred while creating the order",
+                            null
+                    ));
         }
-
-        // check valid order internal
-        orderUseCase.create(newOrder, listOrderItem);
-
-        return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create success" , null);
     }
 
     @GetMapping("/{id}")

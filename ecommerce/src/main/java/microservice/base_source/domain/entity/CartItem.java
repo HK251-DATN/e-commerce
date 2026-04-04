@@ -1,19 +1,11 @@
 package microservice.base_source.domain.entity;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreRemove;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -22,33 +14,30 @@ import lombok.NoArgsConstructor;
 @Table(name = "CART_ITEM")
 public class CartItem {
 
-	@Id
-	@GeneratedValue
-	@Column(name = "cart_item_id", nullable = false)
-    private UUID cartItemId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cart_item_id")
+    private Long cartItemId;
 
-	@Column(name = "cart_id", nullable = false)
-	private UUID cartId;
+    @Column(name = "cart_id")
+    private Long cartId;
 
-	@Column(name = "batch_detail_id", nullable = false)
-	private String batchDetailId;
+    @Column(name = "batch_detail_id")
+    private String batchDetailId;
 
-	@Column(name = "quantity")
-	private Integer quantity;
+    @Column(name = "quantity")
+    private Long quantity;
 
-	@Column(name = "is_selected")
-	private Integer isSelected;
+    @Column(name = "is_selected")
+    private Boolean isSelected;
 
-	@Column(name = "created_at")
-	private LocalDateTime createdAt; // addedAt
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-	@Column(name = "updated_at")
-	private LocalDateTime updatedAt;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
-	@Column(name = "deleted_at")
-	private LocalDateTime deletedAt;
-
-	@PrePersist
+    @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
     }
@@ -57,9 +46,4 @@ public class CartItem {
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-	@PreRemove
-	public void preRemove() {
-		deletedAt = LocalDateTime.now();
-	}
 }

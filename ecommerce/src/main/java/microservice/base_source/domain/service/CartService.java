@@ -1,47 +1,37 @@
 package microservice.base_source.domain.service;
 
-import java.util.UUID;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.Cart;
 import microservice.base_source.domain.exception.type.NotFoundException;
+import microservice.base_source.domain.use_case.CartUseCase;
 import microservice.base_source.persistence.repository.CartRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class CartService {
-	@Autowired
-	private CartRepository cartRepository;
+@RequiredArgsConstructor
+public class CartService implements CartUseCase {
 
-	public Cart get(UUID id) {
-		Cart cart = cartRepository.findById(id).orElseThrow(() -> new NotFoundException("Cart not found"));
-		// caculate total price of cart
-		// Double totalPrice = 0.0;
-		// cart.getListCartItem().forEach(cartItem -> {
-		// 	totalPrice += cartItem.get() * cartItem.getQuantity();
-		// });
-		return cart;
-	}
+    private final CartRepository cartRepository;
 
-	public Cart create(Cart cart) {
-		return cartRepository.save(cart);
-	}
+    @Override
+    @Transactional
+    public Cart create(Cart cart) {
+        return cartRepository.save(cart);
+    }
 
-	public Cart update(UUID id, Cart cart) {
-		Cart existingCategory = cartRepository.findById(id)
-				.orElseThrow(() -> new NotFoundException("Cart not found"));
-		// Update all fields 
-		BeanUtils.copyProperties(cart, existingCategory, "cartId");
-		return cartRepository.save(existingCategory);
-	}
+    @Override
+    public Cart getByBuyerId(String buyerId) {
+        return cartRepository.findByBuyerId(buyerId)
+                .orElseThrow(() -> new NotFoundException("Cart not found for buyer: " + buyerId));
+    }
 
-	public void delete(UUID id) {
-		cartRepository.findById(id)
-			.ifPresentOrElse(
-				cartRepository::delete,
-				() -> {}	
-			);
-	}
+	// @Override
+    // @Transactional
+    // public Cart delete(Long id) {
+    //     Cart existingCart = cartRepository.findById(id)
+	// 			.orElseThrow(() -> new NotFoundException("Cart not found with id: " + id));
+	// 	cartRepository.delete(existingCart);
+	// 	return existingCart;
+    // }
 }

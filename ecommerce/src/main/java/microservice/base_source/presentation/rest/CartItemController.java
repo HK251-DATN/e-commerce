@@ -1,7 +1,5 @@
 package microservice.base_source.presentation.rest;
 
-import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,20 +32,20 @@ public class CartItemController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<CartItem> getById(@PathVariable UUID id) {
+    public ApiResponse<CartItem> getById(@PathVariable Long id) {
         CartItem p = cartItemService.get(id);
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get CartItem success", p);
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<CartItem> update(@Valid @RequestBody CartItemRequest req, @PathVariable UUID id) {
+    public ApiResponse<CartItem> update(@Valid @RequestBody CartItemRequest req, @PathVariable Long id) {
         CartItem toUpdate = req.toEntity();
         CartItem updated = cartItemService.update(id, toUpdate);
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Update success", updated);
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> delete(@PathVariable UUID id) {
+    public ApiResponse<Void> delete(@PathVariable Long id) {
         cartItemService.delete(id);
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Delete success", null);
     }

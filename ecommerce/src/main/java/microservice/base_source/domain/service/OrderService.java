@@ -2,8 +2,15 @@ package microservice.base_source.domain.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+import microservice.base_source.domain.entity.*;
+import microservice.base_source.domain.exception.type.BadRequestException;
+import microservice.base_source.domain.exception.type.UnauthorizedException;
+import microservice.base_source.infrastructure.messaging.order.OrderCreatedEvent;
+import microservice.base_source.infrastructure.messaging.order.OrderProducer;
+import microservice.base_source.persistence.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,12 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import microservice.base_source.domain.entity.Order;
-import microservice.base_source.domain.entity.OrderItem;
 import microservice.base_source.domain.entity.Order.OrderStatus;
 import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.domain.use_case.OrderUseCase;
-import microservice.base_source.persistence.repository.OrderRepository;
 
 @Service
 public class OrderService implements OrderUseCase {
@@ -28,6 +32,20 @@ public class OrderService implements OrderUseCase {
 
 	@PersistenceContext
     EntityManager entityManager;
+
+	@Autowired
+	private OrderProducer orderProducer;
+    @Autowired
+    private AddressRepository addressRepository;
+    @Autowired
+    private CartRepository cartRepository;
+	@Autowired
+	private CartItemRepository cartItemRepository;
+	@Autowired
+	private BatchDetailRepository batchDetailRepository;
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
 
 	@Override
 	public List<Order> search(String buyerId, String searchString, OrderStatus status, BigDecimal minPrice,
@@ -43,19 +61,25 @@ public class OrderService implements OrderUseCase {
 		propagation = Propagation.REQUIRED
 	)
 	public Order create(Order order, List<OrderItem> orderItems) {
-		// check product in stocks
 
-		// insert order
-		Order insertedOrder = orderRepository.save(order);
+//
+//		// check product in stocks
+//
+//		// insert order
+//		Order insertedOrder = orderRepository.save(order);
+//
+//		// insert order item
+//		orderItems.forEach(orderItem -> {
+//			orderItem.setOrderId(insertedOrder.getOrderId());
+//		});
+//		saveBatch(orderItems);
+//
+//		orderProducer.publishOrderCreated(new OrderCreatedEvent(insertedOrder.getOrderId()));
+//
+//		// update quantity batch detail & status product detail
+//		return insertedOrder;
 
-		// insert order item
-		orderItems.forEach(orderItem -> {
-			orderItem.setOrderId(insertedOrder.getOrderId());
-		});
-		saveBatch(orderItems);
-
-		// update quantity batch detail & status product detail
-		return insertedOrder;
+		return null;
 	}
 
 	@Override
@@ -97,5 +121,104 @@ public class OrderService implements OrderUseCase {
 				entityManager.clear();
 			}
 		}
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+	public Order createFromCart(String buyerId, Long addressId) {
+		// 1. Validate address belongs to user
+		Address address = addressRepository.findById(addressId)
+				.orElseThrow(() -> new NotFoundException("Address not found"));
+
+		if (!address.getBuyerId().equals(buyerId)) {
+			throw new UnauthorizedException("Address does not belong to the user");
+		}
+
+		// 2. Find user's cart
+		Cart cart = cartRepository.findByBuyerId(buyerId)
+				.orElseThrow(() -> new NotFoundException("Cart not found for user"));
+
+		// 3. Get selected cart items
+		List<CartItem> selectedItems = cartItemRepository
+				.findByCartIdAndIsSelected(cart.getCartId(), true);
+
+		if (selectedItems.isEmpty()) {
+			throw new BadRequestException("No items selected in cart");
+		}
+
+		// 4. Validate stock and calculate total
+		BigDecimal totalPrice = BigDecimal.ZERO;
+		List<OrderItem> orderItems = new ArrayList<>();
+
+		for (CartItem cartItem : selectedItems) {
+			// Fetch batch detail
+			BatchDetail batchDetail = batchDetailRepository
+					.findById(cartItem.getBatchDetailId())
+					.orElseThrow(() -> new NotFoundException(
+							"Product not found: " + cartItem.getBatchDetailId()));
+
+			// Check stock
+			if (batchDetail.getQuantity() < cartItem.getQuantity()) {
+				throw new BadRequestException(
+						"Insufficient stock for product: " + batchDetail.getBatchDetailId() +
+								". Available: " + batchDetail.getQuantity() +
+								", Requested: " + cartItem.getQuantity());
+			}
+
+			// Calculate item total
+			BigDecimal itemTotal = batchDetail.getPrice()
+					.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+			totalPrice = totalPrice.add(itemTotal);
+
+			// Prepare order item
+			OrderItem orderItem = new OrderItem();
+			orderItem.setBatchDetailId(cartItem.getBatchDetailId());
+			orderItem.setQuantity(cartItem.getQuantity());
+			orderItem.setOriginalPrice(batchDetail.getPrice());
+			orderItem.setUnitPriceAtPurchase(batchDetail.getPrice());
+
+			orderItems.add(orderItem);
+		}
+
+		// 5. Create order
+		Order order = new Order();
+		order.setBuyerId(buyerId);
+		order.setAddressId(addressId);
+		order.setStatus(OrderStatus.PENDING);
+		order.setType(Order.OrderType.DEFAULT);
+		order.setTotalPrice(totalPrice.longValue()); // Convert to Long if needed
+
+		Order savedOrder = orderRepository.save(order);
+
+		// 6. Create order items
+		for (OrderItem item : orderItems) {
+			item.setOrderId(savedOrder.getOrderId());
+		}
+		orderItemRepository.saveAll(orderItems);
+
+		// 7. Update batch detail quantities
+		for (CartItem cartItem : selectedItems) {
+			BatchDetail batchDetail = batchDetailRepository
+					.findById(cartItem.getBatchDetailId())
+					.get();
+
+			batchDetail.setQuantity(
+					batchDetail.getQuantity() - cartItem.getQuantity().intValue());
+			batchDetailRepository.save(batchDetail);
+		}
+
+		// 8. Delete selected cart items
+		cartItemRepository.deleteByCartIdAndIsSelected(cart.getCartId(), true);
+
+		// 9. Publish order created event (if exists)
+		if (orderProducer != null) {
+			orderProducer.publishOrderCreated(new OrderCreatedEvent(
+					savedOrder.getOrderId(),
+					savedOrder.getBuyerId(),
+					savedOrder.getTotalPrice()
+			));
+		}
+
+		return savedOrder;
 	}
 }

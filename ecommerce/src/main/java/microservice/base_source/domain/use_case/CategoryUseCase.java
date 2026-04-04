@@ -18,7 +18,15 @@ public interface CategoryUseCase {
 	 */
 	List<CategoryResponse> getAll(Integer page, Integer size);
 	Category get(Long id);
-	Category create(Category category);
+    //	Category create(Category category);
+    
+    /**
+     * Create category from Kafka event (used by consumer)
+     * @param category Category entity with pre-assigned ID from back-office
+     * @return Created category
+     */
+    Category createFromEvent(Category category);
+    
 	Category update(Long id, Category category);
 	void delete(Long id);
 }
