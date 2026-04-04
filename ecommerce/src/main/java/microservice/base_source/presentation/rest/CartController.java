@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import microservice.base_source.infrastructure.security.AuthenticatedUser;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,12 @@ public class CartController {
 	private final CartService cartService;
 
     @PostMapping
-    public ApiResponse<Cart> create(@Valid @RequestBody CartRequest req) {
+    public ApiResponse<Cart> create(@Valid @RequestBody CartRequest req,
+        @AuthenticationPrincipal AuthenticatedUser principal
+    ) {
+        String buyerId = principal.getId().toString();
+        req.setBuyerId(buyerId);
+
         Cart created = cartService.create(req.toEntity());
         return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create Cart success", created);
     }
