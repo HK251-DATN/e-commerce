@@ -8,9 +8,12 @@ import java.util.List;
 import microservice.base_source.domain.entity.*;
 import microservice.base_source.domain.exception.type.BadRequestException;
 import microservice.base_source.domain.exception.type.UnauthorizedException;
+import microservice.base_source.infrastructure.messaging.order.OrderConfirmedEvent;
 import microservice.base_source.infrastructure.messaging.order.OrderCreatedEvent;
+import microservice.base_source.infrastructure.messaging.order.OrderPickRequestedEvent;
 import microservice.base_source.infrastructure.messaging.order.OrderProducer;
 import microservice.base_source.persistence.repository.*;
+import microservice.base_source.presentation.response.order.OrderDetailResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -83,7 +86,7 @@ public class OrderService implements OrderUseCase {
 	}
 
 	@Override
-	public List<Order> getAll(String buyerId, int page, int size) {
+	public List<Order> getAll(int page, int size) {
 		Pageable pageable = PageRequest.of(page - 1, size);
 		Page<Order> orderPage = orderRepository.findAll(pageable);
 		return orderPage.getContent();
@@ -93,6 +96,13 @@ public class OrderService implements OrderUseCase {
 	public Order get(Long id) {
 		return orderRepository.findById(id).orElseThrow(() -> new NotFoundException("Order not found"));
 	}
+    
+    @Override
+    public List<Order> getByBuyerId(String buyerId, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Order> orderPage = orderRepository.findByBuyerId(buyerId, pageable);
+        return orderPage.getContent();
+    }
 
 	// @Override
 	// public Order update(Long id, Order order) {
@@ -185,16 +195,29 @@ public class OrderService implements OrderUseCase {
 		order.setBuyerId(buyerId);
 		order.setAddressId(addressId);
 		order.setStatus(OrderStatus.PENDING);
-		order.setType(Order.OrderType.DEFAULT);
+//		order.setType(Order.OrderType.DEFAULT);
 		order.setTotalPrice(totalPrice.longValue()); // Convert to Long if needed
 
 		Order savedOrder = orderRepository.save(order);
-
-		// 6. Create order items
-		for (OrderItem item : orderItems) {
-			item.setOrderId(savedOrder.getOrderId());
-		}
-		orderItemRepository.saveAll(orderItems);
+        
+//        // 6. Create order items and publish events
+//        List<OrderItem> savedOrderItems = new ArrayList<>();
+//        for (OrderItem item : orderItems) {
+//            item.setOrderId(savedOrder.getOrderId());
+//            OrderItem savedItem = orderItemRepository.save(item);
+//            savedOrderItems.add(savedItem);
+//
+//            // Publish OrderItemCreatedEvent for each order item
+//            OrderItemCreatedEvent event = new OrderItemCreatedEvent(
+//                    savedItem.getOrderItemId(),
+//                    savedItem.getOrderId(),
+//                    savedItem.getBatchDetailId(),
+//                    savedItem.getQuantity(),
+//                    savedItem.getUnitPriceAtPurchase(),
+//                    buyerId
+//            );
+//            orderItemProducer.publishOrderItemCreated(event);
+//        }
 
 		// 7. Update batch detail quantities
 		for (CartItem cartItem : selectedItems) {
@@ -221,4 +244,67 @@ public class OrderService implements OrderUseCase {
 
 		return savedOrder;
 	}
+    
+    @Override
+    public OrderDetailResponse getOrderDetail(Long orderId) {
+        // Get order
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+        
+        // Get order items
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+        
+        // Build response
+        return OrderDetailResponse.fromEntity(order, orderItems);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public Order confirmOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new BadRequestException("Order is not in PENDING state");
+        }
+
+        order.setStatus(OrderStatus.CONFIRMED);
+        Order savedOrder = orderRepository.save(order);
+
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+
+        List<OrderConfirmedEvent.OrderItemInfo> orderItemInfosForConfirmedEvent = orderItems.stream()
+                .map(item -> new OrderConfirmedEvent.OrderItemInfo(item.getBatchDetailId(), item.getQuantity()))
+                .toList();
+        
+        orderProducer.publishOrderConfirmed(new OrderConfirmedEvent(
+                savedOrder.getOrderId(),
+                savedOrder.getBuyerId(),
+                savedOrder.getAddressId(),
+                savedOrder.getNote(),
+                savedOrder.getTotalPrice(),
+                orderItemInfosForConfirmedEvent
+        ));
+
+        List<OrderPickRequestedEvent.OrderItemInfo> orderItemInfosForPickRequestedEvent = orderItems.stream()
+                .map(item -> new OrderPickRequestedEvent.OrderItemInfo(item.getBatchDetailId(), item.getQuantity()))
+                .toList();
+
+        orderProducer.publishOrderPickRequested(new OrderPickRequestedEvent(
+                savedOrder.getOrderId(),
+                orderItemInfosForPickRequestedEvent,
+                Long.valueOf(order.getBuyerId())
+        ));
+
+        return savedOrder;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public void updateOrderStatus(Long orderId, OrderStatus status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+        order.setStatus(status);
+        orderRepository.save(order);
+    }
 }

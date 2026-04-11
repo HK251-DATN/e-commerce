@@ -3,6 +3,9 @@ package microservice.base_source.persistence.repository;
 import java.math.BigDecimal;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

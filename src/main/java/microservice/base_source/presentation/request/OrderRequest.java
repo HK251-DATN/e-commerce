@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import microservice.base_source.domain.entity.Order;
 import microservice.base_source.domain.entity.OrderItem;
 import microservice.base_source.domain.entity.Order.OrderStatus;
-import microservice.base_source.domain.entity.Order.OrderType;
 
 @Data
 @AllArgsConstructor
@@ -23,8 +22,8 @@ public class OrderRequest {
 	@NotNull
 	private String note;
 
-	@NotNull
-	private OrderType type; // DEFAULT, PREORDER, CART //TODO create cart entity not put in order
+//	@NotNull
+//	private OrderType type; // DEFAULT, PREORDER, CART //TODO create cart entity not put in order
 
 	@NotEmpty
 	List<OrderItemRequest> orderItems;
@@ -36,7 +35,7 @@ public class OrderRequest {
 		order.setBuyerId(this.buyerId);
 		order.setStatus(OrderStatus.PENDING);
 		order.setNote(this.note);
-		order.setType(this.type);
+//		order.setType(this.type);
 		order.setCouponId(couponId);
 		return order;
 	}

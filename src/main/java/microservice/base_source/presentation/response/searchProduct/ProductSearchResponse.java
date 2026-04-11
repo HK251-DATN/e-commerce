@@ -2,9 +2,7 @@ package microservice.base_source.presentation.response.searchProduct;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -19,52 +17,34 @@ public class ProductSearchResponse {
     private String 	      name;
     private String 	      description;
     private String 	      img;
+    private String 	      batchId;
+    private Integer       quantity;
+    private BigDecimal 	  originPrice;
+    private BigDecimal 	  salePrice;
+    private BigDecimal 	  disVal;
+    private BigDecimal 	  avgRate; 
+    private int 	      numRate;
+    private Long          saleEventId;
+    private LocalDateTime createdAt;
 
-    List<DetailResponse> listDetails;
-
-    public static List<ProductSearchResponse> toResponse(List<DetailGeneralDTO> list) {
-
-        // Group theo productGeneralId
-        Map<Long, List<DetailGeneralDTO>> grouped =
-                list.stream().collect(Collectors.groupingBy(DetailGeneralDTO::getProductGeneralId));
-
-        // Chuyển đổi từng nhóm thành ProductSearchResponse
-        return grouped.entrySet().stream().map(entry -> {
-            Long productGeneralId = entry.getKey();             // get key of each group
-            List<DetailGeneralDTO> details = entry.getValue();  // get list detail of each group
-
-            DetailGeneralDTO first = details.get(0);     // Lấy một phần tử để lấy thông tin chung
-
-            ProductSearchResponse response = new ProductSearchResponse();
-            response.setProductGeneralId(productGeneralId);
-            response.setCategoryId(first.getCategoryId());
-            response.setProviderId(first.getProviderId());
-            response.setName(first.getName());
-            response.setDescription(first.getDescription());
-            response.setImg(first.getImg());
-
-            List<DetailResponse> detailResponses = details.stream().map(detail -> {
-                DetailResponse detailResponse = new DetailResponse();
-                detailResponse.setBatchId(detail.getBatchId());
-                detailResponse.setQuantity(detail.getQuantity());
-                detailResponse.setOriginPrice(detail.getOriginPrice());
-                detailResponse.setDisVal(detail.getDisVal());
-                detailResponse.setAvgRate(detail.getAvgRate());
-                detailResponse.setNumRate(detail.getNumRate());
-                detailResponse.setSaleEventId(detail.getSaleEventId());
-                detailResponse.setCreatedAt(detail.getCreatedAt());
-
-                // Tính salePrice
-                BigDecimal salePrice = calculateSalePrice(detail.getOriginPrice(), detail.getDisVal());
-                detailResponse.setSalePrice(salePrice);
-
-                return detailResponse;
-            }).collect(Collectors.toList());
-
-            response.setListDetails(detailResponses);
-            return response;
-        }).collect(Collectors.toList());
-        
+    public static ProductSearchResponse toResponse(DetailGeneralDTO dto) {
+        ProductSearchResponse response = new ProductSearchResponse();
+        response.setProductGeneralId(dto.getProductGeneralId());
+        response.setCategoryId(dto.getCategoryId());
+        response.setProviderId(dto.getProviderId());
+        response.setName(dto.getName());
+        response.setDescription(dto.getDescription());
+        response.setImg(dto.getImg());
+        response.setBatchId(dto.getBatchId());
+        response.setQuantity(dto.getQuantity());
+        response.setOriginPrice(dto.getOriginPrice());
+        response.setDisVal(dto.getDisVal());
+        response.setSalePrice(calculateSalePrice(dto.getOriginPrice(), dto.getDisVal()));
+        response.setAvgRate(dto.getAvgRate());
+        response.setNumRate(dto.getNumRate());
+        response.setSaleEventId(dto.getSaleEventId());
+        response.setCreatedAt(dto.getCreatedAt());
+        return response;
     }
 
     public static BigDecimal calculateSalePrice(BigDecimal originPrice, BigDecimal disVal) {

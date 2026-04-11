@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Getter
 public class BatchDetailCreateEvent {
 
-    private Long batchDetailId;
+    private String batchDetailId;
 
     private Long productGeneralId;
 

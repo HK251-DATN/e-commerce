@@ -9,72 +9,65 @@ import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.domain.exception.type.UnauthorizedException;
 import microservice.base_source.infrastructure.security.AuthenticatedUser;
 import microservice.base_source.presentation.request.CreateOrderFromCartRequest;
+import microservice.base_source.presentation.response.order.OrderDetailResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-// import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.Order;
-import microservice.base_source.domain.entity.OrderItem;
 import microservice.base_source.domain.entity.Order.OrderStatus;
 import microservice.base_source.domain.use_case.OrderUseCase;
-import microservice.base_source.presentation.request.OrderRequest;
 import microservice.base_source.presentation.response.global.ApiResponse;
 
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
 public class OrderController {
+    
     @Autowired
-	private OrderUseCase orderUseCase;
-
-//    @PostMapping
-//    public ApiResponse<Order> create(@Valid @RequestBody OrderRequest req) {
-//        // extract order request
-//        Order newOrder = req.toOrderEntity();
-//        List<OrderItem> listOrderItem = req.toListOrderItemEntity();
-//
-//        // call api valid when have coupon (default couponId = "")
-//        if (!req.getCouponId().equals("")) {
-//            // TODO: call api valid coupon
-//        }
-//
-//        // check valid order internal
-//        orderUseCase.create(newOrder, listOrderItem);
-//
-//        return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create success" , null);
-//    }
-
+    private OrderUseCase orderUseCase;
+    
+    /**
+     * Create order from cart
+     * POST /api/orders
+     */
     @PostMapping
     public ResponseEntity<ApiResponse<Order>> createOrderFromCart(
             @RequestBody @Valid CreateOrderFromCartRequest request,
             @AuthenticationPrincipal AuthenticatedUser principal) {
         try {
             String buyerId = principal.getId().toString();
-
+            
             Order order = orderUseCase.createFromCart(buyerId, request.getAddressId());
-
+            
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.SUCCESS(
                             HttpStatus.CREATED.toString(),
                             "Order created successfully",
                             order
                     ));
-        } catch (NotFoundException | BadRequestException | UnauthorizedException e) {
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.NOT_FOUND.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        } catch (BadRequestException e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.ERROR(
                             HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.UNAUTHORIZED.toString(),
                             e.getMessage(),
                             null
                     ));
@@ -87,54 +80,333 @@ public class OrderController {
                     ));
         }
     }
-
+    
+    /**
+     * Get order detail with order items
+     * GET /api/orders/{id}
+     */
     @GetMapping("/{id}")
-    public ApiResponse<Order> getById(@PathVariable Long id) {
-        Order opt = orderUseCase.get(id);
-        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get order success", opt);
+    public ResponseEntity<ApiResponse<OrderDetailResponse>> getOrderDetail(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AuthenticatedUser principal) {
+        try {
+            String buyerId = principal.getId().toString();
+            
+            // Get order detail with items
+            OrderDetailResponse orderDetail = orderUseCase.getOrderDetail(id);
+            
+            // Verify order belongs to user
+            if (!orderDetail.getBuyerId().equals(buyerId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.ERROR(
+                                HttpStatus.FORBIDDEN.toString(),
+                                "Access denied to this order",
+                                null
+                        ));
+            }
+            
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Get order detail success",
+                            orderDetail
+                    ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.NOT_FOUND.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        }
     }
-
+    
+    /**
+     * Get all orders for authenticated user
+     * GET /api/orders
+     */
     @GetMapping
-    public ApiResponse<List<Order>> getAll(
-        @RequestParam(defaultValue = "") String buyerId, 
-        @RequestParam(defaultValue = "1") Integer page, 
-        @RequestParam(defaultValue = "20") Integer size) {
-        if (orderUseCase.getAll(buyerId, page, size).isEmpty()) {
-            return ApiResponse.SKIP_AS_GOOD(HttpStatus.NO_CONTENT.toString(), "No orders found", null);
+    public ResponseEntity<ApiResponse<List<Order>>> getMyOrders(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer size,
+            @AuthenticationPrincipal AuthenticatedUser principal) {
+        try {
+            String buyerId = principal.getId().toString();
+            List<Order> orders = orderUseCase.getByBuyerId(buyerId, page, size);
+            
+            if (orders.isEmpty()) {
+                return ResponseEntity.ok()
+                        .body(ApiResponse.SKIP_AS_GOOD(
+                                HttpStatus.OK.toString(),
+                                "No orders found",
+                                null
+                        ));
+            }
+            
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Get all orders success",
+                            orders
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
         }
-        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get all orders success", orderUseCase.getAll(buyerId, page, size));
     }
-
+    
+    /**
+     * Search/filter orders for authenticated user
+     * GET /api/orders/search
+     */
     @GetMapping("/search")
-    public ApiResponse<List<Order>> search(
-        @RequestParam(defaultValue = "") String buyerId, 
-		@RequestParam(defaultValue = "") String searchString,
-		@RequestParam(defaultValue = "") OrderStatus status,
-		@RequestParam(defaultValue = "0") BigDecimal minPrice, 
-		@RequestParam(defaultValue = "0") BigDecimal maxPrice,
-		@RequestParam(defaultValue = "") LocalDateTime minTime,
-		@RequestParam(defaultValue = "") LocalDateTime maxTime,
-		@RequestParam(defaultValue = "") String sortByStatus,
-		@RequestParam(defaultValue = "") String sortByPrice,
-		@RequestParam(defaultValue = "") String sortByTime,
-        @RequestParam(defaultValue = "1") Integer page, 
-        @RequestParam(defaultValue = "20") Integer size) {
-        if (orderUseCase.search(buyerId, searchString, status, minPrice, maxPrice, minTime, maxTime, sortByStatus, sortByPrice, sortByTime, page, size).isEmpty()) {
-            return ApiResponse.SKIP_AS_GOOD(HttpStatus.NO_CONTENT.toString(), "No orders found", null);
+    public ResponseEntity<ApiResponse<List<Order>>> search(
+            @RequestParam(defaultValue = "") String searchString,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(defaultValue = "0") BigDecimal minPrice,
+            @RequestParam(defaultValue = "0") BigDecimal maxPrice,
+            @RequestParam(required = false) LocalDateTime minTime,
+            @RequestParam(required = false) LocalDateTime maxTime,
+            @RequestParam(defaultValue = "") String sortByStatus,
+            @RequestParam(defaultValue = "DESC") String sortByPrice,
+            @RequestParam(defaultValue = "DESC") String sortByTime,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer size,
+            @AuthenticationPrincipal AuthenticatedUser principal) {
+        try {
+            String buyerId = principal.getId().toString();
+            
+            List<Order> orders = orderUseCase.search(
+                    buyerId,
+                    searchString,
+                    status,
+                    minPrice,
+                    maxPrice,
+                    minTime,
+                    maxTime,
+                    sortByStatus,
+                    sortByPrice,
+                    sortByTime,
+                    page,
+                    size
+            );
+            
+            if (orders.isEmpty()) {
+                return ResponseEntity.ok()
+                        .body(ApiResponse.SKIP_AS_GOOD(
+                                HttpStatus.OK.toString(),
+                                "No orders found",
+                                null
+                        ));
+            }
+            
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Search orders success",
+                            orders
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
         }
-        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Search orders success", orderUseCase.search(buyerId, searchString, status, minPrice, maxPrice, minTime, maxTime, sortByStatus, sortByPrice, sortByTime, page, size));
+    }
+    
+    /**
+     * Cancel order (soft delete - change status to CANCELLED)
+     * DELETE /api/orders/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> cancelOrder(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AuthenticatedUser principal) {
+        try {
+            String buyerId = principal.getId().toString();
+            Order order = orderUseCase.get(id);
+            
+            // Verify order belongs to user
+            if (!order.getBuyerId().equals(buyerId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.ERROR(
+                                HttpStatus.FORBIDDEN.toString(),
+                                "Access denied to this order",
+                                null
+                        ));
+            }
+            
+            // Only allow cancellation if order is still PENDING
+            if (order.getStatus() != OrderStatus.PENDING) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.ERROR(
+                                HttpStatus.BAD_REQUEST.toString(),
+                                "Cannot cancel order with status: " + order.getStatus(),
+                                null
+                        ));
+            }
+            
+            orderUseCase.delete(id);
+            
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Order cancelled successfully",
+                            null
+                    ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.NOT_FOUND.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        }
     }
 
-    // @PutMapping("/{id}")
-    // public ApiResponse<Order> update(@PathVariable Long id, @Valid @RequestBody OrderRequest req) {
-    //     Order toUpdate = req.toOrderEntity();
-    //     Order updated = orderUseCase.update(id, toUpdate);
-	// 	return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Update success", updated);
-	// }
+    /**
+     * Confirm order
+     * PUT /api/orders/{id}/confirm
+     */
+    // TODO: Add role-based access control for employees
+    @PutMapping("/{id}/confirm")
+    public ResponseEntity<ApiResponse<Order>> confirmOrder(@PathVariable Long id) {
+        try {
+            Order order = orderUseCase.confirmOrder(id);
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Order confirmed successfully",
+                            order
+                    ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.NOT_FOUND.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        } catch (BadRequestException e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.INTERNAL_SERVER_ERROR.toString(),
+                            "An error occurred while confirming the order",
+                            null
+                    ));
+        }
+    }
 
-    @DeleteMapping("/{id}")
-    public ApiResponse<Void> delete(@PathVariable Long id) {
-		orderUseCase.delete(id);
-		return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Delete success", null);
-	}
+    @PutMapping("/{id}/receive")
+    public ResponseEntity<ApiResponse<Void>> receiveOrder(@PathVariable Long id, @AuthenticationPrincipal AuthenticatedUser principal) {
+        try {
+            String buyerId = principal.getId().toString();
+            Order order = orderUseCase.get(id);
+
+            // Verify order belongs to user
+            if (!order.getBuyerId().equals(buyerId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.ERROR(
+                                HttpStatus.FORBIDDEN.toString(),
+                                "Access denied to this order",
+                                null
+                        ));
+            }
+
+            if (order.getStatus() != OrderStatus.DELIVERED) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.ERROR(
+                                HttpStatus.BAD_REQUEST.toString(),
+                                "Order is not yet delivered",
+                                null
+                        ));
+            }
+
+            orderUseCase.updateOrderStatus(id, OrderStatus.RECEIVED);
+
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Order received successfully",
+                            null
+                    ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.NOT_FOUND.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        }
+    }
+    
+    /**
+     * Get all orders for authenticated user
+     * GET /api/orders
+     */
+    @GetMapping("/admin")
+    public ResponseEntity<ApiResponse<List<Order>>> getAllOrders(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer size) {
+        try {
+//            String buyerId = principal.getId().toString();
+            List<Order> orders = orderUseCase.getAll(page, size);
+            
+            if (orders.isEmpty()) {
+                return ResponseEntity.ok()
+                        .body(ApiResponse.SKIP_AS_GOOD(
+                                HttpStatus.OK.toString(),
+                                "No orders found",
+                                null
+                        ));
+            }
+            
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Get all orders success",
+                            orders
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        }
+    }
 }

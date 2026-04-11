@@ -14,7 +14,31 @@ public class OrderProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void publishOrderCreated(OrderCreatedEvent event) {
-        kafkaTemplate.send("category-events", event.orderId().toString(), event).whenComplete((result, ex) -> {
+        kafkaTemplate.send("order-events", event.orderId().toString(), event).whenComplete((result, ex) -> {
+            if (ex != null) {
+                log.error("Failed to publish event", ex);
+            } else {
+                log.info("Event sent with offset {}",
+                        result.getRecordMetadata().offset()
+                );
+            }
+        });
+    }
+
+    public void publishOrderConfirmed(OrderConfirmedEvent event) {
+        kafkaTemplate.send("order-confirmed-events", event.orderId().toString(), event).whenComplete((result, ex) -> {
+            if (ex != null) {
+                log.error("Failed to publish event", ex);
+            } else {
+                log.info("Event sent with offset {}",
+                        result.getRecordMetadata().offset()
+                );
+            }
+        });
+    }
+
+    public void publishOrderPickRequested(OrderPickRequestedEvent event) {
+        kafkaTemplate.send("order-pick-requested-events", event.orderId().toString(), event).whenComplete((result, ex) -> {
             if (ex != null) {
                 log.error("Failed to publish event", ex);
             } else {

@@ -52,7 +52,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 				C.ICON_URL 		 AS subiconUrl,
 				C.DISPLAY_ORDER  AS subDisplayOrder
 			FROM LIST_CATEGORY LS
-			LEFT JOIN CATEGORY C
+			JOIN CATEGORY C
 				ON LS.CATEGORY_ID = C.BELONG_TO_CATEGORY;
             """,
 		nativeQuery = true

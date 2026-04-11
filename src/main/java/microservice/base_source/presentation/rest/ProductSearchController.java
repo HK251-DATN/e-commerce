@@ -1,6 +1,8 @@
 package microservice.base_source.presentation.rest;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
@@ -83,8 +85,12 @@ public class ProductSearchController {
 		}
 
 		// convert to ProductSearchResponse
-		List<ProductSearchResponse> listResponse = ProductSearchResponse.toResponse(results);
-		
+		List<ProductSearchResponse> listResponse = new ArrayList<ProductSearchResponse>();
+		results.forEach(
+			dto -> {
+				listResponse.add(ProductSearchResponse.toResponse(dto));
+			}
+		);
 		return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Search products success", listResponse);
 	}
 }

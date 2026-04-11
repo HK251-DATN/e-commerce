@@ -5,10 +5,9 @@ import java.time.LocalDateTime;
 public interface FeedBackDTO {
 	// buyer short info
 	String getBuyerId();
-	String getFname();
-	String getLname();
-	// String getAvatar();
-	// String getAliasNm();
+	String getName();
+	String getAvatar();
+	String getAliasNm();
 
 	//product detail when hover or click
 	Long   getProductDetailId();
@@ -16,6 +15,6 @@ public interface FeedBackDTO {
 	// feedback content
 	String getContent();
 	String getImg();
-	String getDetail();
+	Object getDetail();
 	LocalDateTime getCreatedAt();
 }

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,7 +16,13 @@ import microservice.base_source.domain.entity.Order.OrderStatus;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-	
+    
+    // Find orders by buyer ID with pagination
+    Page<Order> findByBuyerId(String buyerId, Pageable pageable);
+    
+    // Find orders by buyer ID and status
+    List<Order> findByBuyerIdAndStatus(String buyerId, OrderStatus status);
+    
 	@Query(value = """
 			SELECT * FROM ORDERS ORD
 			WHERE (:buyerId = '' 		OR ORD.BUYER_ID 	= :buyerId)

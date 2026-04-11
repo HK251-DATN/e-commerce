@@ -6,7 +6,7 @@ spring:
     import: optional:file:.env[.properties]
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?stringtype=unspecified
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/ecommerce_db?stringtype=unspecified
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
@@ -32,7 +32,7 @@ logging:
     p6spy: INFO
 
 server:
-  port: 9300
+  port: 9301
 
 cloudflare:
   r2:
@@ -49,5 +49,3 @@ app:
     back-office-user-avts
   product-general-img-bucket:
     product-general-img
-  user-avatar-public-bucket-url:
-    ${USER_AVATAR_PUBLIC_BUCKET_URL}

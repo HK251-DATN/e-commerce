@@ -10,7 +10,7 @@ public interface FeedBackUseCase {
 	 * Get list FeedBack by batchId
 	 * @return List FeedBackDTO
 	 */
-	List<FeedBackDTO> getByBatchId(String batchId, Integer page, Integer size);
+	List<FeedBackDTO> getByBatchId(Long batchId, Integer page, Integer size);
 
 	/**
 	 * Lấy danh sách FeedBack

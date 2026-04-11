@@ -2,7 +2,6 @@ package microservice.base_source.domain.entity;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Map;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -63,7 +62,7 @@ public class SaleEvent {
 
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "detail")
-	private Map<String, Object> detail; // JSON format
+	private Object detail; // JSON format
 
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;

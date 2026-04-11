@@ -2,16 +2,8 @@ package microservice.base_source.domain.entity;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreRemove;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Data
@@ -38,6 +30,17 @@ public class ProductGeneral {
 
     @Column(name = "status")
     private String status;
+    
+    @Column(name = "unit")
+    @Getter
+    @Setter
+    @Enumerated(EnumType.STRING)
+    private Unit unit;
+    
+    @Column(name = "unit_quantity")
+    @Getter
+    @Setter
+    private Long unitQuantity;
 
     // array of tags
     @Column(name = "tags", columnDefinition = "text[]")
@@ -69,4 +72,17 @@ public class ProductGeneral {
     public void preRemove() {
         deletedAt = LocalDateTime.now();
     }
+    
+    public enum Unit {
+        KILOGRAM,
+        GRAM,
+        PIECE,
+        DOZEN,
+        LITER,
+        MILLILITER,
+        PACK,
+        BOX,
+        BOTTLE;
+    }
 }
+

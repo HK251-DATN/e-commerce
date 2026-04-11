@@ -40,9 +40,6 @@ public class FeedBack {
 	@Column(name = "product_detail_id")
 	private Long productDetailId;
 
-	@Column(name = "batch_detail_id")
-	private String batchDetailId;
-
 	@Column(name = "rating", precision = 3, scale = 2)
 	private BigDecimal rating;
 

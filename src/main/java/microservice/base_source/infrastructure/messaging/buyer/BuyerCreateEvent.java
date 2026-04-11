@@ -6,7 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import microservice.base_source.domain.entity.BatchDetail;
 import microservice.base_source.domain.entity.Buyer;
+
+import java.math.BigDecimal;
 
 @AllArgsConstructor
 @NoArgsConstructor

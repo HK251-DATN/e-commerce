@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import microservice.base_source.domain.entity.OrderItem;
 import microservice.base_source.domain.exception.type.NotFoundException;
+import microservice.base_source.domain.exception.type.WarnException;
 import microservice.base_source.domain.use_case.OrderItemUseCase;
 import microservice.base_source.persistence.repository.OrderItemRepository;
 

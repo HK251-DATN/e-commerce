@@ -40,12 +40,6 @@ public class ProductDetailService implements ProductDetailUseCase {
 		ProductDetail existingProductDetail = productDetailRepository.findById(id)
 				.orElseThrow(() -> new ProductNotFoundException("ProductDetail not found"));
 
-		existingProductDetail.setProductGeneralId(productDetail.getProductGeneralId());
-		existingProductDetail.setBatchId(productDetail.getBatchId());
-		existingProductDetail.setDetail(productDetail.getDetail());
-		existingProductDetail.setImg(productDetail.getImg());
-		existingProductDetail.setStatus(productDetail.getStatus());
-
 		return productDetailRepository.save(existingProductDetail);
 	}
 

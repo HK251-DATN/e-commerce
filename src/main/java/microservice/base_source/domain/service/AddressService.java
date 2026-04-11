@@ -2,6 +2,7 @@ package microservice.base_source.domain.service;
 
 import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.Address;
+import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.domain.use_case.AddressUseCase;
 import microservice.base_source.persistence.repository.AddressRepository;
 import org.springframework.stereotype.Service;

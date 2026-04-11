@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreRemove;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -35,13 +36,10 @@ public class Order {
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status")
-	private OrderStatus status; // PENDING, PAID, CONFIRMED, PACKAGED, SHIPPED, COMPLETED, CANCELLED
+	private OrderStatus status;
 
 	@Column(name = "note")
 	private String note;
-
-	@Column(name = "type")
-	private OrderType type; // DEFAULT, PREORDER, CART
 
 	@Column(name = "total_price")
 	private Long totalPrice;
@@ -69,15 +67,9 @@ public class Order {
 		PENDING,
 		PAID,
 		CONFIRMED,
-		PACKAGED,
-		SHIPPED,
-		COMPLETED,
+		DELIVERING,
+		DELIVERED,
+		RECEIVED,
 		CANCELLED
-	}
-
-	public enum OrderType {
-		DEFAULT,
-		PREORDER,
-		CART
 	}
 }

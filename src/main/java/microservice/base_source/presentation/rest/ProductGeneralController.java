@@ -49,9 +49,9 @@ public class ProductGeneralController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<ProductGeneral> update(@Valid @RequestBody ProductGeneralRequest req, @PathVariable Long id) {
+    public ApiResponse<ProductGeneral> update(@Valid @RequestBody ProductGeneralRequest req) {
         ProductGeneral toUpdate = req.toEntity();
-        ProductGeneral updated = productGeneralUseCase.update(id, toUpdate);
+        ProductGeneral updated = productGeneralUseCase.update(req.getCategoryId(), toUpdate);
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Update success", updated);
     }
 
