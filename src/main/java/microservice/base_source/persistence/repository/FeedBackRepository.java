@@ -47,7 +47,7 @@ public interface FeedBackRepository extends JpaRepository<FeedBack, Long> {
 	// 		""",
 	// 	nativeQuery = true
 	// )
-	// List<FeedBackDTO> getByBatchId(Long batchId, Integer page, Integer size);
+	// List<FeedBackDTO> getByBatchId(String batchId, Integer page, Integer size);
 
 	@Query(
 		value = """

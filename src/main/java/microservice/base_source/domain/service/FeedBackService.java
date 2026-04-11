@@ -33,7 +33,7 @@ public class FeedBackService implements FeedBackUseCase {
 	}
 
 	@Override
-	public List<FeedBackDTO> getByBatchId(Long batchId, Integer page, Integer size) {
+	public List<FeedBackDTO> getByBatchId(String batchId, Integer page, Integer size) {
 		return feedBackRepository.getByBatchId(batchId, page, size);
 	}
 

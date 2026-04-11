@@ -53,7 +53,7 @@ public class FeedBackController {
 
     @GetMapping("/{batchId}")
     public ApiResponse<List<FeedBackDTO>> search(
-        @PathVariable(name = "batchId") Long batchId, 
+        @PathVariable(name = "batchId") String batchId,
         @RequestParam(defaultValue = "1") Integer page, 
         @RequestParam(defaultValue = "20") Integer size) {
         if (feedBackUseCase.getByBatchId(batchId, page, size).isEmpty()) {

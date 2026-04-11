@@ -41,9 +41,18 @@ public class CartController {
         Cart created = cartService.create(req.toEntity());
         return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create Cart success", created);
     }
+    
+    @GetMapping
+    public ApiResponse<Cart> getCartById(
+            @AuthenticationPrincipal AuthenticatedUser principal
+    ) {
+        String userId = principal.getId().toString();
+        Cart p = cartService.getByBuyerId(userId);
+        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get Cart success", p);
+    }
 
-    @GetMapping("/{userId}")
-    public ApiResponse<Cart> getById(@PathVariable String userId) {
+    @GetMapping("/admin/{userId}")
+    public ApiResponse<Cart> adminGetByUserId(@PathVariable String userId) {
         Cart p = cartService.getByBuyerId(userId);
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get Cart success", p);
     }
