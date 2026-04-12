@@ -3,12 +3,14 @@ package microservice.base_source.infrastructure.configuration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import microservice.base_source.domain.entity.*;
+import microservice.base_source.domain.entity.Coupon.DiscountType;
 import microservice.base_source.persistence.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -28,6 +30,7 @@ public class DataSeeder {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final FeedBackRepository feedBackRepository;
+    private final CouponRepository couponRepository;
 
     @Bean
     public CommandLineRunner seedData() {
@@ -266,18 +269,88 @@ public class DataSeeder {
             log.info("Seeded {} product generals", productGeneralRepository.count());
 
             // ==================== Seed Carts ====================
-            Cart cart = createCart(buyer.getBuyerId());
-            Cart cart1 = createCart(buyer1.getBuyerId());
-            Cart cart2 = createCart(buyer2.getBuyerId());
-            Cart cart3 = createCart(buyer3.getBuyerId());
-            Cart cart4 = createCart(buyer4.getBuyerId());
-
+            Cart cart = createCart(buyer.getBuyerId(), 100L);
+            Cart cart1 = createCart(buyer1.getBuyerId(), 100L);
+            Cart cart2 = createCart(buyer2.getBuyerId(), 100L);
+            Cart cart3 = createCart(buyer3.getBuyerId(), 100L);
+            Cart cart4 = createCart(buyer4.getBuyerId(), 100L);
+            
             log.info("Seeded {} carts", cartRepository.count());
+            
+            // ==================== Seed Coupon ====================
+            // 1. Coupon giảm 10% cho đơn hàng từ 100k, tối đa giảm 50k
+            createCoupon(
+                null, 
+                "GIAM10% MAX 500K", 
+                100L, 100L, 
+                DiscountType.PERCENTAGE, 10L, 500000L, 100000L, 
+                LocalDateTime.now().plusMonths(1)
+            );
+
+            createCoupon(
+                null, 
+                "GIAM10% MAX 50K", 
+                100L, 100L, 
+                DiscountType.PERCENTAGE, 10L, 50000L, 100000L, 
+                LocalDateTime.now().plusMonths(1)
+            );
+
+            // 2. Coupon giảm thẳng 100k cho đơn hàng từ 1 triệu, không giới hạn mức giảm tối đa
+            createCoupon(
+                null, 
+                "VIP100K", 
+                50L, 50L, 
+                DiscountType.FIXED_AMOUNT, 100000L, 100000L, 1000000L, 
+                LocalDateTime.now().plusWeeks(2)
+            );
+
+            // 3. Coupon "Phá giá" - Giảm 50% cho đơn hàng nhỏ (từ 50k), tối đa giảm 20k
+            createCoupon(
+                null, 
+                "BANMOI", 
+                500L, 500L, 
+                DiscountType.PERCENTAGE, 50L, 20000L, 50000L, 
+                LocalDateTime.now().plusDays(7)
+            );
+
+            // 4. Coupon ngày lễ - Giảm 15% cho đơn từ 500k, tối đa 100k
+            createCoupon(
+                null, 
+                "LE3004", 
+                200L, 200L, 
+                DiscountType.PERCENTAGE, 15L, 100000L, 500000L, 
+                LocalDateTime.now().plusMonths(2)
+            );
+
+            // 5. Coupon Flash Sale - Giảm 200k cho đơn từ 2 triệu (số lượng cực ít)
+            createCoupon(
+                null, 
+                "FLASHSALE", 
+                10L, 10L, 
+                DiscountType.FIXED_AMOUNT, 200000L, 200000L, 2000000L, 
+                LocalDateTime.now().plusHours(5)
+            );
+
+            // Tạo BatchDetail cho sản phẩm đầu tiên
+            BatchDetail batch1 = createBatchDetail(
+                "BATCH-SKU-001",      // batchDetailId (Khớp với CartItem)
+                101L,                 // productGeneralId (ID sản phẩm tổng quát)
+                50,                   // quantity (Số lượng tồn kho trong lô)
+                new BigDecimal("150000"), // price (Giá bán: 150.000 VNĐ)
+                "Màu xanh, Size L, Chất liệu Cotton" // detailContent
+            );
 
             // ==================== Seed Cart Items ====================
-//            createCartItem(cart1.getCartId(), batch1.getBatchDetailId(), 2L, true);
-//            createCartItem(cart1.getCartId(), batch3.getBatchDetailId(), 3L, true);
-//            createCartItem(cart1.getCartId(), batch13.getBatchDetailId(), 5L, true);
+            // 1. Sản phẩm A - Số lượng 2, được chọn để thanh toán
+            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 2L, true);
+            // 2. Sản phẩm B - Số lượng 1, được chọn để thanh toán
+            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 1L, true);
+            // 3. Sản phẩm C - Số lượng 5, chưa chọn thanh toán (để trong giỏ hàng chờ)
+            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 5L, false);
+            // 4. Sản phẩm D - Số lượng 10, được chọn để thanh toán
+            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 10L, true);
+            // 5. Sản phẩm E - Số lượng 1, chưa chọn thanh toán
+            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 1L, false);
 //
 //            createCartItem(cart2.getCartId(), batch8.getBatchDetailId(), 1L, true);
 //            createCartItem(cart2.getCartId(), batch5.getBatchDetailId(), 2L, false);
@@ -433,9 +506,24 @@ public class DataSeeder {
         return saleProductRepository.save(saleProduct);
     }
 
-    private Cart createCart(String buyerId) {
+    private Coupon createCoupon(Long couponId, String couponCode, Long totalQuantity, Long currentQuantity, DiscountType discountType, Long discountValue, Long maxDiscountAmount, Long minOrderValue, LocalDateTime expiredAt) {
+        Coupon coupon = new Coupon();
+        coupon.setCouponId(couponId);
+        coupon.setCouponCode(couponCode);
+        coupon.setTotalQuantity(totalQuantity);
+        coupon.setCurrentQuantity(currentQuantity);
+        coupon.setDiscountType(discountType);
+        coupon.setDiscountValue(discountValue);
+        coupon.setMaxDiscountAmount(maxDiscountAmount);
+        coupon.setMinOrderValue(minOrderValue);
+        coupon.setExpiredAt(expiredAt);
+        return couponRepository.save(coupon);
+    }
+
+    private Cart createCart(String buyerId, Long totalPrice) {
         Cart cart = new Cart();
         cart.setBuyerId(buyerId);
+        cart.setTotalPrice(totalPrice);
         return cartRepository.save(cart);
     }
 

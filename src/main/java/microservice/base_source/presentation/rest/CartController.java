@@ -1,5 +1,7 @@
 package microservice.base_source.presentation.rest;
 
+import java.util.List;
+
 // import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +14,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 // import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import microservice.base_source.presentation.response.coupon.CartCouponResponse;
 import microservice.base_source.infrastructure.security.AuthenticatedUser;
 
 import jakarta.validation.Valid;
@@ -49,6 +53,18 @@ public class CartController {
         String userId = principal.getId().toString();
         Cart p = cartService.getByBuyerId(userId);
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get Cart success", p);
+    }
+
+    @GetMapping("/coupons")
+    public ApiResponse<List<?>> getCartById(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer size
+    ) {
+        String userId = principal.getId().toString();
+        Cart userCart = cartService.getByBuyerId(userId);
+        List<CartCouponResponse> listCouponResponse = cartService.getAllCoupon(userCart.getCartId(), page, size);
+        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get Cart success", listCouponResponse);
     }
 
     @GetMapping("/admin/{userId}")

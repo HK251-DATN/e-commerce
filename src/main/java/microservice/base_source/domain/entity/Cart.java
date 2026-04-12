@@ -21,6 +21,9 @@ public class Cart {
     @Column(name = "buyer_id")
     private String buyerId;
 
+    @Column(name = "total_price")
+    private Long totalPrice;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
