@@ -32,7 +32,7 @@ logging:
     p6spy: INFO
 
 server:
-  port: 9301
+  port: 9300
 
 cloudflare:
   r2:

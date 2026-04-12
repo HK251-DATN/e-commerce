@@ -200,24 +200,11 @@ public class OrderService implements OrderUseCase {
 
 		Order savedOrder = orderRepository.save(order);
         
-//        // 6. Create order items and publish events
-//        List<OrderItem> savedOrderItems = new ArrayList<>();
-//        for (OrderItem item : orderItems) {
-//            item.setOrderId(savedOrder.getOrderId());
-//            OrderItem savedItem = orderItemRepository.save(item);
-//            savedOrderItems.add(savedItem);
-//
-//            // Publish OrderItemCreatedEvent for each order item
-//            OrderItemCreatedEvent event = new OrderItemCreatedEvent(
-//                    savedItem.getOrderItemId(),
-//                    savedItem.getOrderId(),
-//                    savedItem.getBatchDetailId(),
-//                    savedItem.getQuantity(),
-//                    savedItem.getUnitPriceAtPurchase(),
-//                    buyerId
-//            );
-//            orderItemProducer.publishOrderItemCreated(event);
-//        }
+        // 6. Create order items
+        for (OrderItem item : orderItems) {
+            item.setOrderId(savedOrder.getOrderId());
+            OrderItem savedItem = orderItemRepository.save(item);
+        }
 
 		// 7. Update batch detail quantities
 		for (CartItem cartItem : selectedItems) {

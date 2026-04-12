@@ -317,7 +317,7 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.ERROR(
                             HttpStatus.INTERNAL_SERVER_ERROR.toString(),
-                            "An error occurred while confirming the order",
+                            "An error occurred while confirming the order" + e.getMessage(),
                             null
                     ));
         }
