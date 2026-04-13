@@ -12,6 +12,7 @@ import microservice.base_source.infrastructure.messaging.order.OrderConfirmedEve
 import microservice.base_source.infrastructure.messaging.order.OrderCreatedEvent;
 import microservice.base_source.infrastructure.messaging.order.OrderPickRequestedEvent;
 import microservice.base_source.infrastructure.messaging.order.OrderProducer;
+import microservice.base_source.persistence.dto.OrderSummaryDTO;
 import microservice.base_source.persistence.repository.*;
 import microservice.base_source.presentation.response.order.OrderDetailResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -293,5 +294,10 @@ public class OrderService implements OrderUseCase {
                 .orElseThrow(() -> new NotFoundException("Order not found"));
         order.setStatus(status);
         orderRepository.save(order);
+    }
+    
+    @Override
+    public List<OrderSummaryDTO> getOrderSummaryList () {
+        return orderRepository.getOrderSummaryInfo();
     }
 }

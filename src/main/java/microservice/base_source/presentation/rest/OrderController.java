@@ -8,6 +8,7 @@ import microservice.base_source.domain.exception.type.BadRequestException;
 import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.domain.exception.type.UnauthorizedException;
 import microservice.base_source.infrastructure.security.AuthenticatedUser;
+import microservice.base_source.persistence.dto.OrderSummaryDTO;
 import microservice.base_source.presentation.request.CreateOrderFromCartRequest;
 import microservice.base_source.presentation.response.order.OrderDetailResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -398,6 +399,70 @@ public class OrderController {
                     .body(ApiResponse.SUCCESS(
                             HttpStatus.OK.toString(),
                             "Get all orders success",
+                            orders
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        }
+    }
+    
+    /**
+     * Get order detail with order items
+     * GET /api/orders/{id}
+     */
+    @GetMapping("/admin/{id}")
+    public ResponseEntity<ApiResponse<OrderDetailResponse>> adminGetOrderDetail(
+            @PathVariable Long id) {
+        try {
+            // Get order detail with items
+            OrderDetailResponse orderDetail = orderUseCase.getOrderDetail(id);
+            
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Get order detail success",
+                            orderDetail
+                    ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.NOT_FOUND.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        }
+    }
+    
+    @GetMapping("/admin/order-summary")
+    public ResponseEntity<ApiResponse<List<OrderSummaryDTO>>> adminGetOrderSummary() {
+        try {
+            List<OrderSummaryDTO> orders = orderUseCase.getOrderSummaryList();
+            
+            if (orders.isEmpty()) {
+                return ResponseEntity.ok()
+                        .body(ApiResponse.SKIP_AS_GOOD(
+                                HttpStatus.OK.toString(),
+                                "No orders found",
+                                null
+                        ));
+            }
+            
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Get all orders summary success",
                             orders
                     ));
         } catch (Exception e) {

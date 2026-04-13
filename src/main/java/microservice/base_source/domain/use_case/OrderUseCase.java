@@ -7,6 +7,7 @@ import java.util.List;
 import microservice.base_source.domain.entity.Order;
 import microservice.base_source.domain.entity.OrderItem;
 import microservice.base_source.domain.entity.Order.OrderStatus;
+import microservice.base_source.persistence.dto.OrderSummaryDTO;
 import microservice.base_source.presentation.response.order.OrderDetailResponse;
 
 public interface OrderUseCase {
@@ -92,4 +93,6 @@ public interface OrderUseCase {
      * Update order status
      */
     void updateOrderStatus(Long orderId, OrderStatus status);
+    
+    List<OrderSummaryDTO> getOrderSummaryList();
 }

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import microservice.base_source.persistence.dto.OrderSummaryDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -57,4 +58,18 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 		@Param("page") int page, 
 		@Param("size") int size
 	);
+    
+    @Query(value = """
+            select
+            	orders.order_id,
+            	SUM(quantity) as total_quantity,
+            	COUNT(order_item_id) as num_of_item
+            from
+            	orders
+            		inner join order_item
+            			on order_item.order_id = orders.order_id
+            group by orders.order_id;
+            """,
+            nativeQuery = true)
+    List<OrderSummaryDTO> getOrderSummaryInfo();
 }
