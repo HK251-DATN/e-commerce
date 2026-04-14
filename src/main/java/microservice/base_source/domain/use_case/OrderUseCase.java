@@ -7,6 +7,7 @@ import java.util.List;
 import microservice.base_source.domain.entity.Order;
 import microservice.base_source.domain.entity.OrderItem;
 import microservice.base_source.domain.entity.Order.OrderStatus;
+import microservice.base_source.persistence.dto.OrderDeliveryDTO;
 import microservice.base_source.persistence.dto.OrderSummaryDTO;
 import microservice.base_source.presentation.response.order.OrderDetailResponse;
 
@@ -39,7 +40,7 @@ public interface OrderUseCase {
             String sortByPrice,
             String sortByTime,
             int page, int size);
-    
+
     /**
      * <p> Condition create order
      * <p> 	- coupon: valid
@@ -49,7 +50,7 @@ public interface OrderUseCase {
      * @return
      */
     Order create(Order order, List<OrderItem> orderItems);
-    
+
     /**
      * Create order from cart (simplified flow)
      * @param buyerId - authenticated user ID
@@ -57,28 +58,28 @@ public interface OrderUseCase {
      * @return created order
      */
     Order createFromCart(String buyerId, Long addressId);
-    
+
     /**
      * Get all orders (with optional buyer filter)
      * @return List order
      */
     List<Order> getAll(int page, int size);
-    
+
     /**
      * Get orders by buyer ID
      */
     List<Order> getByBuyerId(String buyerId, int page, int size);
-    
+
     /**
      * Get order with order items
      */
     OrderDetailResponse getOrderDetail(Long orderId);
-    
+
     /**
      * Get single order by ID
      */
     Order get(Long id);
-    
+
     /**
      * Delete order
      */
@@ -93,6 +94,10 @@ public interface OrderUseCase {
      * Update order status
      */
     void updateOrderStatus(Long orderId, OrderStatus status);
-    
-    List<OrderSummaryDTO> getOrderSummaryList();
+
+    List<OrderSummaryDTO> getOrderSummaryList(String status);
+
+    List<OrderDeliveryDTO> getDeliveryInfo();
+
+    OrderDeliveryDTO getDeliveryInfoByOrderId(Long orderId);
 }

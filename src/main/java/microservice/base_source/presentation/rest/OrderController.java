@@ -8,6 +8,7 @@ import microservice.base_source.domain.exception.type.BadRequestException;
 import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.domain.exception.type.UnauthorizedException;
 import microservice.base_source.infrastructure.security.AuthenticatedUser;
+import microservice.base_source.persistence.dto.OrderDeliveryDTO;
 import microservice.base_source.persistence.dto.OrderSummaryDTO;
 import microservice.base_source.presentation.request.CreateOrderFromCartRequest;
 import microservice.base_source.presentation.response.order.OrderDetailResponse;
@@ -446,10 +447,12 @@ public class OrderController {
     }
     
     @GetMapping("/admin/order-summary")
-    public ResponseEntity<ApiResponse<List<OrderSummaryDTO>>> adminGetOrderSummary() {
+    public ResponseEntity<ApiResponse<List<OrderSummaryDTO>>> adminGetOrderSummary(
+            @RequestParam(defaultValue = "") String status
+    ) {
         try {
-            List<OrderSummaryDTO> orders = orderUseCase.getOrderSummaryList();
-            
+            List<OrderSummaryDTO> orders = orderUseCase.getOrderSummaryList(status);
+
             if (orders.isEmpty()) {
                 return ResponseEntity.ok()
                         .body(ApiResponse.SKIP_AS_GOOD(
@@ -458,12 +461,70 @@ public class OrderController {
                                 null
                         ));
             }
-            
+
             return ResponseEntity.ok()
                     .body(ApiResponse.SUCCESS(
                             HttpStatus.OK.toString(),
                             "Get all orders summary success",
                             orders
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        }
+    }
+
+    @GetMapping("/admin/delivery")
+    public ResponseEntity<ApiResponse<List<OrderDeliveryDTO>>> adminGetDeliveryInfo() {
+        try {
+            List<OrderDeliveryDTO> deliveryInfo = orderUseCase.getDeliveryInfo();
+
+            if (deliveryInfo.isEmpty()) {
+                return ResponseEntity.ok()
+                        .body(ApiResponse.SKIP_AS_GOOD(
+                                HttpStatus.OK.toString(),
+                                "No delivery info found",
+                                null
+                        ));
+            }
+
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Get delivery info success",
+                            deliveryInfo
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        }
+    }
+
+    @GetMapping("/admin/delivery/{orderId}")
+    public ResponseEntity<ApiResponse<OrderDeliveryDTO>> adminGetDeliveryInfoByOrderId(@PathVariable Long orderId) {
+        try {
+            OrderDeliveryDTO deliveryInfo = orderUseCase.getDeliveryInfoByOrderId(orderId);
+
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Get delivery info for order success",
+                            deliveryInfo
+                    ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.NOT_FOUND.toString(),
+                            e.getMessage(),
+                            null
                     ));
         } catch (Exception e) {
             return ResponseEntity.badRequest()

@@ -12,6 +12,7 @@ import microservice.base_source.infrastructure.messaging.order.OrderConfirmedEve
 import microservice.base_source.infrastructure.messaging.order.OrderCreatedEvent;
 import microservice.base_source.infrastructure.messaging.order.OrderPickRequestedEvent;
 import microservice.base_source.infrastructure.messaging.order.OrderProducer;
+import microservice.base_source.persistence.dto.OrderDeliveryDTO;
 import microservice.base_source.persistence.dto.OrderSummaryDTO;
 import microservice.base_source.persistence.repository.*;
 import microservice.base_source.presentation.response.order.OrderDetailResponse;
@@ -297,7 +298,18 @@ public class OrderService implements OrderUseCase {
     }
     
     @Override
-    public List<OrderSummaryDTO> getOrderSummaryList () {
-        return orderRepository.getOrderSummaryInfo();
+    public List<OrderSummaryDTO> getOrderSummaryList (String status) {
+        return orderRepository.getOrderSummaryInfo(status);
+    }
+
+    @Override
+    public List<OrderDeliveryDTO> getDeliveryInfo() {
+        return orderRepository.getDeliveryInfo();
+    }
+
+    @Override
+    public OrderDeliveryDTO getDeliveryInfoByOrderId(Long orderId) {
+        return orderRepository.getDeliveryInfoByOrderId(orderId)
+                .orElseThrow(() -> new NotFoundException("Delivery info not found for order: " + orderId));
     }
 }

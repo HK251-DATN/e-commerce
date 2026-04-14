@@ -3,7 +3,9 @@ package microservice.base_source.persistence.repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
+import microservice.base_source.persistence.dto.OrderDeliveryDTO;
 import microservice.base_source.persistence.dto.OrderSummaryDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -68,8 +70,50 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             	orders
             		inner join order_item
             			on order_item.order_id = orders.order_id
-            group by orders.order_id;
+            where (:status = '' OR status = :status)
+            group by orders.order_id
             """,
             nativeQuery = true)
-    List<OrderSummaryDTO> getOrderSummaryInfo();
+    List<OrderSummaryDTO> getOrderSummaryInfo(
+        @Param("status") String status
+    );
+
+	@Query(value = """
+        SELECT 
+            o.order_id AS orderId,
+            o.buyer_id AS buyerId,
+            o.status AS status,
+            o.total_price AS totalPrice,
+            o.note AS note,
+            o.created_at AS createdAt,
+            a.receiver_name AS receiverName,
+            a.receiver_p_num AS receiverPNum,
+            a.province AS province,
+            a.district AS district,
+            a.commune AS commune,
+            a.detail AS detail
+        FROM ORDERS o
+        LEFT JOIN address a ON o.address_id = a.address_id
+        """, nativeQuery = true)
+	List<OrderDeliveryDTO> getDeliveryInfo();
+
+    @Query(value = """
+        SELECT 
+            o.order_id AS orderId,
+            o.buyer_id AS buyerId,
+            o.status AS status,
+            o.total_price AS totalPrice,
+            o.note AS note,
+            o.created_at AS createdAt,
+            a.receiver_name AS receiverName,
+            a.receiver_p_num AS receiverPNum,
+            a.province AS province,
+            a.district AS district,
+            a.commune AS commune,
+            a.detail AS detail
+        FROM ORDERS o
+        LEFT JOIN address a ON o.address_id = a.address_id
+        WHERE o.order_id = :orderId
+        """, nativeQuery = true)
+    Optional<OrderDeliveryDTO> getDeliveryInfoByOrderId(@Param("orderId") Long orderId);
 }
