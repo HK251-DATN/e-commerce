@@ -332,25 +332,25 @@ public class DataSeeder {
             );
 
             // Tạo BatchDetail cho sản phẩm đầu tiên
-            BatchDetail batch1 = createBatchDetail(
-                "BATCH-SKU-001",      // batchDetailId (Khớp với CartItem)
-                101L,                 // productGeneralId (ID sản phẩm tổng quát)
-                50,                   // quantity (Số lượng tồn kho trong lô)
-                new BigDecimal("150000"), // price (Giá bán: 150.000 VNĐ)
-                "Màu xanh, Size L, Chất liệu Cotton" // detailContent
-            );
-
-            // ==================== Seed Cart Items ====================
-            // 1. Sản phẩm A - Số lượng 2, được chọn để thanh toán
-            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 2L, true);
-            // 2. Sản phẩm B - Số lượng 1, được chọn để thanh toán
-            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 1L, true);
-            // 3. Sản phẩm C - Số lượng 5, chưa chọn thanh toán (để trong giỏ hàng chờ)
-            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 5L, false);
-            // 4. Sản phẩm D - Số lượng 10, được chọn để thanh toán
-            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 10L, true);
-            // 5. Sản phẩm E - Số lượng 1, chưa chọn thanh toán
-            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 1L, false);
+//            BatchDetail batch1 = createBatchDetail(
+//                "BATCH-SKU-001",      // batchDetailId (Khớp với CartItem)
+//                101L,                 // productGeneralId (ID sản phẩm tổng quát)
+//                50,                   // quantity (Số lượng tồn kho trong lô)
+//                new BigDecimal("150000"), // price (Giá bán: 150.000 VNĐ)
+//                "Màu xanh, Size L, Chất liệu Cotton" // detailContent
+//            );
+//
+//            // ==================== Seed Cart Items ====================
+//            // 1. Sản phẩm A - Số lượng 2, được chọn để thanh toán
+//            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 2L, true);
+//            // 2. Sản phẩm B - Số lượng 1, được chọn để thanh toán
+//            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 1L, true);
+//            // 3. Sản phẩm C - Số lượng 5, chưa chọn thanh toán (để trong giỏ hàng chờ)
+//            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 5L, false);
+//            // 4. Sản phẩm D - Số lượng 10, được chọn để thanh toán
+//            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 10L, true);
+//            // 5. Sản phẩm E - Số lượng 1, chưa chọn thanh toán
+//            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 1L, false);
 //
 //            createCartItem(cart2.getCartId(), batch8.getBatchDetailId(), 1L, true);
 //            createCartItem(cart2.getCartId(), batch5.getBatchDetailId(), 2L, false);
