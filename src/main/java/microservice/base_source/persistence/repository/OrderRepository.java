@@ -116,4 +116,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         WHERE o.order_id = :orderId
         """, nativeQuery = true)
     Optional<OrderDeliveryDTO> getDeliveryInfoByOrderId(@Param("orderId") Long orderId);
+    
+    Optional<Order> findByOrderId(Long orderId);
 }

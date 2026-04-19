@@ -16,6 +16,8 @@ Ecommerce microservice built with **Clean Architecture** pattern (hexagonal arch
 - **Messaging**: Kafka (consumer & producer)
 - **Security**: JWT authentication via custom filter
 - **Storage**: Cloudflare R2 for product images and user avatars
+- **Payment**: Sepay QR payment with Google Sheets polling
+- **External APIs**: Google Sheets API v4 for payment transaction polling
 - **Build Tool**: Maven Wrapper (`./mvnw`)
 
 ## Quick Start
@@ -129,6 +131,7 @@ microservice.base_source/
 - **Category**: Category hierarchy (3 levels synced from back-office)
 - **FeedBack**: Product reviews and ratings
 - **Address**: Customer shipping addresses
+- **ProcessedTransaction**: Tracks processed payment transactions to prevent duplicate processing
 
 **Entity conventions**:
 - All use `@GeneratedValue(strategy = GenerationType.IDENTITY)` for auto-increment IDs
@@ -199,6 +202,94 @@ public class EventProducer {
 }
 ```
 
+## Payment Integration
+
+### Sepay QR Payment with Google Sheets Polling
+
+The service integrates with **Sepay** (Vietnamese payment gateway) for QR code-based bank transfers. Payment confirmations are tracked via Google Sheets API polling.
+
+**Payment flow**:
+1. Order created with status PENDING
+2. QR code URL generated via `QrPaymentService` with order code format `DH00012345` (zero-padded to 8 digits)
+3. Customer scans QR and completes bank transfer with order code in description
+4. Sepay logs transaction to Google Sheets
+5. `PaymentPollingService` polls Google Sheets every 10 seconds (configurable)
+6. Service extracts order code from transaction description, updates order status to PAID
+7. `ProcessedTransaction` entity prevents duplicate processing
+
+### QrPaymentService
+
+Generates Sepay QR code URLs for payment:
+
+```java
+public String createOrderTransactionQrUrl(String orderId, Long totalPrice);
+```
+
+**Parameters**:
+- `orderId`: Order ID (will be formatted as `DH00012345`)
+- `totalPrice`: Total amount in VND (long integer, no decimals)
+
+**Returns**: URL for Sepay QR code image with embedded payment info
+
+**Example**: `https://qr.sepay.vn/img?acc=SEPTAK21191&bank=OCB&amount=100000&des=DH00012345`
+
+### PaymentPollingService
+
+Polls Google Sheets for new transactions via scheduled task:
+
+**Key methods**:
+- `pollPayments()`: Scheduled method (runs every `payment.polling.interval` milliseconds)
+- `processRow(List<Object> row)`: Processes individual transaction row
+- `extractOrderCode(String description)`: Extracts order code from transaction description using regex
+
+**Implementation notes**:
+- Uses `lastProcessedRow` counter to avoid re-reading entire sheet
+- Only processes new rows since last poll
+- Validates transaction hasn't been processed before checking `ProcessedTransaction` table
+- Updates order status to PAID and saves transaction ID
+- Logs warnings for missing order codes or unfound orders
+
+**Transaction deduplication**: Uses `ProcessedTransaction.transactionId` as unique constraint
+
+### Google Sheets Configuration
+
+**GoogleSheetsConfig** (`infrastructure/configuration/`):
+- Initializes Google Sheets API v4 client
+- Uses service account credentials from `google-credentials.json`
+- Scoped to `SPREADSHEETS_READONLY`
+- Application name: "Capstone Payment"
+
+**Required credentials file**: `src/main/resources/google-credentials.json` (service account JSON)
+
+**Configuration** (in `.env` or `application.yaml`):
+```bash
+# Google Sheets
+GOOGLE_SHEETS_SPREADSHEET_ID=your_spreadsheet_id
+GOOGLE_SHEETS_CREDENTIALS_PATH=google-credentials.json
+
+# Sepay
+SEPAY_ACCOUNT=your_account_number
+SEPAY_BANK=bank_code  # e.g., OCB, VCB, MB
+
+# Payment polling interval (milliseconds)
+PAYMENT_POLLING_INTERVAL=10000  # 10 seconds
+```
+
+**Google Sheets format**: Sheet named "sepay" with columns:
+- [0] Timestamp
+- [1] Amount
+- [2-4] Other fields
+- [5] Description (contains order code)
+- [6-7] Other fields
+- [8] Transaction ID (unique identifier)
+
+### Payment Dependencies
+
+**pom.xml** includes:
+- `google-http-client-jackson2`: HTTP client for Google APIs
+- `google-auth-library-oauth2-http`: OAuth2 authentication
+- `google-api-services-sheets`: Google Sheets API v4
+
 ## Security and Authentication
 
 **JWT-based authentication** with Spring Security:
@@ -246,6 +337,8 @@ Controllers in `presentation/rest/`:
 - **ProductGeneralService**: Product catalog management
 - **SaleEventService**: Sales campaign logic, active sale validation
 - **SearchService**: Product search with filtering and pagination
+- **PaymentPollingService**: Scheduled polling of Google Sheets for payment confirmations
+- **QrPaymentService**: Generates Sepay QR code URLs for bank transfer payments
 
 **Service pattern**:
 ```java
@@ -278,6 +371,7 @@ Schema managed via JPA with `hibernate.ddl-auto: update`
 - `BATCH_DETAIL`: batch_detail_id (PK), product_general_id (FK), quantity_remain
 - `SALE_EVENTS`: sale_event_id (PK), name, start_time, end_time, is_active
 - `SALE_PRODUCTS`: sale_product_id (PK), sale_event_id (FK), product_detail_id (FK), discount_percent
+- `PROCESSED_TRANSACTIONS`: id (PK), transaction_id (unique), processed_at
 
 **Schema documentation**: See `db_schema/README.md` for backup/restore commands
 
@@ -303,9 +397,19 @@ R2_SECRET_KEY=your_secret_key
 
 **Application configuration** (`src/main/resources/application.yaml`):
 - Database: `jdbc:postgresql://${DB_HOST}:${DB_PORT}/ecommerce_db`
-- Server port: 9301
+- Server port: 9300 (changed from 9301)
 - Kafka: Configured via `app.kafka-url`
 - R2 buckets: `back-office-user-avts`, `product-general-img`
+- Google Sheets:
+  - `google.sheets.credentials-path`: Path to service account JSON (default: `google-credentials.json`)
+  - `google.sheets.spreadsheet-id`: Google Sheets spreadsheet ID
+- Sepay:
+  - `sepay.account`: Sepay account number
+  - `sepay.bank`: Bank code (e.g., OCB, VCB, MB)
+- Payment polling:
+  - `payment.polling.interval`: Milliseconds between polling cycles (default: 10000 = 10 seconds)
+
+**Important**: Add `google-credentials.json` to `.gitignore` - this file contains service account credentials and should NOT be committed
 
 ## Development Workflow
 
@@ -403,8 +507,13 @@ Import into Postman for pre-configured requests.
 - Look for exceptions in consumer logs (events are NOT auto-retried)
 
 **Port conflicts**:
-- Default port 9301 can be changed via `SERVER_PORT` env var
+- Default port 9300 can be changed via `SERVER_PORT` env var
 - Check if other services are using the same port
+
+**Payment polling issues**:
+- **Google Sheets API failed**: Verify `google-credentials.json` exists in resources and service account has read access
+- **Payments not detected**: Check spreadsheet ID, sheet name "sepay", and polling interval
+- **Order not found**: Verify transaction description contains order code format `DH00012345`
 
 ## Key Architectural Decisions
 

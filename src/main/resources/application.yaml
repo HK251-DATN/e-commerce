@@ -49,3 +49,19 @@ app:
     back-office-user-avts
   product-general-img-bucket:
     product-general-img
+
+google:
+  sheets:
+    credentials-path:
+      google-credentials.json
+    spreadsheet-id:
+      1OgOhMyB660z8ITyLA8QZt39IWpz24qfT5GjjlcjT1m0
+
+# Polling interval (milliseconds) - 10 giây
+payment:
+  polling:
+    interval: 10000
+
+sepay:
+  account: SEPTAK21191
+  bank: OCB

@@ -16,6 +16,7 @@ import microservice.base_source.persistence.dto.OrderDeliveryDTO;
 import microservice.base_source.persistence.dto.OrderSummaryDTO;
 import microservice.base_source.persistence.repository.*;
 import microservice.base_source.presentation.response.order.OrderDetailResponse;
+import microservice.base_source.presentation.response.order.OrderPaymentStatusResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -50,6 +51,8 @@ public class OrderService implements OrderUseCase {
 	private BatchDetailRepository batchDetailRepository;
     @Autowired
     private OrderItemRepository orderItemRepository;
+    @Autowired
+    private QrPaymentService qrPaymentService;
 
 
 	@Override
@@ -202,6 +205,14 @@ public class OrderService implements OrderUseCase {
 
 		Order savedOrder = orderRepository.save(order);
         
+        if (savedOrder.getPaymentMethod().equals(Order.PaymentMethod.VNPAY)) {
+            String transactionQrUrl = qrPaymentService.createOrderTransactionQrUrl(
+                    savedOrder.getOrderId().toString(), order.getTotalPrice()
+            );
+            savedOrder.setTransactionQrUrl(transactionQrUrl);
+            orderRepository.save(savedOrder);
+        }
+        
         // 6. Create order items
         for (OrderItem item : orderItems) {
             item.setOrderId(savedOrder.getOrderId());
@@ -311,5 +322,20 @@ public class OrderService implements OrderUseCase {
     public OrderDeliveryDTO getDeliveryInfoByOrderId(Long orderId) {
         return orderRepository.getDeliveryInfoByOrderId(orderId)
                 .orElseThrow(() -> new NotFoundException("Delivery info not found for order: " + orderId));
+    }
+
+    @Override
+    public OrderPaymentStatusResponse getPaymentStatus(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+
+        return new OrderPaymentStatusResponse(
+                order.getOrderId(),
+                order.getStatus(),
+                order.getPaymentMethod(),
+                order.getTransactionQrUrl(),
+                order.getTransactionId(),
+                order.getTotalPrice()
+        );
     }
 }

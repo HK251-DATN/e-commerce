@@ -10,6 +10,7 @@ import microservice.base_source.domain.entity.Order.OrderStatus;
 import microservice.base_source.persistence.dto.OrderDeliveryDTO;
 import microservice.base_source.persistence.dto.OrderSummaryDTO;
 import microservice.base_source.presentation.response.order.OrderDetailResponse;
+import microservice.base_source.presentation.response.order.OrderPaymentStatusResponse;
 
 public interface OrderUseCase {
     /**
@@ -100,4 +101,9 @@ public interface OrderUseCase {
     List<OrderDeliveryDTO> getDeliveryInfo();
 
     OrderDeliveryDTO getDeliveryInfoByOrderId(Long orderId);
+
+    /**
+     * Get payment status for order (lightweight for polling)
+     */
+    OrderPaymentStatusResponse getPaymentStatus(Long orderId);
 }

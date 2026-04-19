@@ -43,6 +43,16 @@ public class Order {
 
 	@Column(name = "total_price")
 	private Long totalPrice;
+    
+    @Column(name = "transaction_id", unique = true)
+    private String transactionId;
+    
+    @Column(name = "transaction_qr_url")
+    private String transactionQrUrl;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
+    private PaymentMethod paymentMethod;
 
 	@Column(name = "coupon_id")
 	private String couponId;
@@ -72,4 +82,9 @@ public class Order {
 		RECEIVED,
 		CANCELLED
 	}
+    
+    public enum PaymentMethod {
+        COD,
+        VNPAY,
+    }
 }

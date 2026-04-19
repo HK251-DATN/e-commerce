@@ -12,6 +12,7 @@ import microservice.base_source.persistence.dto.OrderDeliveryDTO;
 import microservice.base_source.persistence.dto.OrderSummaryDTO;
 import microservice.base_source.presentation.request.CreateOrderFromCartRequest;
 import microservice.base_source.presentation.response.order.OrderDetailResponse;
+import microservice.base_source.presentation.response.order.OrderPaymentStatusResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,6 +84,54 @@ public class OrderController {
         }
     }
     
+    /**
+     * Get payment status for order (lightweight endpoint for polling)
+     * GET /api/orders/{id}/payment-status
+     */
+    @GetMapping("/{id}/payment-status")
+    public ResponseEntity<ApiResponse<OrderPaymentStatusResponse>> getPaymentStatus(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AuthenticatedUser principal) {
+        try {
+            String buyerId = principal.getId().toString();
+
+            // Get payment status
+            OrderPaymentStatusResponse paymentStatus = orderUseCase.getPaymentStatus(id);
+
+            // Verify order belongs to user
+            Order order = orderUseCase.get(id);
+            if (!order.getBuyerId().equals(buyerId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(ApiResponse.ERROR(
+                                HttpStatus.FORBIDDEN.toString(),
+                                "Access denied to this order",
+                                null
+                        ));
+            }
+
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Payment status retrieved successfully",
+                            paymentStatus
+                    ));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.NOT_FOUND.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        }
+    }
+
     /**
      * Get order detail with order items
      * GET /api/orders/{id}
