@@ -4,7 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Ecommerce microservice built with **Clean Architecture** pattern (hexagonal architecture). Handles order processing, cart management, product catalog (read-side), sales events, and feedback. Consumes inventory events from product-storage service and publishes order events to Kafka.
+Ecommerce microservice built with **Clean Architecture** pattern (hexagonal architecture). Handles comprehensive order processing with multi-status workflow, cart management with coupon support, product catalog (read-side), sales events, promotional coupons, and customer feedback. Consumes inventory events from product-storage service and publishes detailed order lifecycle events to Kafka for warehouse coordination.
+
+**Key features**:
+- **Order Management**: Full lifecycle tracking (PENDING → PAID → CONFIRMED → DELIVERING → DELIVERED → RECEIVED)
+- **Payment Integration**: Sepay QR payment with Google Sheets polling + COD support
+- **Coupon System**: Code-based discounts with usage limits and validation
+- **Admin Operations**: Order summaries, delivery tracking, order confirmation
+- **Event-Driven**: Kafka integration for inventory sync and warehouse coordination
 
 **Key distinction**: Unlike other services in the platform (identity, back-office, product-storage) which use traditional layered architecture, this service strictly follows Clean Architecture principles to isolate business logic from framework concerns.
 
@@ -18,6 +25,7 @@ Ecommerce microservice built with **Clean Architecture** pattern (hexagonal arch
 - **Storage**: Cloudflare R2 for product images and user avatars
 - **Payment**: Sepay QR payment with Google Sheets polling
 - **External APIs**: Google Sheets API v4 for payment transaction polling
+- **gRPC**: Dependencies included (Spring gRPC, gRPC services) but not currently implemented
 - **Build Tool**: Maven Wrapper (`./mvnw`)
 
 ## Quick Start
@@ -59,7 +67,7 @@ The seeder only runs when the database is empty (checks `buyer` table). Logs sho
 docker-compose up --build
 ```
 
-**Default port**: 9301
+**Default port**: 9300 (changed from 9301 in application.yaml)
 
 ## Clean Architecture Structure
 
@@ -119,9 +127,12 @@ microservice.base_source/
 
 **Primary entities** (all in `domain/entity/`):
 
-- **Order**: Customer orders with status tracking (PENDING, CONFIRMED, SHIPPED, etc.)
+- **Order**: Customer orders with comprehensive status tracking
+  - **OrderStatus**: PENDING, PAID, CONFIRMED, DELIVERING, DELIVERED, RECEIVED, CANCELLED
+  - **PaymentMethod**: COD (Cash on Delivery), VNPAY
+  - Includes `transactionId`, `transactionQrUrl` for payment tracking
 - **OrderItem**: Line items in orders, linked to ProductDetail
-- **Cart / CartItem**: Shopping cart functionality per buyer
+- **Cart / CartItem**: Shopping cart functionality per buyer with coupon support
 - **Buyer**: Customer information synced from identity service
 - **ProductGeneral**: Product catalog (brand, name, category) - read model
 - **ProductDetail**: Sellable product units with pricing - read model
@@ -129,8 +140,11 @@ microservice.base_source/
 - **SaleEvent**: Time-bound sales campaigns
 - **SaleProduct**: Products participating in sale events with discounts
 - **Category**: Category hierarchy (3 levels synced from back-office)
+- **Coupon**: Discount coupons with usage limits and validation rules
+  - **DiscountType**: PERCENTAGE, FIXED_AMOUNT
+  - Tracks `totalQuantity`, `currentQuantity`, `minOrderValue`, `maxDiscountAmount`
 - **FeedBack**: Product reviews and ratings
-- **Address**: Customer shipping addresses
+- **Address**: Customer shipping addresses with delivery tracking
 - **ProcessedTransaction**: Tracks processed payment transactions to prevent duplicate processing
 
 **Entity conventions**:
@@ -181,10 +195,16 @@ public class EventConsumer {
 
 ### Kafka Producers (Outbound Events)
 
-1. **OrderItemProducer** (`order-item-events`)
-   - Publishes order item creation to product-storage service
-   - Used for inventory reservation/deduction
-   - Returns `CompletableFuture` for async handling
+Located in `infrastructure/messaging/order/`:
+
+1. **OrderProducer** - Publishes order lifecycle events:
+   - `OrderCreatedEvent` - New order created
+   - `OrderConfirmedEvent` - Order confirmed by admin
+   - `OrderPickRequestedEvent` - Order ready for pickup/packing
+   - `OrderDeliveringEvent` - Order out for delivery
+   - `OrderDeliveredEvent` - Order delivered to customer
+   
+**Note**: OrderItemProducer functionality is handled through OrderProducer events
 
 **Producer pattern**:
 ```java
@@ -202,20 +222,87 @@ public class EventProducer {
 }
 ```
 
+## Order Lifecycle Management
+
+### Order Status Workflow
+
+The service implements a comprehensive order status workflow:
+
+```
+PENDING → PAID → CONFIRMED → DELIVERING → DELIVERED → RECEIVED
+                                                    ↓
+                                              (CANCELLED - only from PENDING)
+```
+
+**Status Transitions**:
+
+1. **PENDING**: Order created from cart
+   - Customer selects payment method (COD or VNPAY)
+   - For VNPAY: QR code generated, customer must pay
+   - Only status that allows cancellation by customer
+   
+2. **PAID**: Payment confirmed
+   - Auto-updated by PaymentPollingService for VNPAY
+   - Immediately set for COD orders
+   - Triggers notification to admin
+   
+3. **CONFIRMED**: Admin confirms order
+   - Admin endpoint: `PUT /api/orders/{id}/confirm`
+   - Publishes `OrderConfirmedEvent` to Kafka
+   - Warehouse notified to prepare items
+   
+4. **DELIVERING**: Order out for delivery
+   - Updated by delivery/warehouse service via Kafka consumer
+   - Customer can track delivery status
+   
+5. **DELIVERED**: Order delivered to address
+   - Updated by delivery/warehouse service via Kafka consumer
+   - Customer notified
+   
+6. **RECEIVED**: Customer confirms receipt
+   - Customer endpoint: `PUT /api/orders/{id}/receive`
+   - Only allowed when status is DELIVERED
+   - Completes order lifecycle
+
+**Kafka Event Flow**:
+- Order creation → `OrderCreatedEvent`
+- Admin confirms → `OrderConfirmedEvent` → triggers `OrderPickRequestedEvent`
+- Warehouse updates → `OrderDeliveringEvent` → updates status to DELIVERING
+- Delivery complete → `OrderDeliveredEvent` → updates status to DELIVERED
+
+### Order Creation Flow
+
+**Create from cart** (`POST /api/orders`):
+1. Validates authenticated buyer has cart with items
+2. Validates delivery address belongs to buyer
+3. Creates order with selected payment method
+4. For VNPAY: Generates QR code URL via `QrPaymentService`
+5. Creates order items from cart items
+6. For COD: Sets status to PAID immediately
+7. For VNPAY: Sets status to PENDING, awaits payment
+8. Clears cart after successful order creation
+
 ## Payment Integration
 
 ### Sepay QR Payment with Google Sheets Polling
 
 The service integrates with **Sepay** (Vietnamese payment gateway) for QR code-based bank transfers. Payment confirmations are tracked via Google Sheets API polling.
 
-**Payment flow**:
-1. Order created with status PENDING
+**VNPAY Payment flow**:
+1. Order created with status PENDING and `paymentMethod: VNPAY`
 2. QR code URL generated via `QrPaymentService` with order code format `DH00012345` (zero-padded to 8 digits)
-3. Customer scans QR and completes bank transfer with order code in description
-4. Sepay logs transaction to Google Sheets
-5. `PaymentPollingService` polls Google Sheets every 10 seconds (configurable)
-6. Service extracts order code from transaction description, updates order status to PAID
-7. `ProcessedTransaction` entity prevents duplicate processing
+3. QR URL stored in order's `transactionQrUrl` field
+4. Customer scans QR and completes bank transfer with order code in description
+5. Sepay logs transaction to Google Sheets
+6. `PaymentPollingService` polls Google Sheets every 10 seconds (configurable)
+7. Service extracts order code from transaction description, updates order status to PAID
+8. Transaction ID stored in order's `transactionId` field
+9. `ProcessedTransaction` entity prevents duplicate processing
+
+**COD Payment flow**:
+1. Order created with status PAID immediately (skips PENDING)
+2. No QR code generation needed
+3. Payment collected on delivery
 
 ### QrPaymentService
 
@@ -290,6 +377,47 @@ PAYMENT_POLLING_INTERVAL=10000  # 10 seconds
 - `google-auth-library-oauth2-http`: OAuth2 authentication
 - `google-api-services-sheets`: Google Sheets API v4
 
+## Coupon System
+
+### Coupon Management
+
+The service implements a flexible coupon system for promotional discounts separate from sale events.
+
+**Coupon Entity** (`domain/entity/Coupon.java`):
+- **couponCode**: Unique code customers enter at checkout
+- **totalQuantity**: Total number of times coupon can be used
+- **currentQuantity**: Remaining usage count
+- **discountType**: PERCENTAGE or FIXED_AMOUNT
+- **discountValue**: Discount amount (percentage value or fixed VND amount)
+- **maxDiscountAmount**: Maximum discount cap (for percentage discounts)
+- **minOrderValue**: Minimum order value required to use coupon
+- **expiredAt**: Coupon expiration timestamp
+
+**Coupon API** (`/api/coupon`):
+- `POST /api/coupon` - Create coupon (admin)
+- `GET /api/coupon/{id}` - Get coupon by ID
+- `GET /api/coupon?page=1&size=20` - List all coupons (paginated)
+- `PUT /api/coupon/{id}` - Update coupon
+- `DELETE /api/coupon/{id}` - Delete coupon
+
+**Cart Coupon Integration**:
+- `GET /api/cart/coupons` - Get applicable coupons for current cart
+- Returns `CartCouponResponse` with valid coupons based on:
+  - Expiration date
+  - Remaining quantity
+  - Minimum order value requirement
+  - Current cart total
+
+**Validation Logic**:
+- Coupon must not be expired (`expiredAt > now`)
+- Must have remaining quantity (`currentQuantity > 0`)
+- Cart total must meet minimum order value
+- Decrements `currentQuantity` when applied to order
+
+**Key Differences from Sale Events**:
+- **Coupons**: Code-based, usage-limited, order-level discounts
+- **Sale Events**: Time-based, product-specific, no usage limits
+
 ## Security and Authentication
 
 **JWT-based authentication** with Spring Security:
@@ -307,16 +435,42 @@ PAYMENT_POLLING_INTERVAL=10000  # 10 seconds
 
 Controllers in `presentation/rest/`:
 
-- **OrderController**: Create orders, order history, order details, status updates
+### Customer-Facing Endpoints
+
+- **OrderController**: 
+  - **Customer**: Create from cart, view orders, order details, payment status, search/filter, cancel, receive
+  - **Admin**: View all orders, order details, order summaries, delivery tracking, confirm orders
+  - Key endpoints:
+    - `POST /api/orders` - Create order from cart
+    - `GET /api/orders/{id}/payment-status` - Lightweight payment status polling
+    - `GET /api/orders/{id}` - Get order detail with items
+    - `GET /api/orders/search` - Search/filter orders
+    - `PUT /api/orders/{id}/confirm` - Admin: Confirm order
+    - `PUT /api/orders/{id}/receive` - Customer: Mark as received
+    - `GET /api/orders/admin/order-summary` - Admin: Get order summaries by status
+    - `GET /api/orders/admin/delivery` - Admin: Get delivery information
+    
+- **CartController**: 
+  - Create cart, view cart, admin access
+  - `GET /api/cart/coupons` - Get applicable coupons for cart
+  
 - **CartItemController**: Add to cart, update quantity, remove items, view cart
+
 - **ProductSearchController**: Search products, filter by category, pagination
+
+- **CouponController**: CRUD operations for discount coupons (admin)
+
+- **FeedBackController**: Product reviews and ratings
+
+- **AddressController**: Customer shipping addresses
+
+### Admin Endpoints
+
 - **ProductGeneralController**: Product catalog CRUD (admin)
 - **ProductDetailController**: Product detail CRUD (admin)
 - **SaleEventController**: Manage sales campaigns
 - **SaleProductController**: Assign products to sales
 - **CategoryController**: Category hierarchy management
-- **FeedBackController**: Product reviews and ratings
-- **AddressController**: Customer shipping addresses
 - **BatchDetailController**: Inventory batch management (admin)
 
 **API conventions**:
@@ -331,9 +485,36 @@ Controllers in `presentation/rest/`:
 
 **Domain services** (`domain/service/`): Implement use cases with business logic
 
+### Data Transfer Objects (DTOs)
+
+Located in `persistence/dto/`:
+
+- **OrderSummaryDTO**: Lightweight order summary for admin dashboards (order ID, buyer info, status, price, timestamps)
+- **OrderDeliveryDTO**: Delivery tracking information (order details, address, buyer contact)
+- **CartItemWithBatchDetailDTO**: Cart items enriched with batch and product details
+- **FeedBackDTO**: Aggregated feedback data
+- **CategoryDTO**: Category hierarchy data
+- **DetailGeneralDTO**: Combined product detail and general information
+
+### Response Objects
+
+Located in `presentation/response/`:
+
+- **OrderPaymentStatusResponse**: Lightweight response for payment status polling (orderId, status, paymentMethod)
+- **OrderDetailResponse**: Complete order details with items, buyer info, and address
+- **ShipmentFeeResponse**: Shipment fee calculation with address and distance
+- **CartCouponResponse**: Applicable coupons for cart with discount details
+- **ApiResponse<T>**: Standard response wrapper for all endpoints
+
 **Key services**:
-- **OrderService**: Order lifecycle management, cart-to-order conversion, status transitions
+- **OrderService**: Comprehensive order lifecycle management
+  - Cart-to-order conversion with payment method selection
+  - Order status transitions (PENDING → PAID → CONFIRMED → DELIVERING → DELIVERED → RECEIVED)
+  - Admin order summaries and delivery tracking
+  - Payment status polling support
+- **CartService**: Cart management with coupon integration
 - **CartItemService**: Cart operations, quantity updates, cart summary
+- **CouponService**: Coupon validation, usage tracking, expiration management
 - **ProductGeneralService**: Product catalog management
 - **SaleEventService**: Sales campaign logic, active sale validation
 - **SearchService**: Product search with filtering and pagination
@@ -362,10 +543,11 @@ public class DomainService {
 Schema managed via JPA with `hibernate.ddl-auto: update`
 
 **Key tables**:
-- `ORDERS`: order_id (PK), buyer_id, total_price, status, timestamps
+- `ORDERS`: order_id (PK), buyer_id, address_id, status, payment_method, total_price, transaction_id, transaction_qr_url, coupon_id, note, timestamps
 - `ORDER_ITEMS`: order_item_id (PK), order_id (FK), product_detail_id (FK), quantity, unit_price
 - `CARTS`: cart_id (PK), buyer_id (unique)
 - `CART_ITEMS`: cart_item_id (PK), cart_id (FK), product_detail_id (FK), quantity
+- `COUPON`: coupon_id (PK), coupon_code, total_quantity, current_quantity, discount_type, discount_value, max_discount_amount, min_order_value, expired_at, timestamps
 - `PRODUCT_GENERAL`: product_general_id (PK), name, brand, category_id (FK)
 - `PRODUCT_DETAIL`: product_detail_id (PK), product_general_id (FK), batch_detail_id (FK), unit_price
 - `BATCH_DETAIL`: batch_detail_id (PK), product_general_id (FK), quantity_remain
@@ -396,18 +578,19 @@ R2_SECRET_KEY=your_secret_key
 ```
 
 **Application configuration** (`src/main/resources/application.yaml`):
-- Database: `jdbc:postgresql://${DB_HOST}:${DB_PORT}/ecommerce_db`
+- Database: `jdbc:postgresql://${DB_HOST}:${DB_PORT}/ecommerce_db?stringtype=unspecified`
 - Server port: 9300 (changed from 9301)
 - Kafka: Configured via `app.kafka-url`
 - R2 buckets: `back-office-user-avts`, `product-general-img`
 - Google Sheets:
   - `google.sheets.credentials-path`: Path to service account JSON (default: `google-credentials.json`)
-  - `google.sheets.spreadsheet-id`: Google Sheets spreadsheet ID
+  - `google.sheets.spreadsheet-id`: Google Sheets spreadsheet ID (e.g., `1OgOhMyB660z8ITyLA8QZt39IWpz24qfT5GjjlcjT1m0`)
 - Sepay:
-  - `sepay.account`: Sepay account number
-  - `sepay.bank`: Bank code (e.g., OCB, VCB, MB)
+  - `sepay.account`: Sepay account number (e.g., `SEPTAK21191`)
+  - `sepay.bank`: Bank code (e.g., `OCB`)
 - Payment polling:
   - `payment.polling.interval`: Milliseconds between polling cycles (default: 10000 = 10 seconds)
+- gRPC: Dependencies configured but not actively used (`grpc.version: 1.74.0`, `spring-grpc.version: 0.11.0`)
 
 **Important**: Add `google-credentials.json` to `.gitignore` - this file contains service account credentials and should NOT be committed
 
@@ -474,9 +657,15 @@ R2_SECRET_KEY=your_secret_key
 - **product-storage service**: Inventory updates via `batch-detail-events`
 - **back-office service**: Product catalog via `product-general-events`, categories via `category-events`
 - **identity service**: User profiles via `buyer-events`
+- **order-events** (internal): Order status updates via `order-delivered-events` and `order-delivering-events`
 
 **Downstream dependencies** (publishes to):
-- **product-storage service**: Order items via `order-item-events` for inventory deduction
+- **product-storage service**: Order lifecycle events for inventory and warehouse management:
+  - `order-created-events`
+  - `order-confirmed-events` 
+  - `order-pick-requested-events`
+  - `order-delivering-events`
+  - `order-delivered-events`
 
 **Cross-service communication**:
 - Asynchronous via Kafka events (preferred)
@@ -485,9 +674,9 @@ R2_SECRET_KEY=your_secret_key
 
 ## Postman Collection
 
-API documentation and testing: `Ecommerce API v1.0.5.postman_collection.json`
+API documentation and testing: `Ecommerce API v1.0.6.postman_collection.json`
 
-Import into Postman for pre-configured requests.
+Import into Postman for pre-configured requests with comprehensive endpoint coverage.
 
 ## Troubleshooting
 
@@ -507,8 +696,9 @@ Import into Postman for pre-configured requests.
 - Look for exceptions in consumer logs (events are NOT auto-retried)
 
 **Port conflicts**:
-- Default port 9300 can be changed via `SERVER_PORT` env var
+- Default port 9300 (changed from 9301) can be changed via `SERVER_PORT` env var
 - Check if other services are using the same port
+- Note: Service port was updated in application.yaml but may conflict with existing documentation referring to 9301
 
 **Payment polling issues**:
 - **Google Sheets API failed**: Verify `google-credentials.json` exists in resources and service account has read access
@@ -531,8 +721,25 @@ Import into Postman for pre-configured requests.
 - Loose coupling between microservices
 - Asynchronous processing improves performance
 - Event log provides audit trail and enables eventual consistency
+- Order lifecycle events enable warehouse coordination (picking, packing, delivery)
 
 **Why separate ProductGeneral and ProductDetail?**
 - ProductGeneral: Read model for catalog browsing (denormalized)
 - ProductDetail: Sellable units with pricing and inventory
 - Aligns with CQRS pattern (Command-Query Responsibility Segregation)
+
+**Why comprehensive order status workflow?**
+- PENDING → PAID → CONFIRMED → DELIVERING → DELIVERED → RECEIVED
+- Enables real-time order tracking for customers
+- Coordinates warehouse operations through Kafka events
+- Supports both COD and online payment methods
+
+**Why gRPC dependencies without implementation?**
+- Future-proofing for potential inter-service synchronous communication
+- Dependencies configured but not actively used
+- Could enable faster service-to-service calls when needed
+
+**Why coupon system separate from sale events?**
+- Coupons: User-specific, code-based discounts with usage limits
+- Sale Events: Time-bound, product-wide discounts
+- Allows combining both discount types for promotional flexibility

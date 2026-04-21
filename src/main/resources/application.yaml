@@ -27,10 +27,6 @@ spring:
 #      tracing:
 #        include-parameter-values: true
 
-logging:
-  level:
-    p6spy: INFO
-
 server:
   port: 9300
 
