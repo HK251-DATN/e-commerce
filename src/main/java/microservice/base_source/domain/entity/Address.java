@@ -31,6 +31,12 @@ public class Address {
     @Column(name = "commune")
     private String commune;
     
+    @Column(name = "lat")
+    private Double lat;
+    
+    @Column(name = "lng")
+    private Double lng;
+    
     @Column(name = "detail")
     private String detail;
     

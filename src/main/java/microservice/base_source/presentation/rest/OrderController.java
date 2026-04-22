@@ -45,7 +45,10 @@ public class OrderController {
         try {
             String buyerId = principal.getId().toString();
             
-            Order order = orderUseCase.createFromCart(buyerId, request.getAddressId());
+            Order order = orderUseCase.createFromCart(
+                    buyerId,
+                    request.getAddressId(),
+                    request.getPaymentMethod());
             
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.SUCCESS(

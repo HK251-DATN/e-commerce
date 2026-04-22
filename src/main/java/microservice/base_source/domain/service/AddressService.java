@@ -2,9 +2,10 @@ package microservice.base_source.domain.service;
 
 import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.Address;
-import microservice.base_source.domain.exception.type.NotFoundException;
+import microservice.base_source.domain.entity.Coordinate;
 import microservice.base_source.domain.use_case.AddressUseCase;
 import microservice.base_source.persistence.repository.AddressRepository;
+import microservice.base_source.presentation.response.order.ShipmentFeeResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,8 +14,16 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AddressService implements AddressUseCase {
-    
+
     private final AddressRepository addressRepository;
+
+    private final GeocodingService geocodingService;
+
+    private final DistanceService distanceService;
+
+    // Warehouse coordinates
+    private static final double WAREHOUSE_LAT = 10.8759793;
+    private static final double WAREHOUSE_LNG = 106.8086064;
     
     @Override
     @Transactional
@@ -27,6 +36,16 @@ public class AddressService implements AddressUseCase {
             
             addressRepository.saveAll(userAddrs);
         }
+        
+        Coordinate coords = geocodingService.getCoordinates(
+                address.getDetail() + ", " +
+                        address.getCommune() + ", " +
+                        address.getDistrict() + ", " +
+                        address.getProvince()
+        );
+
+        address.setLat(coords.getLat());
+        address.setLng(coords.getLng());
         
         return addressRepository.save(address);
     }
@@ -99,7 +118,47 @@ public class AddressService implements AddressUseCase {
     @Override
     public void delete (Long addressId) {
         Address addr = read(addressId);
-        
+
         addressRepository.delete(addr);
+    }
+
+    @Override
+    public ShipmentFeeResponse calculateShipmentFee(String buyerId) {
+        // Get the default address for the buyer
+        Address defaultAddress = addressRepository.findByBuyerIdAndIsDefaultTrue(buyerId)
+                .orElseThrow(() -> new RuntimeException("No default address found for buyer: " + buyerId));
+
+        // Validate that the address has coordinates
+        if (defaultAddress.getLat() == null || defaultAddress.getLng() == null) {
+            throw new RuntimeException("Address coordinates not found. Please update the address.");
+        }
+
+        // Calculate distance from warehouse to delivery address
+        double distanceKm = distanceService.calculateDistanceKm(
+                WAREHOUSE_LAT,
+                WAREHOUSE_LNG,
+                defaultAddress.getLat(),
+                defaultAddress.getLng()
+        );
+
+        // Calculate shipment fee based on distance
+        Long shipmentFee = distanceService.calculateShippingFee(distanceKm);
+
+        // Build full address string
+        String fullAddress = String.format("%s, %s, %s, %s",
+                defaultAddress.getDetail(),
+                defaultAddress.getCommune(),
+                defaultAddress.getDistrict(),
+                defaultAddress.getProvince()
+        );
+
+        // Create and return response
+        return new ShipmentFeeResponse(
+                defaultAddress.getAddressId(),
+                defaultAddress.getReceiverName(),
+                fullAddress,
+                Math.round(distanceKm * 100.0) / 100.0, // Round to 2 decimal places
+                shipmentFee
+        );
     }
 }

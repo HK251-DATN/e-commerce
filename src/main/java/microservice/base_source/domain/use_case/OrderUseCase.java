@@ -58,7 +58,7 @@ public interface OrderUseCase {
      * @param addressId - delivery address ID
      * @return created order
      */
-    Order createFromCart(String buyerId, Long addressId);
+    Order createFromCart(String buyerId, Long addressId, Order.PaymentMethod paymentMethod);
 
     /**
      * Get all orders (with optional buyer filter)

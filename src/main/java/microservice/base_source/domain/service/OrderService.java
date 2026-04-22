@@ -140,7 +140,7 @@ public class OrderService implements OrderUseCase {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-	public Order createFromCart(String buyerId, Long addressId) {
+	public Order createFromCart(String buyerId, Long addressId, Order.PaymentMethod paymentMethod) {
 		// 1. Validate address belongs to user
 		Address address = addressRepository.findById(addressId)
 				.orElseThrow(() -> new NotFoundException("Address not found"));
@@ -199,13 +199,14 @@ public class OrderService implements OrderUseCase {
 		Order order = new Order();
 		order.setBuyerId(buyerId);
 		order.setAddressId(addressId);
+        order.setPaymentMethod(paymentMethod);
 		order.setStatus(OrderStatus.PENDING);
 //		order.setType(Order.OrderType.DEFAULT);
 		order.setTotalPrice(totalPrice.longValue()); // Convert to Long if needed
 
 		Order savedOrder = orderRepository.save(order);
         
-        if (savedOrder.getPaymentMethod().equals(Order.PaymentMethod.VNPAY)) {
+        if (savedOrder.getPaymentMethod() != null && savedOrder.getPaymentMethod().equals(Order.PaymentMethod.VNPAY)) {
             String transactionQrUrl = qrPaymentService.createOrderTransactionQrUrl(
                     savedOrder.getOrderId().toString(), order.getTotalPrice()
             );

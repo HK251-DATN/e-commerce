@@ -2,10 +2,12 @@ package microservice.base_source.presentation.rest;
 
 import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.Address;
+import microservice.base_source.domain.service.AddressService;
 import microservice.base_source.domain.use_case.AddressUseCase;
 import microservice.base_source.infrastructure.security.AuthenticatedUser;
 import microservice.base_source.presentation.request.AddressRequest;
 import microservice.base_source.presentation.response.global.ApiResponse;
+import microservice.base_source.presentation.response.order.ShipmentFeeResponse;
 import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +21,7 @@ import java.util.List;
 @RequestMapping("/api/address")
 @RequiredArgsConstructor
 public class AddressController {
-    
+
     private final AddressUseCase addressUseCase;
     
     @PostMapping
@@ -125,22 +127,45 @@ public class AddressController {
             @PathVariable Long addressId,
             @AuthenticationPrincipal AuthenticatedUser principal
     ) {
-        
+
         try {
             String buyerId = principal.getId().toString();
-            
+
             Address existedRequest = addressUseCase.read(addressId);
-            
+
             if (!existedRequest.getBuyerId().equals(buyerId)) {
                 return ResponseEntity.badRequest()
                         .body(ApiResponse.ERROR(HttpStatus.UNAUTHORIZED.toString(), "Unauthorized access!", null));
             }
-            
+
             addressUseCase.delete(addressId);
-            
+
             return ResponseEntity.ok()
                     .body(ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Delete address successfully", null));
-            
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(HttpStatus.BAD_REQUEST.toString(), e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/shipment-fee")
+    public ResponseEntity<ApiResponse<ShipmentFeeResponse>> calculateShipmentFee(
+            @AuthenticationPrincipal AuthenticatedUser principal
+    ) {
+
+        try {
+            String buyerId = principal.getId().toString();
+
+            ShipmentFeeResponse shipmentFee = addressUseCase.calculateShipmentFee(buyerId);
+
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Shipment fee calculated successfully",
+                            shipmentFee
+                    ));
+
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.ERROR(HttpStatus.BAD_REQUEST.toString(), e.getMessage(), null));

@@ -53,6 +53,10 @@ google:
     spreadsheet-id:
       1OgOhMyB660z8ITyLA8QZt39IWpz24qfT5GjjlcjT1m0
 
+goong:
+  api-key:
+    ${GOONG_API_KEY}
+
 # Polling interval (milliseconds) - 10 giây
 payment:
   polling:
