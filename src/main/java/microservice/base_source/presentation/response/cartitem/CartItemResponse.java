@@ -25,6 +25,10 @@ public class CartItemResponse {
 
     // BatchDetail information
     private String productName;
+    private String productImg;
+    private String productDescription;
+    private String unit;
+    private Long unitQuantity;
     private BigDecimal unitPrice;
     private BigDecimal totalPrice;
 
