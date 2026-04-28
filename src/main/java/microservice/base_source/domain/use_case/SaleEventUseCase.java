@@ -32,5 +32,7 @@ public interface SaleEventUseCase {
 	SaleEvent create(SaleEvent saleEvent);
 	SaleEvent update(Long saleEventid, SaleEvent saleEvent);
 	SaleEvent cancel(Long saleEventId);
+	SaleEvent enable(Long saleEventId);
 	void delete(Long saleEventid);
+	SaleEvent uploadBanner(Long saleEventId, String bannerUrl);
 }

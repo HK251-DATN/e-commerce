@@ -45,6 +45,10 @@ app:
     back-office-user-avts
   product-general-img-bucket:
     product-general-img
+  sale-event-banner-bucket:
+    sale-event-banners
+  sale-event-banner-public-url:
+    https://pub-4df933a93a6c4f2c8c9ce81cc96336ac.r2.dev
 
 google:
   sheets:

@@ -27,6 +27,11 @@ public class SaleSliderService {
                 .collect(Collectors.toList());
     }
 
+    public SaleEventWithProductsResponse getSaleEventWithProducts(Long id) {
+        SaleEvent event = saleEventUseCase.get(id);
+        return toResponse(event);
+    }
+
     private SaleEventWithProductsResponse toResponse(SaleEvent event) {
         List<SaleProductDetailDTO> products = saleProductRepository.findProductsByEventId(event.getSaleEventId());
 

@@ -63,8 +63,16 @@ public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, 
             FROM BATCH_DETAIL BD
             LEFT JOIN PRODUCT_GENERAL PG
                 ON BD.PRODUCT_GENERAL_ID = PG.PRODUCT_GENERAL_ID
-            LEFT JOIN SALE_PRODUCT SP
-                ON SP.BATCH_ID = BD.BATCH_DETAIL_ID
+            LEFT JOIN (
+                SELECT SP2.*
+                FROM SALE_PRODUCT SP2
+                JOIN SALE_EVENT SE ON SE.SALE_EVENT_ID = SP2.SALE_EVENT_ID
+                WHERE SE.ACTIVE_YN  = 'Y'
+                  AND SE.ENABLED_YN = 'Y'
+                  AND (SE.BEGIN_DATE IS NULL OR SE.BEGIN_DATE <= NOW())
+                  AND (SE.END_DATE   IS NULL OR SE.END_DATE   >= NOW())
+                  AND SP2.CUR_QTY > 0
+            ) SP ON SP.BATCH_ID = BD.BATCH_DETAIL_ID
             WHERE
                 (
                     :categoryId = 0

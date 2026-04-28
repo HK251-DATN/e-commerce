@@ -16,17 +16,17 @@ public interface SaleEventRepository extends JpaRepository<SaleEvent, Long> {
 
 	@Query(value = """
 			SELECT * FROM SALE_EVENT SE
-			WHERE (:searchString = '' OR
-				SE.NAME 	   LIKE CONCAT('%', :searchString, '%') OR
-				SE.DESCRIPTION LIKE CONCAT('%', :searchString, '%'))
-				AND (:activeYn  = 'Y' 	OR SE.ACTIVE_YN  = :activeYn)
-				AND (:enableYn  = 'Y' 	OR SE.ENABLED_YN = :enableYn)
-				AND (:beginTime IS NULL OR SE.BEGIN_TIME >= :beginTime)
-				AND (:endTime 	IS NULL OR SE.END_TIME 	 <= :endTime)
-				AND (:beginDate IS NULL OR SE.BEGIN_DATE >= :beginDate)
-				AND (:endDate 	IS NULL OR SE.END_DATE 	 <= :endDate)
+			WHERE (CAST(:searchString AS TEXT) = '' OR
+				LOWER(SE.NAME)        LIKE LOWER(CONCAT('%', CAST(:searchString AS TEXT), '%')) OR
+				LOWER(SE.DESCRIPTION) LIKE LOWER(CONCAT('%', CAST(:searchString AS TEXT), '%')))
+				AND (CAST(:activeYn AS TEXT) = '' OR SE.ACTIVE_YN  = CAST(:activeYn AS TEXT))
+				AND (CAST(:enableYn AS TEXT) = '' OR SE.ENABLED_YN = CAST(:enableYn AS TEXT))
+				AND (CAST(:beginTime AS TIME)      IS NULL OR SE.BEGIN_TIME >= CAST(:beginTime AS TIME))
+				AND (CAST(:endTime   AS TIME)      IS NULL OR SE.END_TIME   <= CAST(:endTime   AS TIME))
+				AND (CAST(:beginDate AS TIMESTAMP) IS NULL OR SE.BEGIN_DATE >= CAST(:beginDate AS TIMESTAMP))
+				AND (CAST(:endDate   AS TIMESTAMP) IS NULL OR SE.END_DATE   <= CAST(:endDate   AS TIMESTAMP))
 			LIMIT :size
-			OFFSET (:page - 1) * :size;
+			OFFSET (:page - 1) * :size
 			""",
 			nativeQuery = true)
 	List<SaleEvent> search(

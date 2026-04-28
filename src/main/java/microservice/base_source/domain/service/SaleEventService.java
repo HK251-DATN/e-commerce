@@ -48,17 +48,16 @@ public class SaleEventService implements SaleEventUseCase {
 		SaleEvent existingSaleEvent = saleEventRepository.findById(saleEventid)
 				.orElseThrow(() -> new NotFoundException("SaleEvent not found"));
 
-		// Update all fields
-		existingSaleEvent.setName(saleEvent.getName());
-		existingSaleEvent.setDescription(saleEvent.getDescription());
-		existingSaleEvent.setImg(saleEvent.getImg());
-		existingSaleEvent.setDisplayPriority(saleEvent.getDisplayPriority());
-		existingSaleEvent.setActiveYn(saleEvent.getActiveYn());
-		existingSaleEvent.setEnabledYn(saleEvent.getEnabledYn());
-		existingSaleEvent.setBeginTime(saleEvent.getBeginTime());
-		existingSaleEvent.setEndTime(saleEvent.getEndTime());
-		existingSaleEvent.setBeginDate(saleEvent.getBeginDate());
-		existingSaleEvent.setEndDate(saleEvent.getEndDate());  
+		if (saleEvent.getName() != null) existingSaleEvent.setName(saleEvent.getName());
+		if (saleEvent.getDescription() != null) existingSaleEvent.setDescription(saleEvent.getDescription());
+		if (saleEvent.getImg() != null) existingSaleEvent.setImg(saleEvent.getImg());
+		if (saleEvent.getDisplayPriority() != null) existingSaleEvent.setDisplayPriority(saleEvent.getDisplayPriority());
+		if (saleEvent.getActiveYn() != null) existingSaleEvent.setActiveYn(saleEvent.getActiveYn());
+		if (saleEvent.getEnabledYn() != null) existingSaleEvent.setEnabledYn(saleEvent.getEnabledYn());
+		if (saleEvent.getBeginTime() != null) existingSaleEvent.setBeginTime(saleEvent.getBeginTime());
+		if (saleEvent.getEndTime() != null) existingSaleEvent.setEndTime(saleEvent.getEndTime());
+		if (saleEvent.getBeginDate() != null) existingSaleEvent.setBeginDate(saleEvent.getBeginDate());
+		if (saleEvent.getEndDate() != null) existingSaleEvent.setEndDate(saleEvent.getEndDate());
 		
 		return saleEventRepository.save(existingSaleEvent);
 	}
@@ -78,12 +77,29 @@ public class SaleEventService implements SaleEventUseCase {
 	}
 
 	@Override
+	public SaleEvent enable(Long saleEventId) {
+		SaleEvent existing = saleEventRepository.findById(saleEventId)
+				.orElseThrow(() -> new NotFoundException("SaleEvent not found"));
+		existing.setActiveYn("Y");
+		existing.setEnabledYn("Y");
+		return saleEventRepository.save(existing);
+	}
+
+	@Override
 	public void delete(Long saleEventid) {
 		saleEventRepository.findById(saleEventid)
 			.ifPresentOrElse(
 				saleEventRepository::delete,
 				() -> {}
 			);
+	}
+
+	@Override
+	public SaleEvent uploadBanner(Long saleEventId, String bannerUrl) {
+		SaleEvent existing = saleEventRepository.findById(saleEventId)
+				.orElseThrow(() -> new NotFoundException("SaleEvent not found"));
+		existing.setImg(bannerUrl);
+		return saleEventRepository.save(existing);
 	}
 
 }

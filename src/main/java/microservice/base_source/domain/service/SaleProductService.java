@@ -69,22 +69,45 @@ public class SaleProductService implements SaleProductUseCase {
         SaleProduct existing = saleProductRepository.findOneByEventAndBatch(saleEventId, batchId)
                 .orElseThrow(() -> new NotFoundException("SaleProduct not found"));
 
-        if (saleProduct.getMaxQty() != null) {
-            BatchDetail batchDetail = batchDetailRepository.findById(batchId)
-                    .orElseThrow(() -> new NotFoundException("BatchDetail not found: " + batchId));
-            if (saleProduct.getMaxQty() > batchDetail.getQuantity()) {
-                throw new WarnException(
-                        "maxQty (" + saleProduct.getMaxQty() + ") cannot exceed available batch quantity (" + batchDetail.getQuantity() + ")");
-            }
-            existing.setMaxQty(saleProduct.getMaxQty());
+        BatchDetail batchDetail = null;
 
-            if (saleProduct.getDisVal() != null) {
-                existing.setDisVal(saleProduct.getDisVal());
-                existing.setSalePrice(calculateSalePrice(batchDetail.getPrice(), saleProduct.getDisVal()));
-            }
-        } else if (saleProduct.getDisVal() != null) {
-            BatchDetail batchDetail = batchDetailRepository.findById(batchId)
+        if (saleProduct.getMaxQty() != null) {
+            batchDetail = batchDetailRepository.findById(batchId)
                     .orElseThrow(() -> new NotFoundException("BatchDetail not found: " + batchId));
+
+            long oldMaxQty = existing.getMaxQty();
+            long newMaxQty = saleProduct.getMaxQty();
+            long alreadySold = oldMaxQty - existing.getCurQty();
+
+            if (newMaxQty < alreadySold) {
+                throw new WarnException(
+                        "newMaxQty (" + newMaxQty + ") cannot be less than already sold quantity (" + alreadySold + ")");
+            }
+
+            if (newMaxQty > oldMaxQty) {
+                long increase = newMaxQty - oldMaxQty;
+                if (batchDetail.getQuantity() < increase) {
+                    throw new WarnException(
+                            "Not enough batch stock to increase maxQty by " + increase +
+                            " (available: " + batchDetail.getQuantity() + ")");
+                }
+                batchDetail.setQuantity((int) (batchDetail.getQuantity() - increase));
+                existing.setCurQty(existing.getCurQty() + increase);
+            } else if (newMaxQty < oldMaxQty) {
+                long decrease = oldMaxQty - newMaxQty;
+                batchDetail.setQuantity((int) (batchDetail.getQuantity() + decrease));
+                existing.setCurQty(existing.getCurQty() - decrease);
+            }
+
+            batchDetailRepository.save(batchDetail);
+            existing.setMaxQty(newMaxQty);
+        }
+
+        if (saleProduct.getDisVal() != null) {
+            if (batchDetail == null) {
+                batchDetail = batchDetailRepository.findById(batchId)
+                        .orElseThrow(() -> new NotFoundException("BatchDetail not found: " + batchId));
+            }
             existing.setDisVal(saleProduct.getDisVal());
             existing.setSalePrice(calculateSalePrice(batchDetail.getPrice(), saleProduct.getDisVal()));
         }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import microservice.base_source.domain.entity.BatchDetail;
 import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.domain.use_case.BatchDetailUseCase;
+import microservice.base_source.persistence.dto.DetailGeneralDTO;
 import microservice.base_source.persistence.repository.BatchDetailRepository;
 
 import org.springframework.beans.BeanUtils;
@@ -50,7 +51,12 @@ public class BatchDetailService implements BatchDetailUseCase {
 		batchDetailRepository.findById(id.toString())
 			.ifPresentOrElse(
 				batchDetailRepository::delete,
-				() -> {}	
+				() -> {}
 			);
+	}
+
+	@Override
+	public List<DetailGeneralDTO> getAvailableForSaleEvent(String searchString, int page, int size) {
+		return batchDetailRepository.findAvailableForSaleEvent(searchString, page, size);
 	}
 }

@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.SaleProduct;
 import microservice.base_source.domain.use_case.SaleProductUseCase;
 import microservice.base_source.presentation.request.SaleProductRequest;
+import microservice.base_source.presentation.request.SaleProductUpdateRequest;
 import microservice.base_source.presentation.response.global.ApiResponse;
 
 @RestController
@@ -51,12 +52,14 @@ public class SaleProductController {
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get all sale products success", saleProductUseCase.getAll(page, size));
     }
 
-    @PutMapping("/{id}")
-    public ApiResponse<SaleProduct> update(@PathVariable Long id, @Valid @RequestBody SaleProductRequest req) {
-        SaleProduct toUpdate = req.toEntity();
-        SaleProduct updated = saleProductUseCase.update(req.getSaleEventId(), req.getBatchId(), toUpdate);
-		return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Update success", updated);
-	}
+    @PutMapping("/{saleEventId}/{batchId}")
+    public ApiResponse<SaleProduct> update(
+            @PathVariable Long saleEventId,
+            @PathVariable String batchId,
+            @Valid @RequestBody SaleProductUpdateRequest req) {
+        SaleProduct updated = saleProductUseCase.update(saleEventId, batchId, req.toEntity());
+        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Update success", updated);
+    }
 
     @DeleteMapping("/{saleEventId}/{batchId}")
     public ApiResponse<Void> delete(@PathVariable(name = "saleEventId") Long saleEventid, @PathVariable(name = "batchId") String batchId) {

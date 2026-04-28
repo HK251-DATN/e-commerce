@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,12 +16,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.SaleEvent;
 import microservice.base_source.domain.service.SaleSliderService;
 import microservice.base_source.domain.use_case.SaleEventUseCase;
+import microservice.base_source.infrastructure.storage.R2UploadService;
 import microservice.base_source.presentation.request.SaleEventRequest;
 import microservice.base_source.presentation.response.global.ApiResponse;
 import microservice.base_source.presentation.response.saleevent.SaleEventWithProductsResponse;
@@ -36,6 +39,9 @@ public class SaleEventController {
     @Autowired
     private SaleSliderService saleSliderService;
 
+    @Autowired
+    private R2UploadService r2UploadService;
+
     @PostMapping
     public ApiResponse<SaleEvent> create(@Valid @RequestBody SaleEventRequest req) {
         SaleEvent created = saleEventUseCase.create(req.toEntity());
@@ -43,9 +49,9 @@ public class SaleEventController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<SaleEvent> getById(@PathVariable Long id) {
-        SaleEvent opt = saleEventUseCase.get(id);
-        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get sale event success", opt);
+    public ApiResponse<SaleEventWithProductsResponse> getById(@PathVariable Long id) {
+        SaleEventWithProductsResponse resp = saleSliderService.getSaleEventWithProducts(id);
+        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get sale event success", resp);
     }
 
     @GetMapping
@@ -103,9 +109,24 @@ public class SaleEventController {
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Sale event cancelled", cancelled);
     }
 
+    @PutMapping("/{id}/enable")
+    public ApiResponse<SaleEvent> enable(@PathVariable Long id) {
+        SaleEvent enabled = saleEventUseCase.enable(id);
+        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Sale event enabled", enabled);
+    }
+
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         saleEventUseCase.delete(id);
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Delete success", null);
+    }
+
+    @PostMapping(value = "/{id}/banner", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<SaleEvent> uploadBanner(
+            @PathVariable Long id,
+            @RequestParam("image") MultipartFile image) {
+        String bannerUrl = r2UploadService.uploadSaleEventBanner(image);
+        SaleEvent updated = saleEventUseCase.uploadBanner(id, bannerUrl);
+        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Banner uploaded successfully", updated);
     }
 }

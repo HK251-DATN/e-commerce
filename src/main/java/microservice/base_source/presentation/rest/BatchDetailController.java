@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.BatchDetail;
 import microservice.base_source.domain.use_case.BatchDetailUseCase;
+import microservice.base_source.persistence.dto.DetailGeneralDTO;
 import microservice.base_source.presentation.request.BatchDetailRequest;
 import microservice.base_source.presentation.response.global.ApiResponse;
 
@@ -62,4 +63,16 @@ public class BatchDetailController {
 		batchDetailUseCase.delete(id);
 		return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Delete success", null);
 	}
+
+    @GetMapping("/available-for-sale-event")
+    public ApiResponse<List<DetailGeneralDTO>> getAvailableForSaleEvent(
+            @RequestParam(defaultValue = "") String searchString,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        List<DetailGeneralDTO> result = batchDetailUseCase.getAvailableForSaleEvent(searchString, page, size);
+        if (result.isEmpty()) {
+            return ApiResponse.SKIP_AS_GOOD(HttpStatus.NO_CONTENT.toString(), "No available batch details", null);
+        }
+        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get available batch details success", result);
+    }
 }
