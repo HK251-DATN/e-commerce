@@ -71,16 +71,16 @@ public class DataSeeder {
             log.info("Seeded {} addresses", addressRepository.count());
 
             // ==================== Seed Categories (synced from back-office) ====================
-            Category thitHaiSan = createCategory(1L,"Thịt & Hải Sản", 1, "Thịt tươi, gia cầm và hải sản", null, "N", null);
+            Category thitHaiSan = createCategory(1L,"Thịt & Hải Sản", 1, "Thịt tươi, gia cầm và hải sản", "https://pub-b68fb0743b644089825dfe7eadaf6d7e.r2.dev/meat.png", "N", null);
             Category giaCam = createCategory(2L, "Gia Cầm", 1, "Các loại thịt gia cầm tươi", null, "Y", thitHaiSan.getCategoryId());
             Category thitDo = createCategory(3L, "Thịt Đỏ", 2, "Các loại thịt đỏ tươi", null, "Y", thitHaiSan.getCategoryId());
             Category haiSan = createCategory(4L, "Hải Sản", 3, "Hải sản tươi sống", null, "Y", thitHaiSan.getCategoryId());
-            Category rauCuQua = createCategory(5L, "Rau Củ Quả", 2, "Rau xanh, củ quả và trái cây tươi", null, "N", null);
+            Category rauCuQua = createCategory(5L, "Rau Củ Quả", 2, "Rau xanh, củ quả và trái cây tươi", "https://pub-b68fb0743b644089825dfe7eadaf6d7e.r2.dev/vegetable.png", "N", null);
             Category rauAnLa = createCategory(6L, "Rau Ăn Lá", 1, "Các loại rau xanh ăn lá", null, "Y", rauCuQua.getCategoryId());
             Category cuQua = createCategory(7L, "Củ Quả", 2, "Các loại củ và quả tươi", null, "Y", rauCuQua.getCategoryId());
             Category traiCay = createCategory(8L, "Trái Cây", 3, "Trái cây tươi trong nước và nhập khẩu", null, "Y", rauCuQua.getCategoryId());
             Category rauGiaVi = createCategory(9L, "Rau Gia Vị", 4, "Các loại rau và củ gia vị", null, "Y", rauCuQua.getCategoryId());
-            Category suaTrung = createCategory(10L, "Sữa & Trứng", 3, "Sữa tươi, sản phẩm từ sữa và trứng", null, "N", null);
+            Category suaTrung = createCategory(10L, "Sữa & Trứng", 3, "Sữa tươi, sản phẩm từ sữa và trứng", "https://pub-b68fb0743b644089825dfe7eadaf6d7e.r2.dev/dairy-products.png", "N", null);
             Category suaTuoi = createCategory(11L, "Sữa Tươi", 1, "Các loại sữa tươi nguyên chất", null, "Y", suaTrung.getCategoryId());
             Category spTuSua = createCategory(12L, "Sản Phẩm Từ Sữa", 2, "Bơ, phô mai, kem và sữa chua", null, "Y", suaTrung.getCategoryId());
             Category trung = createCategory(13L, "Trứng", 3, "Các loại trứng tươi", null, "Y", suaTrung.getCategoryId());
@@ -494,7 +494,7 @@ public class DataSeeder {
         return saleEventRepository.save(saleEvent);
     }
 
-    private SaleProduct createSaleProduct(Long saleEventId, String batchId, BigDecimal disVal,
+    private SaleProduct createSaleProduct(Long saleEventId, String batchId, Integer disVal,
                                          Long maxQty, Long curQty, Long maxBuy) {
         SaleProduct saleProduct = new SaleProduct();
         saleProduct.setSaleEventId(saleEventId);

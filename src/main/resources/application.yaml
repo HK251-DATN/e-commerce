@@ -65,3 +65,11 @@ payment:
 sepay:
   account: SEPTAK21191
   bank: OCB
+
+services:
+  identity:
+    url: http://${IDENTITY_HOST:localhost}:${IDENTITY_PORT:9000}
+  back-office:
+    url: http://${BACK_OFFICE_HOST:localhost}:${BACK_OFFICE_PORT:9100}
+  product-storage:
+    url: http://${PRODUCT_STORAGE_HOST:localhost}:${PRODUCT_STORAGE_PORT:9200}

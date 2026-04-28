@@ -52,6 +52,8 @@ public class OrderService implements OrderUseCase {
     @Autowired
     private OrderItemRepository orderItemRepository;
     @Autowired
+    private SaleProductRepository saleProductRepository;
+    @Autowired
     private QrPaymentService qrPaymentService;
 
 
@@ -161,18 +163,17 @@ public class OrderService implements OrderUseCase {
 			throw new BadRequestException("No items selected in cart");
 		}
 
-		// 4. Validate stock and calculate total
+		// 4. Validate stock, sale limits, and calculate total
 		BigDecimal totalPrice = BigDecimal.ZERO;
 		List<OrderItem> orderItems = new ArrayList<>();
 
 		for (CartItem cartItem : selectedItems) {
-			// Fetch batch detail
 			BatchDetail batchDetail = batchDetailRepository
 					.findById(cartItem.getBatchDetailId())
 					.orElseThrow(() -> new NotFoundException(
 							"Product not found: " + cartItem.getBatchDetailId()));
 
-			// Check stock
+			// Check overall stock
 			if (batchDetail.getQuantity() < cartItem.getQuantity()) {
 				throw new BadRequestException(
 						"Insufficient stock for product: " + batchDetail.getBatchDetailId() +
@@ -180,18 +181,52 @@ public class OrderService implements OrderUseCase {
 								", Requested: " + cartItem.getQuantity());
 			}
 
-			// Calculate item total
-			BigDecimal itemTotal = batchDetail.getPrice()
-					.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+			// Check sale purchase limit (maxBuy) when this cart item is part of a sale
+			BigDecimal effectivePrice = batchDetail.getPrice();
+			if (cartItem.getSaleEventId() != null) {
+				SaleProduct saleProduct = saleProductRepository
+						.findOneByEventAndBatch(cartItem.getSaleEventId(), cartItem.getBatchDetailId())
+						.orElse(null);
+
+				if (saleProduct != null) {
+					// Check remaining sale stock
+					if (cartItem.getQuantity() > saleProduct.getCurQty()) {
+						throw new BadRequestException(
+								"Insufficient sale stock for product: " + cartItem.getBatchDetailId() +
+										". Sale stock available: " + saleProduct.getCurQty() +
+										", Requested: " + cartItem.getQuantity());
+					}
+
+					// Check per-buyer limit
+					if (saleProduct.getMaxBuy() != null) {
+						long pastOrderQty = orderItemRepository.sumCommittedSaleQuantity(
+								buyerId, cartItem.getBatchDetailId(), cartItem.getSaleEventId());
+						long allowed = saleProduct.getMaxBuy() - pastOrderQty;
+						if (cartItem.getQuantity() > allowed) {
+							throw new BadRequestException(
+									"Exceeds sale purchase limit for product: " + cartItem.getBatchDetailId() +
+											". Limit per buyer: " + saleProduct.getMaxBuy() +
+											", Already ordered: " + pastOrderQty +
+											", Requested now: " + cartItem.getQuantity());
+						}
+					}
+
+					// Apply sale price when available
+					if (saleProduct.getSalePrice() != null && saleProduct.getSalePrice() > 0) {
+						effectivePrice = BigDecimal.valueOf(saleProduct.getSalePrice());
+					}
+				}
+			}
+
+			BigDecimal itemTotal = effectivePrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
 			totalPrice = totalPrice.add(itemTotal);
 
-			// Prepare order item
 			OrderItem orderItem = new OrderItem();
 			orderItem.setBatchDetailId(cartItem.getBatchDetailId());
+			orderItem.setSaleEventId(cartItem.getSaleEventId());
 			orderItem.setQuantity(cartItem.getQuantity());
 			orderItem.setOriginalPrice(batchDetail.getPrice());
-			orderItem.setUnitPriceAtPurchase(batchDetail.getPrice());
-
+			orderItem.setUnitPriceAtPurchase(effectivePrice);
 			orderItems.add(orderItem);
 		}
 
@@ -199,48 +234,50 @@ public class OrderService implements OrderUseCase {
 		Order order = new Order();
 		order.setBuyerId(buyerId);
 		order.setAddressId(addressId);
-        order.setPaymentMethod(paymentMethod);
+		order.setPaymentMethod(paymentMethod);
 		order.setStatus(OrderStatus.PENDING);
-//		order.setType(Order.OrderType.DEFAULT);
-		order.setTotalPrice(totalPrice.longValue()); // Convert to Long if needed
+		order.setTotalPrice(totalPrice.longValue());
 
 		Order savedOrder = orderRepository.save(order);
-        
-        if (savedOrder.getPaymentMethod() != null && savedOrder.getPaymentMethod().equals(Order.PaymentMethod.VNPAY)) {
-            String transactionQrUrl = qrPaymentService.createOrderTransactionQrUrl(
-                    savedOrder.getOrderId().toString(), order.getTotalPrice()
-            );
-            savedOrder.setTransactionQrUrl(transactionQrUrl);
-            orderRepository.save(savedOrder);
-        }
-        
-        // 6. Create order items
-        for (OrderItem item : orderItems) {
-            item.setOrderId(savedOrder.getOrderId());
-            OrderItem savedItem = orderItemRepository.save(item);
-        }
 
-		// 7. Update batch detail quantities
-		for (CartItem cartItem : selectedItems) {
-			BatchDetail batchDetail = batchDetailRepository
-					.findById(cartItem.getBatchDetailId())
-					.get();
-
-			batchDetail.setQuantity(
-					batchDetail.getQuantity() - cartItem.getQuantity().intValue());
-			batchDetailRepository.save(batchDetail);
+		if (savedOrder.getPaymentMethod() != null && savedOrder.getPaymentMethod().equals(Order.PaymentMethod.VNPAY)) {
+			String transactionQrUrl = qrPaymentService.createOrderTransactionQrUrl(
+					savedOrder.getOrderId().toString(), order.getTotalPrice());
+			savedOrder.setTransactionQrUrl(transactionQrUrl);
+			orderRepository.save(savedOrder);
 		}
 
-		// 8. Delete selected cart items
+		// 6. Save order items
+		for (OrderItem item : orderItems) {
+			item.setOrderId(savedOrder.getOrderId());
+			orderItemRepository.save(item);
+		}
+
+		// 7. Decrement stock: batch quantity and sale curQty
+		for (CartItem cartItem : selectedItems) {
+			BatchDetail batchDetail = batchDetailRepository.findById(cartItem.getBatchDetailId()).get();
+			batchDetail.setQuantity(batchDetail.getQuantity() - cartItem.getQuantity().intValue());
+			batchDetailRepository.save(batchDetail);
+
+			if (cartItem.getSaleEventId() != null) {
+				saleProductRepository
+						.findOneByEventAndBatch(cartItem.getSaleEventId(), cartItem.getBatchDetailId())
+						.ifPresent(sp -> {
+							sp.setCurQty(sp.getCurQty() - cartItem.getQuantity());
+							saleProductRepository.save(sp);
+						});
+			}
+		}
+
+		// 8. Clear selected cart items
 		cartItemRepository.deleteByCartIdAndIsSelected(cart.getCartId(), true);
 
-		// 9. Publish order created event (if exists)
+		// 9. Publish order created event
 		if (orderProducer != null) {
 			orderProducer.publishOrderCreated(new OrderCreatedEvent(
 					savedOrder.getOrderId(),
 					savedOrder.getBuyerId(),
-					savedOrder.getTotalPrice()
-			));
+					savedOrder.getTotalPrice()));
 		}
 
 		return savedOrder;

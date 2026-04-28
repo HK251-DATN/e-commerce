@@ -27,8 +27,10 @@ public interface SaleEventUseCase {
 	 * @return List SaleEvent
 	 */
 	List<SaleEvent> getAll(Integer page, Integer size);
+	List<SaleEvent> getActiveEvents(int page, int size);
 	SaleEvent get(Long saleEventid);
 	SaleEvent create(SaleEvent saleEvent);
 	SaleEvent update(Long saleEventid, SaleEvent saleEvent);
+	SaleEvent cancel(Long saleEventId);
 	void delete(Long saleEventid);
 }

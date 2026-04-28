@@ -31,7 +31,7 @@ public class SaleProductController {
     @PostMapping
     public ApiResponse<SaleProduct> create(@Valid @RequestBody SaleProductRequest req) {
         SaleProduct created = saleProductUseCase.create(req.toEntity());
-        System.out.println("THIS APUI RUNNING");
+        System.out.println("THIS API RUNNING");
         return ApiResponse.SUCCESS(HttpStatus.CREATED.toString(), "Create success" , created);
     }
 

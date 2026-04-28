@@ -17,4 +17,10 @@ public interface CartItemWithBatchDetailDTO {
     // BatchDetail fields
     String getProductName();
     BigDecimal getUnitPrice();
+    Integer getBatchQuantity();
+
+    // Sale info (null when product is not in an active sale)
+    Long getSaleEventId();
+    Integer getSalePrice();
+    Integer getDisVal();
 }

@@ -1,7 +1,8 @@
 package microservice.base_source.presentation.request;
 
-import java.math.BigDecimal;
-
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,17 +14,21 @@ import microservice.base_source.domain.entity.SaleProduct;
 @AllArgsConstructor
 public class SaleProductRequest {
     @NotNull
-	private Long saleEventId;
+    private Long saleEventId;
 
-	private String batchId;
+    @NotBlank
+    private String batchId;
 
-	private BigDecimal disVal;
+    @NotNull
+    @Min(0)
+    @Max(100)
+    private Integer disVal;
 
-	private Long maxQty;
+    @NotNull
+    @Min(1)
+    private Long maxQty;
 
-	private Long curQty;
-
-	private Long maxBuy;
+    private Long maxBuy;
 
     public SaleProduct toEntity() {
         SaleProduct sp = new SaleProduct();
@@ -31,7 +36,7 @@ public class SaleProductRequest {
         sp.setBatchId(this.batchId);
         sp.setDisVal(this.disVal);
         sp.setMaxQty(this.maxQty);
-        sp.setCurQty(this.curQty);
+        sp.setCurQty(this.maxQty); // initialize available qty = max qty
         sp.setMaxBuy(this.maxBuy);
         return sp;
     }

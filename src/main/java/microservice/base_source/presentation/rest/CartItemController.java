@@ -3,6 +3,7 @@ package microservice.base_source.presentation.rest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.CartItem;
+import microservice.base_source.domain.service.CartItemAddResult;
 import microservice.base_source.domain.use_case.CartItemUseCase;
 import microservice.base_source.domain.use_case.CartUseCase;
 import microservice.base_source.infrastructure.security.AuthenticatedUser;
@@ -36,24 +37,31 @@ public class CartItemController {
         
         try {
             String buyerId = principal.getId().toString();
-            
+
             // Get user's cart
             var cart = cartUseCase.getByBuyerId(buyerId);
-            
-            // Add item to cart
-            CartItem cartItem = cartItemUseCase.addToCart(
+
+            // Add item to cart (sale-limit validation happens inside)
+            CartItemAddResult result = cartItemUseCase.addToCart(
                     cart.getCartId(),
+                    buyerId,
                     request.getBatchDetailId(),
                     request.getQuantity(),
                     request.getIsSelected()
             );
-            
+
+            String message = result.wasCapped()
+                    ? result.getNote()
+                    : "Item added to cart successfully";
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.SUCCESS(
                             HttpStatus.CREATED.toString(),
-                            "Item added to cart successfully",
-                            CartItemResponse.fromEntity(cartItem)
+                            message,
+                            CartItemResponse.fromEntity(result.getCartItem())
                     ));
+            // Note: when result.hasOverflow(), a second cart item (at original price) was also
+            // persisted. It will appear alongside the sale item when the buyer fetches their cart.
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.ERROR(

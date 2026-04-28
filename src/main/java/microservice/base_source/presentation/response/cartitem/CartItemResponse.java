@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class CartItemResponse {
-    
+
     private Long cartItemId;
     private Long cartId;
     private String batchDetailId;
@@ -22,12 +22,19 @@ public class CartItemResponse {
     private Boolean isSelected;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    
+
     // BatchDetail information
     private String productName;
     private BigDecimal unitPrice;
     private BigDecimal totalPrice;
-    
+
+    // Sale information (null when product is not part of an active sale)
+    private Long saleEventId;
+    private Integer salePrice;
+    private Integer disVal;
+
+    private CartItem.CartItemStatus cartItemStatus;
+
     public static CartItemResponse fromEntity(CartItem cartItem) {
         return CartItemResponse.builder()
                 .cartItemId(cartItem.getCartItemId())
@@ -37,16 +44,17 @@ public class CartItemResponse {
                 .isSelected(cartItem.getIsSelected())
                 .createdAt(cartItem.getCreatedAt())
                 .updatedAt(cartItem.getUpdatedAt())
+                .saleEventId(cartItem.getSaleEventId())
                 .build();
     }
-    
+
     public static CartItemResponse fromEntityWithBatchDetail(
             CartItem cartItem,
             String productName,
             BigDecimal unitPrice) {
-        
+
         BigDecimal totalPrice = unitPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
-        
+
         return CartItemResponse.builder()
                 .cartItemId(cartItem.getCartItemId())
                 .cartId(cartItem.getCartId())
@@ -55,6 +63,7 @@ public class CartItemResponse {
                 .isSelected(cartItem.getIsSelected())
                 .createdAt(cartItem.getCreatedAt())
                 .updatedAt(cartItem.getUpdatedAt())
+                .saleEventId(cartItem.getSaleEventId())
                 .productName(productName)
                 .unitPrice(unitPrice)
                 .totalPrice(totalPrice)

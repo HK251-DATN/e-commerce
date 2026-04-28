@@ -2,6 +2,7 @@ package microservice.base_source.persistence.repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -56,15 +57,26 @@ public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, 
                    BD.AVG_RATE   			AS "avgRate",
                    BD.NUM_RATE   			AS "numRate",
                    BD.CREATED_AT 			AS "createdAt",
-                COALESCE(SP.DIS_VAL, 0) AS "disVal",
-                COALESCE(SP.SALE_EVENT_ID, 0) AS "saleEventId"
+                COALESCE(SP.DIS_VAL, 0)        AS "disVal",
+                SP.SALE_PRICE                  AS "salePrice",
+                COALESCE(SP.SALE_EVENT_ID, 0)  AS "saleEventId"
             FROM BATCH_DETAIL BD
             LEFT JOIN PRODUCT_GENERAL PG
                 ON BD.PRODUCT_GENERAL_ID = PG.PRODUCT_GENERAL_ID
             LEFT JOIN SALE_PRODUCT SP
                 ON SP.BATCH_ID = BD.BATCH_DETAIL_ID
             WHERE
-                (:categoryId = 0 OR PG.CATEGORY_ID = :categoryId)
+                (
+                    :categoryId = 0
+                    OR PG.CATEGORY_ID = :categoryId
+                    OR EXISTS (
+                        SELECT 1
+                        FROM CATEGORY C
+                        WHERE C.CATEGORY_ID      = PG.CATEGORY_ID
+                        AND C.IS_SUB_CATEGORY    = 'Y'
+                        AND C.BELONG_TO_CATEGORY = :categoryId
+                    )
+                )
                 AND (:productGeneralId = 0 OR BD.PRODUCT_GENERAL_ID = :productGeneralId)
                 AND (
                     CAST(:searchString AS TEXT) = '' OR
@@ -108,4 +120,40 @@ public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, 
             @Param("page") Integer page,
             @Param("size") Integer size
     );
+    
+    @Query(value = """
+            SELECT
+                PG.PRODUCT_GENERAL_ID   AS "productGeneralId",
+                PG.CATEGORY_ID          AS "categoryId",
+                PG.PROVIDER_ID          AS "providerId",
+                PG.NAME                 AS "name",
+                PG.DESCRIPTION          AS "description",
+                PG.IMG                  AS "img",
+                BD.BATCH_DETAIL_ID      AS "batchId",
+                BD.QUANTITY             AS "quantity",
+                BD.PRICE                AS "originPrice",
+                BD.AVG_RATE             AS "avgRate",
+                BD.NUM_RATE             AS "numRate",
+                BD.CREATED_AT           AS "createdAt",
+                SP.DIS_VAL              AS "disVal",
+                SP.SALE_PRICE           AS "salePrice",
+                SP.SALE_EVENT_ID        AS "saleEventId"
+            FROM BATCH_DETAIL BD
+            LEFT JOIN PRODUCT_GENERAL PG ON BD.PRODUCT_GENERAL_ID = PG.PRODUCT_GENERAL_ID
+            LEFT JOIN (
+                SELECT sp2.*
+                FROM SALE_PRODUCT sp2
+                JOIN SALE_EVENT se ON se.sale_event_id = sp2.sale_event_id
+                WHERE se.active_yn   = 'Y'
+                  AND se.enabled_yn  = 'Y'
+                  AND (se.begin_date IS NULL OR se.begin_date <= NOW())
+                  AND (se.end_date   IS NULL OR se.end_date   >= NOW())
+                  AND sp2.cur_qty > 0
+            ) SP ON SP.batch_id = BD.BATCH_DETAIL_ID
+            WHERE BD.BATCH_DETAIL_ID = :batchDetailId
+            LIMIT 1
+            """, nativeQuery = true)
+    Optional<DetailGeneralDTO> findByBatchDetailId(@Param("batchDetailId") String batchDetailId);
+
+    
 }

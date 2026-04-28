@@ -28,6 +28,9 @@ public class OrderItem {
 	
 	@Column(name = "order_id")
 	private Long orderId;
+    
+    @Column(name = "sale_event_id")
+    private Long saleEventId;
 
 	@Column(name = "batch_detail_id")
 	private String batchDetailId;

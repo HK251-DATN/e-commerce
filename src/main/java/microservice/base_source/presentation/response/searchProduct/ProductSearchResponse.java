@@ -1,7 +1,6 @@
 package microservice.base_source.presentation.response.searchProduct;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 import lombok.Getter;
@@ -39,7 +38,7 @@ public class ProductSearchResponse {
         response.setQuantity(dto.getQuantity());
         response.setOriginPrice(dto.getOriginPrice());
         response.setDisVal(dto.getDisVal());
-        response.setSalePrice(calculateSalePrice(dto.getOriginPrice(), dto.getDisVal()));
+        response.setSalePrice(dto.getSalePrice());
         response.setAvgRate(dto.getAvgRate());
         response.setNumRate(dto.getNumRate());
         response.setSaleEventId(dto.getSaleEventId());
@@ -47,12 +46,4 @@ public class ProductSearchResponse {
         return response;
     }
 
-    public static BigDecimal calculateSalePrice(BigDecimal originPrice, BigDecimal disVal) {
-        if (disVal == null || disVal.compareTo(BigDecimal.ZERO) == 0) {
-            return originPrice;
-        }
-        else {
-            return originPrice.multiply(disVal).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-        }
-    }
 }

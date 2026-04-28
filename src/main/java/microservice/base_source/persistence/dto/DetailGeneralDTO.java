@@ -16,8 +16,9 @@ public interface DetailGeneralDTO {
 	String 		  getBatchId();
 	Integer 	  getQuantity();  // status AVAILABLE, OUT_OF_STOCK when quantity = 0
 	BigDecimal 	  getOriginPrice();
+	BigDecimal 	  getSalePrice(); // pre-calculated, rounded to nearest 1000 VND; null if not in sale
 	BigDecimal 	  getDisVal();    // discount percent, null if not in sale
-	BigDecimal 	  getAvgRate();   // default: 0 
+	BigDecimal 	  getAvgRate();   // default: 0
 	int 		  getNumRate();	  // default: 0
 	Long		  getSaleEventId();
 	LocalDateTime getCreatedAt(); // sort ASC/DESC

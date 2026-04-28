@@ -1,16 +1,19 @@
 package microservice.base_source.domain.use_case;
 
 import microservice.base_source.domain.entity.CartItem;
+import microservice.base_source.domain.service.CartItemAddResult;
 import microservice.base_source.presentation.response.cartitem.CartItemResponse;
 
 import java.util.List;
 
 public interface CartItemUseCase {
-    
+
     /**
-     * Add item to cart or update quantity if already exists
+     * Add item to cart or update quantity if already exists.
+     * Enforces sale-event maxBuy limits when the product is part of an active sale.
+     * Returns {@link CartItemAddResult} which includes a note when the quantity was capped.
      */
-    CartItem addToCart(Long cartId, String batchDetailId, Long quantity, Boolean isSelected);
+    CartItemAddResult addToCart(Long cartId, String buyerId, String batchDetailId, Long quantity, Boolean isSelected);
     
     /**
      * Get a single cart item by ID

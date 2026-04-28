@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreRemove;
 import jakarta.persistence.PreUpdate;
@@ -18,18 +19,22 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@IdClass(SaleProductId.class)
 @Table(name = "SALE_PRODUCT")
 public class SaleProduct {
 	@Id
 	@Column(name = "sale_event_id")
     private Long saleEventId;
 
-	// @Id
+	@Id
 	@Column(name = "batch_id")
-	private String batchId; // composited primary key (sale_event_id, batchId)
+	private String batchId;
 
-	@Column(name = "dis_val", precision = 10, scale = 2)
-	private BigDecimal disVal; // discount percent
+	@Column(name = "dis_val")
+	private Integer disVal; // discount percent
+    
+    @Column(name = "sale_price")
+    private Integer salePrice;
 
 	@Column(name = "max_qty")
 	private Long maxQty; // max sale quantity

@@ -64,6 +64,20 @@ public class SaleEventService implements SaleEventUseCase {
 	}
 
 	@Override
+	public List<SaleEvent> getActiveEvents(int page, int size) {
+		return saleEventRepository.findActiveEvents(page, size);
+	}
+
+	@Override
+	public SaleEvent cancel(Long saleEventId) {
+		SaleEvent existing = saleEventRepository.findById(saleEventId)
+				.orElseThrow(() -> new NotFoundException("SaleEvent not found"));
+		existing.setActiveYn("N");
+		existing.setEnabledYn("N");
+		return saleEventRepository.save(existing);
+	}
+
+	@Override
 	public void delete(Long saleEventid) {
 		saleEventRepository.findById(saleEventid)
 			.ifPresentOrElse(
@@ -71,5 +85,5 @@ public class SaleEventService implements SaleEventUseCase {
 				() -> {}
 			);
 	}
-	
+
 }

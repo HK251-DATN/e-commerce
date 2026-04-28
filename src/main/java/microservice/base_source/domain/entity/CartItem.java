@@ -24,6 +24,9 @@ public class CartItem {
 
     @Column(name = "batch_detail_id")
     private String batchDetailId;
+    
+    @Column(name = "sale_event_id")
+    private Long saleEventId;
 
     @Column(name = "quantity")
     private Long quantity;
@@ -45,5 +48,10 @@ public class CartItem {
     @PreUpdate
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+    
+    public enum CartItemStatus {
+        AVAILABLE,
+        OUT_OF_STOCK
     }
 }

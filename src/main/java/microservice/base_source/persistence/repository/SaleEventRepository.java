@@ -16,8 +16,8 @@ public interface SaleEventRepository extends JpaRepository<SaleEvent, Long> {
 
 	@Query(value = """
 			SELECT * FROM SALE_EVENT SE
-			WHERE (:searchString = '' OR 
-				SE.NAME 	   LIKE CONCAT('%', :searchString, '%') OR 
+			WHERE (:searchString = '' OR
+				SE.NAME 	   LIKE CONCAT('%', :searchString, '%') OR
 				SE.DESCRIPTION LIKE CONCAT('%', :searchString, '%'))
 				AND (:activeYn  = 'Y' 	OR SE.ACTIVE_YN  = :activeYn)
 				AND (:enableYn  = 'Y' 	OR SE.ENABLED_YN = :enableYn)
@@ -25,19 +25,30 @@ public interface SaleEventRepository extends JpaRepository<SaleEvent, Long> {
 				AND (:endTime 	IS NULL OR SE.END_TIME 	 <= :endTime)
 				AND (:beginDate IS NULL OR SE.BEGIN_DATE >= :beginDate)
 				AND (:endDate 	IS NULL OR SE.END_DATE 	 <= :endDate)
-			LIMIT :size 
+			LIMIT :size
 			OFFSET (:page - 1) * :size;
 			""",
 			nativeQuery = true)
 	List<SaleEvent> search(
-		@Param("searchString") String searchString, 
-		@Param("activeYn")  String activeYn, 
-		@Param("enableYn")  String enableYn, 
+		@Param("searchString") String searchString,
+		@Param("activeYn")  String activeYn,
+		@Param("enableYn")  String enableYn,
 		@Param("beginTime") LocalTime beginTime,
-		@Param("endTime") 	LocalTime endTime, 
-		@Param("beginDate") LocalDateTime beginDate, 
+		@Param("endTime") 	LocalTime endTime,
+		@Param("beginDate") LocalDateTime beginDate,
 		@Param("endDate") 	LocalDateTime endDate,
 		@Param("page") int page,
 		@Param("size") int size
 	);
+
+	@Query(value = """
+			SELECT * FROM SALE_EVENT
+			WHERE ACTIVE_YN = 'Y'
+			AND ENABLED_YN = 'Y'
+			AND (BEGIN_DATE IS NULL OR BEGIN_DATE <= NOW())
+			AND (END_DATE   IS NULL OR END_DATE   >= NOW())
+			ORDER BY DISPLAY_PRIORITY ASC NULLS LAST
+			LIMIT :size OFFSET (:page - 1) * :size
+			""", nativeQuery = true)
+	List<SaleEvent> findActiveEvents(@Param("page") int page, @Param("size") int size);
 }
