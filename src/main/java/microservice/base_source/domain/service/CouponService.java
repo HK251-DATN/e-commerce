@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.Coupon;
 import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.persistence.repository.CouponRepository;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,10 +18,8 @@ public class CouponService {
     private final CouponRepository couponRepository;
 
     public List<Coupon> getAll(int page, int size) {
-        return couponRepository.findAll().stream()
-                .skip((long) (page - 1) * size)
-                .limit(size)
-                .toList();
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return couponRepository.findByPublicYn("Y", pageable);
     }
 
     public Coupon getById(Long id) {

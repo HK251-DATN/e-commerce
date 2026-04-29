@@ -39,6 +39,9 @@ public class Coupon {
     @Column(name = "minOrder_value")
     private Long minOrderValue;
 
+    @Column(name = "public_yn")
+    private String publicYn; // Y or N
+
     @Column(name = "expired_at")
     private LocalDateTime expiredAt;
 

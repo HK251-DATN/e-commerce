@@ -4,8 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import microservice.base_source.domain.entity.*;
+import microservice.base_source.domain.entity.Coupon.DiscountType;
 import microservice.base_source.domain.exception.type.BadRequestException;
 import microservice.base_source.domain.exception.type.UnauthorizedException;
 import microservice.base_source.infrastructure.messaging.order.OrderConfirmedEvent;
@@ -55,6 +57,8 @@ public class OrderService implements OrderUseCase {
     private SaleProductRepository saleProductRepository;
     @Autowired
     private QrPaymentService qrPaymentService;
+	@Autowired
+	private CouponRepository couponRepository;
 
 
 	@Override
@@ -245,6 +249,20 @@ public class OrderService implements OrderUseCase {
 					savedOrder.getOrderId().toString(), order.getTotalPrice());
 			savedOrder.setTransactionQrUrl(transactionQrUrl);
 			orderRepository.save(savedOrder);
+		}
+
+		// caculate apply coupon
+		Long couponId = Long.parseLong(order.getCouponId());
+		Optional<Coupon> optionalCoupon = couponRepository.findById(couponId);
+		Coupon appliedCoupon = new Coupon();
+		if (optionalCoupon.isPresent()) {
+			appliedCoupon = optionalCoupon.get();
+		}
+
+		if (appliedCoupon.getDiscountType() == DiscountType.FIXED_AMOUNT) {
+			order.setTotalPrice(order.getTotalPrice() - appliedCoupon.getDiscountValue());
+		} else {
+			order.setTotalPrice(order.getTotalPrice() * (1 - appliedCoupon.getDiscountValue()));
 		}
 
 		// 6. Save order items
