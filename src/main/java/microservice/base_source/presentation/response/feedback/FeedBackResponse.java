@@ -16,7 +16,7 @@ public class FeedBackResponse {
 	String buyerId;
 	String fname;
 	String lname;
-	Long   productDetailId;
+	String batchDetailId;
 
 	String content;
 	String img;
@@ -28,7 +28,7 @@ public class FeedBackResponse {
 		response.setBuyerId(dto.getBuyerId());
 		response.setFname(dto.getFname());
 		response.setLname(dto.getLname());
-		response.setProductDetailId(dto.getProductDetailId());
+		response.setBatchDetailId(dto.getBatchDetailId());
 		response.setContent(dto.getContent());
 		response.setImg(dto.getImg());
 		response.setDetail(toMap(dto.getDetail()));

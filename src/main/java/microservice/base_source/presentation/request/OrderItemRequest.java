@@ -20,9 +20,7 @@ public class OrderItemRequest {
 
 	@NotNull
 	private Long productGeneralId;
-	
-	private Long productDetailId;
-	
+
 	@NotBlank
 	private Long quantity;
 	

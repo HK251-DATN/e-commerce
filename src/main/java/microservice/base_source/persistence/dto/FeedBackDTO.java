@@ -9,9 +9,9 @@ public interface FeedBackDTO {
     String getLname();
     // String getAvatar();
     // String getAliasNm();
-    
-    //product detail when hover or click
-    Long   getProductDetailId();
+
+    //batch detail when hover or click
+    String getBatchDetailId();
     
     // feedback content
     String getContent();

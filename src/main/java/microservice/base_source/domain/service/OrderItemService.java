@@ -39,17 +39,6 @@ public class OrderItemService implements OrderItemUseCase {
 
 	@Override
 	public OrderItem update(Long id, OrderItem orderItem) {
-//		OrderItem existingOrderItem = orderItemRepository.findById(id)
-//				.orElseThrow(() -> new NotFoundException("OrderItem not found"));
-//		if (existingOrderItem.getTempYn().equals("N")) {
-//			throw new WarnException("Đơn hàng đã tạo thành công");
-//		}
-//		// Update productDetailId, quantity, originalPrice, salePrice, tempYn
-//		existingOrderItem.setProductDetailId(orderItem.getProductDetailId());
-//		existingOrderItem.setQuantity(orderItem.getQuantity());
-//		existingOrderItem.setOriginalPrice(orderItem.getOriginalPrice());
-//		existingOrderItem.setSalePrice(orderItem.getSalePrice());
-//		existingOrderItem.setTempYn(orderItem.getTempYn());
 		return null;
 	}
 

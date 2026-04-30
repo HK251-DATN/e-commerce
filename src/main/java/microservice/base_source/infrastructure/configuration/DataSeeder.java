@@ -23,7 +23,6 @@ public class DataSeeder {
     private final CategoryRepository categoryRepository;
     private final ProductGeneralRepository productGeneralRepository;
     private final BatchDetailRepository batchDetailRepository;
-    private final ProductDetailRepository productDetailRepository;
     private final SaleEventRepository saleEventRepository;
     private final SaleProductRepository saleProductRepository;
     private final AddressRepository addressRepository;
@@ -386,7 +385,6 @@ public class DataSeeder {
             log.info("  - {} categories available", categoryRepository.count());
             log.info("  - {} products in catalog", productGeneralRepository.count());
             log.info("  - {} batch details in stock", batchDetailRepository.count());
-            log.info("  - {} product details for sale", productDetailRepository.count());
             log.info("  - {} active sale events", saleEventRepository.count());
             log.info("  - {} products on sale", saleProductRepository.count());
             log.info("  - {} shopping carts created", cartRepository.count());
@@ -461,19 +459,6 @@ public class DataSeeder {
         return batchDetailRepository.save(batchDetail);
     }
 
-    private ProductDetail createProductDetail(Long productGeneralId, String batchId,
-                                             String detailContent, BigDecimal rating, String buyYn) {
-        ProductDetail productDetail = new ProductDetail();
-        productDetail.setProductGeneralId(productGeneralId);
-        productDetail.setBatchId(batchId);
-        productDetail.setDetail(detailContent);
-        productDetail.setImg("https://pub-0365edd1781141cdb68675969c7cdb87.r2.dev/5fe95e6c-c064-49c4-8712-1c8f54472502.jpg");
-        productDetail.setStatus("ACTIVE");
-        productDetail.setRating(rating);
-        productDetail.setBuyYn(buyYn);
-        return productDetailRepository.save(productDetail);
-    }
-
     private SaleEvent createSaleEvent(String name, String description, String img,
                                      Long displayPriority, String activeYn, String enabledYn,
                                      LocalTime beginTime, LocalTime endTime,
@@ -536,10 +521,10 @@ public class DataSeeder {
         return cartItemRepository.save(cartItem);
     }
 
-    private FeedBack createFeedBack(String buyerId, Long productDetailId, BigDecimal rating, String content) {
+    private FeedBack createFeedBack(String buyerId, String batchDetailId, BigDecimal rating, String content) {
         FeedBack feedBack = new FeedBack();
         feedBack.setBuyerId(buyerId);
-        feedBack.setProductDetailId(productDetailId);
+        feedBack.setBatchDetailId(batchDetailId);
         feedBack.setRating(rating);
         feedBack.setContent(content);
         feedBack.setReplyId(null);
