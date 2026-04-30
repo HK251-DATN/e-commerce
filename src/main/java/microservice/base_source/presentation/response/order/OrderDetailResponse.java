@@ -25,7 +25,8 @@ public class OrderDetailResponse {
     private String note;
     private String type;
     private Long totalPrice;
-    private String couponId;
+    private Long couponId;
+    private String transactionQrUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -42,6 +43,7 @@ public class OrderDetailResponse {
 //                .type(order.getType() != null ? order.getType().toString() : null)
                 .totalPrice(order.getTotalPrice())
                 .couponId(order.getCouponId())
+                .transactionQrUrl(order.getTransactionQrUrl())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
                 .orderItems(orderItems.stream()

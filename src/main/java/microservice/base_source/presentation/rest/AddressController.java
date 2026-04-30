@@ -151,13 +151,14 @@ public class AddressController {
 
     @GetMapping("/shipment-fee")
     public ResponseEntity<ApiResponse<ShipmentFeeResponse>> calculateShipmentFee(
-            @AuthenticationPrincipal AuthenticatedUser principal
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            Long addressId
     ) {
 
         try {
-            String buyerId = principal.getId().toString();
+//            String buyerId = principal.getId().toString();
 
-            ShipmentFeeResponse shipmentFee = addressUseCase.calculateShipmentFee(buyerId);
+            ShipmentFeeResponse shipmentFee = addressUseCase.calculateShipmentFee(addressId);
 
             return ResponseEntity.ok()
                     .body(ApiResponse.SUCCESS(

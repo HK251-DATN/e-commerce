@@ -54,11 +54,13 @@ public interface OrderUseCase {
 
     /**
      * Create order from cart (simplified flow)
+     * Uses cart's selected address, shipping fee, and coupon
      * @param buyerId - authenticated user ID
-     * @param addressId - delivery address ID
+     * @param paymentMethod - COD or VNPAY
+     * @param note - optional order note
      * @return created order
      */
-    Order createFromCart(String buyerId, Long addressId, Order.PaymentMethod paymentMethod);
+    Order createFromCart(String buyerId, Order.PaymentMethod paymentMethod, String note);
 
     /**
      * Get all orders (with optional buyer filter)

@@ -11,6 +11,8 @@ public interface DetailGeneralDTO {
 	String 		  getName();
 	String 		  getDescription();
 	String 		  getImg();
+    String        getUnit();
+    Long          getUnitQuantity();
 
 	// batch detail info
 	String 		  getBatchId();
@@ -22,4 +24,10 @@ public interface DetailGeneralDTO {
 	int 		  getNumRate();	  // default: 0
 	Long		  getSaleEventId();
 	LocalDateTime getCreatedAt(); // sort ASC/DESC
+
+	// provider verification info
+	String 		  getVerificationType(); // CERTIFICATE or VIDEO
+	String 		  getCertificateType();  // VIETGAP, GLOBALGAP, etc. (null for VIDEO)
+	Long 		  getSubBatchId();
+	String 		  getLogoUrl();         // Provider logo URL (null for VIDEO)
 }

@@ -28,6 +28,16 @@ public class BatchDetailCreateEvent {
 
     private String detailContent;
 
+    private Long subBatchId;
+
+    private String verificationType;
+
+    private String certificateType;
+
+    private Long providerId;
+
+    private String logoUrl;
+
     public BatchDetail toBatchDetailEntity() {
         BatchDetail batchDetail = new BatchDetail();
 
@@ -38,6 +48,11 @@ public class BatchDetailCreateEvent {
         batchDetail.setAvgRate(BigDecimal.valueOf(avgRate));
         batchDetail.setNumRate(numRate.intValue());
         batchDetail.setDetailContent(String.valueOf(detailContent));
+        batchDetail.setSubBatchId(subBatchId);
+        batchDetail.setVerificationType(verificationType);
+        batchDetail.setCertificateType(certificateType);
+        batchDetail.setProviderId(providerId);
+        batchDetail.setLogoUrl(logoUrl);
 
         return batchDetail;
     }

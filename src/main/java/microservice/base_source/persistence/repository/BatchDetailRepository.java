@@ -29,7 +29,12 @@ public interface BatchDetailRepository extends JpaRepository<BatchDetail, String
                 BD.AVG_RATE            AS "avgRate",
                 BD.NUM_RATE            AS "numRate",
                 NULL                   AS "saleEventId",
-                BD.CREATED_AT          AS "createdAt"
+                BD.CREATED_AT          AS "createdAt",
+                BD.VERIFICATION_TYPE   AS "verificationType",
+                BD.CERTIFICATE_TYPE    AS "certificateType",
+                BD.PROVIDER_ID         AS "providerId",
+                BD.SUB_BATCH_ID        AS "subBatchId",
+                BD.LOGO_URL            AS "logoUrl"
             FROM BATCH_DETAIL BD
             JOIN PRODUCT_GENERAL PG ON PG.PRODUCT_GENERAL_ID = BD.PRODUCT_GENERAL_ID
             WHERE BD.QUANTITY > 0

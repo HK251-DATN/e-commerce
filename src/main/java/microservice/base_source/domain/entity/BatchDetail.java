@@ -42,6 +42,21 @@ public class BatchDetail {
 	@Column(name = "detail_content", columnDefinition = "TEXT")
     private String detailContent;
 
+	@Column(name = "sub_batch_id")
+	private Long subBatchId;
+
+	@Column(name = "verification_type")
+	private String verificationType;
+
+	@Column(name = "certificate_type")
+	private String certificateType;
+
+	@Column(name = "provider_id")
+	private Long providerId;
+
+	@Column(name = "logo_url")
+	private String logoUrl;
+
 	@Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

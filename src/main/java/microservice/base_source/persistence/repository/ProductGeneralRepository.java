@@ -50,16 +50,23 @@ public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, 
                 PG.PROVIDER_ID 			AS "providerId",
                 PG.NAME        			AS "name",
                 PG.DESCRIPTION 			AS "description",
-                   PG.IMG         			AS "img",
-                   BD.BATCH_DETAIL_ID		AS "batchId",
-                   BD.QUANTITY   			AS "quantity",
-                   BD.PRICE      			AS "originPrice",
-                   BD.AVG_RATE   			AS "avgRate",
-                   BD.NUM_RATE   			AS "numRate",
-                   BD.CREATED_AT 			AS "createdAt",
-                COALESCE(SP.DIS_VAL, 0)        AS "disVal",
+                PG.IMG         			AS "img",
+                PG.UNIT                 AS "unit",
+                PG.UNIT_QUANTITY        AS "unitQuantity",
+                BD.BATCH_DETAIL_ID		AS "batchId",
+                BD.QUANTITY   			AS "quantity",
+                BD.PRICE      			AS "originPrice",
+                BD.AVG_RATE   			AS "avgRate",
+                BD.NUM_RATE   			AS "numRate",
+                BD.CREATED_AT 			AS "createdAt",
+                BD.VERIFICATION_TYPE           AS "verificationType",
+                BD.CERTIFICATE_TYPE            AS "certificateType",
+                BD.PROVIDER_ID                 AS "providerId",
+                BD.SUB_BATCH_ID                AS "subBatchId",
+                BD.LOGO_URL                    AS "logoUrl",
+                COALESCE(SP.DIS_VAL, null)        AS "disVal",
                 SP.SALE_PRICE                  AS "salePrice",
-                COALESCE(SP.SALE_EVENT_ID, 0)  AS "saleEventId"
+                COALESCE(SP.SALE_EVENT_ID, null)  AS "saleEventId"
             FROM BATCH_DETAIL BD
             LEFT JOIN PRODUCT_GENERAL PG
                 ON BD.PRODUCT_GENERAL_ID = PG.PRODUCT_GENERAL_ID
@@ -145,7 +152,12 @@ public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, 
                 BD.CREATED_AT           AS "createdAt",
                 SP.DIS_VAL              AS "disVal",
                 SP.SALE_PRICE           AS "salePrice",
-                SP.SALE_EVENT_ID        AS "saleEventId"
+                SP.SALE_EVENT_ID        AS "saleEventId",
+                BD.VERIFICATION_TYPE    AS "verificationType",
+                BD.CERTIFICATE_TYPE     AS "certificateType",
+                BD.PROVIDER_ID          AS "providerId",
+                BD.SUB_BATCH_ID         AS "subBatchId",
+                BD.LOGO_URL             AS "logoUrl"
             FROM BATCH_DETAIL BD
             LEFT JOIN PRODUCT_GENERAL PG ON BD.PRODUCT_GENERAL_ID = PG.PRODUCT_GENERAL_ID
             LEFT JOIN (

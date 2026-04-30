@@ -25,6 +25,10 @@ public class ProductSearchResponse {
     private int 	      numRate;
     private Long          saleEventId;
     private LocalDateTime createdAt;
+    private String        certificateType;
+    private String        providerLogoUrl;
+    private String        unit;
+    private Long          unitQuantity;
 
     public static ProductSearchResponse toResponse(DetailGeneralDTO dto) {
         ProductSearchResponse response = new ProductSearchResponse();
@@ -43,6 +47,10 @@ public class ProductSearchResponse {
         response.setNumRate(dto.getNumRate());
         response.setSaleEventId(dto.getSaleEventId());
         response.setCreatedAt(dto.getCreatedAt());
+        response.setCertificateType(dto.getCertificateType());
+        response.setProviderLogoUrl(dto.getLogoUrl());
+        response.setUnit(dto.getUnit());
+        response.setUnitQuantity(dto.getUnitQuantity());
         return response;
     }
 

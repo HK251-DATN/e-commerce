@@ -28,7 +28,7 @@ public class OrderRequest {
 	@NotEmpty
 	List<OrderItemRequest> orderItems;
 
-	private String couponId;
+	private Long couponId;
 
 	public Order toOrderEntity() {
 		Order order = new Order();

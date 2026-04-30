@@ -10,24 +10,28 @@ import microservice.base_source.domain.entity.Address;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddressRequest {
-    
+
     private String receiverName;
-    
+
     private String receiverPNum;
-    
+
     private String province;
-    
+
     private String district;
-    
+
     private String commune;
-    
+
     private String detail;
-    
+
     private Boolean isDefault;
-    
+
+    private Double lat;
+
+    private Double lng;
+
     public Address toEntity() {
         Address address = new Address();
-        
+
         address.setReceiverName(receiverName);
         address.setReceiverPNum(receiverPNum);
         address.setProvince(province);
@@ -35,7 +39,9 @@ public class AddressRequest {
         address.setCommune(commune);
         address.setDetail(detail);
         address.setIsDefault(isDefault);
-        
+        address.setLat(lat);
+        address.setLng(lng);
+
         return address;
     }
 }

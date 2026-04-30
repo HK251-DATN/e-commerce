@@ -9,6 +9,6 @@ import microservice.base_source.domain.entity.Order;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateOrderFromCartRequest {
-    private Long addressId;
     private Order.PaymentMethod paymentMethod;
+    private String note; // Optional order note
 }

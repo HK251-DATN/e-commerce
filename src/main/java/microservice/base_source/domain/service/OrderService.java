@@ -146,20 +146,25 @@ public class OrderService implements OrderUseCase {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
-	public Order createFromCart(String buyerId, Long addressId, Order.PaymentMethod paymentMethod) {
-		// 1. Validate address belongs to user
-		Address address = addressRepository.findById(addressId)
+	public Order createFromCart(String buyerId, Order.PaymentMethod paymentMethod, String note) {
+		// 1. Find user's cart
+		Cart cart = cartRepository.findByBuyerId(buyerId)
+				.orElseThrow(() -> new NotFoundException("Cart not found for user"));
+
+		// 2. Validate cart has an address selected
+		if (cart.getAddressId() == null) {
+			throw new BadRequestException("Please select a delivery address for your cart");
+		}
+
+		// 3. Validate address exists and belongs to user
+		Address address = addressRepository.findById(cart.getAddressId())
 				.orElseThrow(() -> new NotFoundException("Address not found"));
 
 		if (!address.getBuyerId().equals(buyerId)) {
 			throw new UnauthorizedException("Address does not belong to the user");
 		}
 
-		// 2. Find user's cart
-		Cart cart = cartRepository.findByBuyerId(buyerId)
-				.orElseThrow(() -> new NotFoundException("Cart not found for user"));
-
-		// 3. Get selected cart items
+		// 4. Get selected cart items
 		List<CartItem> selectedItems = cartItemRepository
 				.findByCartIdAndIsSelected(cart.getCartId(), true);
 
@@ -167,7 +172,7 @@ public class OrderService implements OrderUseCase {
 			throw new BadRequestException("No items selected in cart");
 		}
 
-		// 4. Validate stock, sale limits, and calculate total
+		// 5. Validate stock, sale limits, and calculate total
 		BigDecimal totalPrice = BigDecimal.ZERO;
 		List<OrderItem> orderItems = new ArrayList<>();
 
@@ -234,44 +239,44 @@ public class OrderService implements OrderUseCase {
 			orderItems.add(orderItem);
 		}
 
-		// 5. Create order
+		// 6. Create order - copy all information from cart
 		Order order = new Order();
 		order.setBuyerId(buyerId);
-		order.setAddressId(addressId);
+		order.setAddressId(cart.getAddressId());
+		order.setShippingFee(cart.getShippingFee());
 		order.setPaymentMethod(paymentMethod);
+		order.setNote(note);
 		order.setStatus(OrderStatus.PENDING);
-		order.setTotalPrice(totalPrice.longValue());
+
+		// Copy coupon and pricing information from cart
+		order.setCouponId(cart.getCouponId());
+		order.setPriceBeforeDiscount(cart.getPriceBeforeDiscount());
+		order.setDiscountAmount(cart.getDiscountAmount());
+		order.setPriceAfterDiscount(cart.getPriceAfterDiscount());
+		order.setTotalPrice(cart.getTotalPrice());
+
+		// For COD, set status to PAID immediately
+		if (paymentMethod == Order.PaymentMethod.COD) {
+			order.setStatus(OrderStatus.PAID);
+		}
 
 		Order savedOrder = orderRepository.save(order);
 
+		// For VNPAY, generate QR code URL for payment
 		if (savedOrder.getPaymentMethod() != null && savedOrder.getPaymentMethod().equals(Order.PaymentMethod.VNPAY)) {
 			String transactionQrUrl = qrPaymentService.createOrderTransactionQrUrl(
-					savedOrder.getOrderId().toString(), order.getTotalPrice());
+					savedOrder.getOrderId().toString(), savedOrder.getTotalPrice());
 			savedOrder.setTransactionQrUrl(transactionQrUrl);
 			orderRepository.save(savedOrder);
 		}
 
-		// caculate apply coupon
-		Long couponId = Long.parseLong(order.getCouponId());
-		Optional<Coupon> optionalCoupon = couponRepository.findById(couponId);
-		Coupon appliedCoupon = new Coupon();
-		if (optionalCoupon.isPresent()) {
-			appliedCoupon = optionalCoupon.get();
-		}
-
-		if (appliedCoupon.getDiscountType() == DiscountType.FIXED_AMOUNT) {
-			order.setTotalPrice(order.getTotalPrice() - appliedCoupon.getDiscountValue());
-		} else {
-			order.setTotalPrice(order.getTotalPrice() * (1 - appliedCoupon.getDiscountValue()));
-		}
-
-		// 6. Save order items
+		// 7. Save order items
 		for (OrderItem item : orderItems) {
 			item.setOrderId(savedOrder.getOrderId());
 			orderItemRepository.save(item);
 		}
 
-		// 7. Decrement stock: batch quantity and sale curQty
+		// 8. Decrement stock: batch quantity and sale curQty
 		for (CartItem cartItem : selectedItems) {
 			BatchDetail batchDetail = batchDetailRepository.findById(cartItem.getBatchDetailId()).get();
 			batchDetail.setQuantity(batchDetail.getQuantity() - cartItem.getQuantity().intValue());
@@ -287,10 +292,18 @@ public class OrderService implements OrderUseCase {
 			}
 		}
 
-		// 8. Clear selected cart items
+		// 9. Clear selected cart items and reset cart coupon
 		cartItemRepository.deleteByCartIdAndIsSelected(cart.getCartId(), true);
 
-		// 9. Publish order created event
+		// Reset cart coupon and pricing after order creation
+		cart.setCouponId(null);
+		cart.setPriceBeforeDiscount(null);
+		cart.setDiscountAmount(null);
+		cart.setPriceAfterDiscount(null);
+		cart.setTotalPrice(0L);
+		cartRepository.save(cart);
+
+		// 10. Publish order created event
 		if (orderProducer != null) {
 			orderProducer.publishOrderCreated(new OrderCreatedEvent(
 					savedOrder.getOrderId(),

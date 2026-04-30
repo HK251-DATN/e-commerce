@@ -16,5 +16,7 @@ public interface AddressUseCase {
     
     void delete(Long addressId);
     
-    ShipmentFeeResponse calculateShipmentFee(String buyerId);
+    ShipmentFeeResponse calculateDefaultShipmentFee(String buyerId);
+    
+    ShipmentFeeResponse calculateShipmentFee(Long addressId);
 }

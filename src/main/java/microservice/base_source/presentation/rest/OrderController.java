@@ -36,6 +36,7 @@ public class OrderController {
     
     /**
      * Create order from cart
+     * Uses cart's selected address, shipping fee, and coupon
      * POST /api/orders
      */
     @PostMapping
@@ -44,12 +45,12 @@ public class OrderController {
             @AuthenticationPrincipal AuthenticatedUser principal) {
         try {
             String buyerId = principal.getId().toString();
-            
+
             Order order = orderUseCase.createFromCart(
                     buyerId,
-                    request.getAddressId(),
-                    request.getPaymentMethod());
-            
+                    request.getPaymentMethod(),
+                    request.getNote());
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.SUCCESS(
                             HttpStatus.CREATED.toString(),

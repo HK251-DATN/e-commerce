@@ -4,15 +4,21 @@ import lombok.RequiredArgsConstructor;
 import microservice.base_source.domain.entity.Cart;
 import microservice.base_source.domain.entity.CartItem;
 import microservice.base_source.domain.entity.Coupon;
+import microservice.base_source.domain.entity.Address;
 import microservice.base_source.domain.entity.BatchDetail;
 import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.domain.exception.type.BadRequestException;
 import microservice.base_source.domain.use_case.CartUseCase;
+import microservice.base_source.domain.use_case.CartItemUseCase;
+import microservice.base_source.domain.use_case.AddressUseCase;
 import microservice.base_source.persistence.repository.CartRepository;
 import microservice.base_source.persistence.repository.CouponRepository;
 import microservice.base_source.persistence.repository.CartItemRepository;
 import microservice.base_source.persistence.repository.BatchDetailRepository;
+import microservice.base_source.presentation.response.cart.CartDetailResponse;
+import microservice.base_source.presentation.response.cartitem.CartItemResponse;
 import microservice.base_source.presentation.response.coupon.CartCouponResponse;
+import microservice.base_source.presentation.response.order.ShipmentFeeResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,11 +38,25 @@ public class CartService implements CartUseCase {
     private final CouponRepository couponRepository;
     private final CartItemRepository cartItemRepository;
     private final BatchDetailRepository batchDetailRepository;
+    private final CartItemUseCase cartItemUseCase;
+    private final AddressUseCase addressUseCase;
 
 
     @Override
     @Transactional
     public Cart create(Cart cart) {
+        // Set default address and shipping fee
+        try {
+            ShipmentFeeResponse shipmentFee = addressUseCase.calculateDefaultShipmentFee(cart.getBuyerId());
+            cart.setAddressId(shipmentFee.getAddressId());
+            cart.setShippingFee(shipmentFee.getShipmentFee());
+        } catch (Exception e) {
+            // If no default address found, set shipping fee to null
+            // User will need to set an address later
+            cart.setAddressId(null);
+            cart.setShippingFee(null);
+        }
+
         return cartRepository.save(cart);
     }
 
@@ -44,6 +64,21 @@ public class CartService implements CartUseCase {
     public Cart getByBuyerId(String buyerId) {
         return cartRepository.findByBuyerId(buyerId)
                 .orElseThrow(() -> new NotFoundException("Cart not found for buyer: " + buyerId));
+    }
+
+    public CartDetailResponse getCartWithItems(String buyerId) {
+        // Get cart
+        Cart cart = cartRepository.findByBuyerId(buyerId)
+                .orElseThrow(() -> new NotFoundException("Cart not found for buyer: " + buyerId));
+
+        // Validate and update cart coupon if needed
+        validateAndUpdateCartCoupon(cart);
+
+        // Get cart items with full details
+        List<CartItemResponse> items = cartItemUseCase.getAllWithBatchDetailByCartId(cart.getCartId());
+
+        // Build and return response
+        return CartDetailResponse.fromCartAndItems(cart, items);
     }
 
     public List<CartCouponResponse> getAllCoupon(Long cartId, int page, int size) {
@@ -78,13 +113,13 @@ public class CartService implements CartUseCase {
 			tempTotalPrice = tempTotalPrice.add(itemTotal);
         }
         Long totalPrice = tempTotalPrice.longValue();
-        
+
         // get all coupon
         Pageable pageable = PageRequest.of(page - 1, size);
-		Page<Coupon> coupons = couponRepository.findAll(pageable);
+		List<Coupon> coupons = couponRepository.findByPublicYn("Y", pageable);
         List<CartCouponResponse> listCartCouponResponses = new ArrayList<>();
-        
-        // check coupon: valid caculate saleAmount; not valid caculate amountToReachDiscount
+
+        // check coupon: valid calculate saleAmount; not valid calculate amountToReachDiscount
         coupons.forEach(coupon -> {
             if (coupon.getMinOrderValue() > totalPrice) {
                 CartCouponResponse cartCouponResponse = new CartCouponResponse();
@@ -113,5 +148,289 @@ public class CartService implements CartUseCase {
 
         // return list coupon
         return listCartCouponResponses;
+    }
+
+    @Override
+    @Transactional
+    public Cart applyCoupon(String buyerId, String couponCode) {
+        // Get cart
+        Cart cart = cartRepository.findByBuyerId(buyerId)
+                .orElseThrow(() -> new NotFoundException("Cart not found for buyer: " + buyerId));
+
+        // Get selected items
+        List<CartItem> selectedItems = cartItemRepository.findByCartIdAndIsSelected(cart.getCartId(), true);
+        if (selectedItems.isEmpty()) {
+            throw new BadRequestException("No items selected in cart");
+        }
+
+        // Calculate total price of selected items
+        BigDecimal tempTotalPrice = BigDecimal.ZERO;
+        for (CartItem cartItem : selectedItems) {
+            BatchDetail batchDetail = batchDetailRepository
+                    .findById(cartItem.getBatchDetailId())
+                    .orElseThrow(() -> new NotFoundException(
+                            "Product not found: " + cartItem.getBatchDetailId()));
+
+            // Check stock
+            if (batchDetail.getQuantity() < cartItem.getQuantity()) {
+                throw new BadRequestException(
+                        "Insufficient stock for product: " + batchDetail.getBatchDetailId() +
+                                ". Available: " + batchDetail.getQuantity() +
+                                ", Requested: " + cartItem.getQuantity());
+            }
+
+            // Calculate item total
+            BigDecimal itemTotal = batchDetail.getPrice()
+                    .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+            tempTotalPrice = tempTotalPrice.add(itemTotal);
+        }
+        Long totalPrice = tempTotalPrice.longValue();
+
+        // Get and validate coupon
+        Coupon coupon = couponRepository.findByCouponCode(couponCode)
+                .orElseThrow(() -> new NotFoundException("Coupon not found: " + couponCode));
+
+        // Validate coupon is not expired
+        if (coupon.getExpiredAt() != null && coupon.getExpiredAt().isBefore(java.time.LocalDateTime.now())) {
+            throw new BadRequestException("Coupon has expired");
+        }
+
+        // Validate coupon has remaining quantity
+        if (coupon.getCurrentQuantity() <= 0) {
+            throw new BadRequestException("Coupon is no longer available");
+        }
+
+        // Validate minimum order value
+        if (coupon.getMinOrderValue() > totalPrice) {
+            throw new BadRequestException(
+                    "Order total does not meet minimum required: " + coupon.getMinOrderValue() +
+                            ". Current total: " + totalPrice);
+        }
+
+        // Calculate discount amount
+        Long discountAmount;
+        if (coupon.getDiscountType() == Coupon.DiscountType.PERCENTAGE) {
+            discountAmount = totalPrice * coupon.getDiscountValue() / 100;
+            // Apply max discount cap if set
+            if (coupon.getMaxDiscountAmount() != null && discountAmount > coupon.getMaxDiscountAmount()) {
+                discountAmount = coupon.getMaxDiscountAmount();
+            }
+        } else {
+            discountAmount = coupon.getDiscountValue();
+        }
+
+        // Update cart with coupon information
+        cart.setCouponId(coupon.getCouponId());
+        cart.setPriceBeforeDiscount(totalPrice);
+        cart.setDiscountAmount(discountAmount);
+        cart.setPriceAfterDiscount(totalPrice - discountAmount);
+        cart.setTotalPrice(totalPrice - discountAmount); // Update total price
+
+        return cartRepository.save(cart);
+    }
+
+    @Override
+    @Transactional
+    public Cart removeCoupon(String buyerId) {
+        // Get cart
+        Cart cart = cartRepository.findByBuyerId(buyerId)
+                .orElseThrow(() -> new NotFoundException("Cart not found for buyer: " + buyerId));
+
+        // Get selected items
+        List<CartItem> selectedItems = cartItemRepository.findByCartIdAndIsSelected(cart.getCartId(), true);
+        if (selectedItems.isEmpty()) {
+            throw new BadRequestException("No items selected in cart");
+        }
+
+        // Calculate total price of selected items (without discount)
+        BigDecimal tempTotalPrice = BigDecimal.ZERO;
+        for (CartItem cartItem : selectedItems) {
+            BatchDetail batchDetail = batchDetailRepository
+                    .findById(cartItem.getBatchDetailId())
+                    .orElseThrow(() -> new NotFoundException(
+                            "Product not found: " + cartItem.getBatchDetailId()));
+
+            BigDecimal itemTotal = batchDetail.getPrice()
+                    .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+            tempTotalPrice = tempTotalPrice.add(itemTotal);
+        }
+        Long totalPrice = tempTotalPrice.longValue();
+
+        // Clear coupon information
+        cart.setCouponId(null);
+        cart.setPriceBeforeDiscount(null);
+        cart.setDiscountAmount(null);
+        cart.setPriceAfterDiscount(null);
+        cart.setTotalPrice(totalPrice); // Restore original total price
+
+        return cartRepository.save(cart);
+    }
+
+    @Override
+    @Transactional
+    public Cart updateAddress(String buyerId, Long addressId) {
+        // Get cart
+        Cart cart = cartRepository.findByBuyerId(buyerId)
+                .orElseThrow(() -> new NotFoundException("Cart not found for buyer: " + buyerId));
+
+        // Verify address exists and belongs to buyer
+        Address address = addressUseCase.read(addressId);
+        if (!address.getBuyerId().equals(buyerId)) {
+            throw new BadRequestException("Address does not belong to buyer");
+        }
+
+        // Calculate new shipping fee based on the new address
+        ShipmentFeeResponse shipmentFee = addressUseCase.calculateShipmentFee(addressId);
+
+        // Update cart address and shipping fee
+        cart.setAddressId(addressId);
+        cart.setShippingFee(shipmentFee.getShipmentFee());
+
+        return cartRepository.save(cart);
+    }
+
+    /**
+     * Recalculates and updates the cart's total price based on selected items.
+     * If a coupon is applied, recalculates discount and final price.
+     * This should be called whenever cart items are added, updated, or removed.
+     */
+    @Transactional
+    public void recalculateCartTotals(Long cartId) {
+        // Get cart
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new NotFoundException("Cart not found with id: " + cartId));
+
+        // Get selected items
+        List<CartItem> selectedItems = cartItemRepository.findByCartIdAndIsSelected(cartId, true);
+
+        // Calculate total price of selected items
+        BigDecimal tempTotalPrice = BigDecimal.ZERO;
+        
+        if (cart.getShippingFee() != null) {
+            tempTotalPrice = tempTotalPrice.add(BigDecimal.valueOf(cart.getShippingFee()));
+        }
+        
+        for (CartItem cartItem : selectedItems) {
+            BatchDetail batchDetail = batchDetailRepository
+                    .findById(cartItem.getBatchDetailId())
+                    .orElse(null);
+
+            if (batchDetail != null) {
+                BigDecimal itemTotal = batchDetail.getPrice()
+                        .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+                tempTotalPrice = tempTotalPrice.add(itemTotal);
+            }
+        }
+        Long totalPrice = tempTotalPrice.longValue();
+
+        // Update cart totals
+        if (cart.getCouponId() != null) {
+            // Coupon is applied - recalculate with discount
+            Coupon coupon = couponRepository.findById(cart.getCouponId()).orElse(null);
+
+            // Validate coupon is still valid
+            boolean couponValid = coupon != null
+                    && (coupon.getExpiredAt() == null || coupon.getExpiredAt().isAfter(java.time.LocalDateTime.now()))
+                    && coupon.getCurrentQuantity() > 0
+                    && coupon.getMinOrderValue() <= totalPrice;
+
+            if (couponValid) {
+                // Calculate discount amount
+                Long discountAmount;
+                if (coupon.getDiscountType() == Coupon.DiscountType.PERCENTAGE) {
+                    discountAmount = totalPrice * coupon.getDiscountValue() / 100;
+                    if (coupon.getMaxDiscountAmount() != null && discountAmount > coupon.getMaxDiscountAmount()) {
+                        discountAmount = coupon.getMaxDiscountAmount();
+                    }
+                } else {
+                    discountAmount = coupon.getDiscountValue();
+                }
+
+                cart.setPriceBeforeDiscount(totalPrice);
+                cart.setDiscountAmount(discountAmount);
+                cart.setPriceAfterDiscount(totalPrice - discountAmount);
+                cart.setTotalPrice(totalPrice - discountAmount);
+            } else {
+                // Coupon is no longer valid - remove it
+                cart.setCouponId(null);
+                cart.setPriceBeforeDiscount(null);
+                cart.setDiscountAmount(null);
+                cart.setPriceAfterDiscount(null);
+                cart.setTotalPrice(totalPrice);
+            }
+        } else {
+            // No coupon applied - just update total price
+            cart.setTotalPrice(totalPrice);
+        }
+
+        cartRepository.save(cart);
+    }
+
+    /**
+     * Validates the coupon applied to the cart and removes it if:
+     * - Coupon has expired
+     * - Coupon has run out of uses
+     * - Coupon no longer exists
+     *
+     * Note: publicYn = "N" means private coupon (for employees, VIP, etc.), not disabled
+     * Private coupons are still valid if applied
+     *
+     * If coupon is invalid, recalculates cart pricing without the discount
+     */
+    @Transactional
+    private void validateAndUpdateCartCoupon(Cart cart) {
+        // Skip if no coupon is applied
+        if (cart.getCouponId() == null) {
+            return;
+        }
+
+        // Get the applied coupon
+        Coupon coupon = couponRepository.findById(cart.getCouponId()).orElse(null);
+
+        boolean shouldRemoveCoupon = false;
+
+        if (coupon == null) {
+            shouldRemoveCoupon = true;
+        } else {
+            // Check if coupon has expired
+            if (coupon.getExpiredAt() != null && coupon.getExpiredAt().isBefore(java.time.LocalDateTime.now())) {
+                shouldRemoveCoupon = true;
+            }
+            // Check if coupon has run out of uses
+            else if (coupon.getCurrentQuantity() <= 0) {
+                shouldRemoveCoupon = true;
+            }
+        }
+
+        // Remove coupon if invalid
+        if (shouldRemoveCoupon) {
+            // Get selected items to recalculate total price
+            List<CartItem> selectedItems = cartItemRepository.findByCartIdAndIsSelected(cart.getCartId(), true);
+
+            // Calculate total price without coupon
+            BigDecimal tempTotalPrice = BigDecimal.ZERO;
+            for (CartItem cartItem : selectedItems) {
+                BatchDetail batchDetail = batchDetailRepository
+                        .findById(cartItem.getBatchDetailId())
+                        .orElse(null);
+
+                if (batchDetail != null) {
+                    BigDecimal itemTotal = batchDetail.getPrice()
+                            .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+                    tempTotalPrice = tempTotalPrice.add(itemTotal);
+                }
+            }
+            Long totalPrice = tempTotalPrice.longValue();
+
+            // Clear coupon information
+            cart.setCouponId(null);
+            cart.setPriceBeforeDiscount(null);
+            cart.setDiscountAmount(null);
+            cart.setPriceAfterDiscount(null);
+            cart.setTotalPrice(totalPrice);
+
+            // Save updated cart
+            cartRepository.save(cart);
+        }
     }
 }

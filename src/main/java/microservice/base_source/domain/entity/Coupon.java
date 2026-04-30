@@ -18,7 +18,7 @@ public class Coupon {
     @Column(name = "coupon_id")
     private Long couponId;
 
-    @Column(name = "coupon_code")
+    @Column(name = "coupon_code", unique = true)
     private String couponCode;
 
     @Column(name = "total_quantity")

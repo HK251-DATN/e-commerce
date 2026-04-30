@@ -21,8 +21,26 @@ public class Cart {
     @Column(name = "buyer_id")
     private String buyerId;
 
+    @Column(name = "address_id")
+    private Long addressId;
+
+    @Column(name = "shipping_fee")
+    private Long shippingFee;
+
     @Column(name = "total_price")
     private Long totalPrice;
+
+    @Column(name = "coupon_id")
+    private Long couponId;
+
+    @Column(name = "price_before_discount")
+    private Long priceBeforeDiscount;
+
+    @Column(name = "discount_amount")
+    private Long discountAmount;
+
+    @Column(name = "price_after_discount")
+    private Long priceAfterDiscount;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

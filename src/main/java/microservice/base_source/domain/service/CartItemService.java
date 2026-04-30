@@ -1,16 +1,17 @@
 package microservice.base_source.domain.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import microservice.base_source.domain.entity.CartItem;
 import microservice.base_source.domain.entity.SaleProduct;
 import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.domain.use_case.CartItemUseCase;
+import microservice.base_source.domain.use_case.CartUseCase;
 import microservice.base_source.persistence.dto.CartItemWithBatchDetailDTO;
 import microservice.base_source.persistence.repository.CartItemRepository;
 import microservice.base_source.persistence.repository.OrderItemRepository;
 import microservice.base_source.persistence.repository.SaleProductRepository;
 import microservice.base_source.presentation.response.cartitem.CartItemResponse;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,17 +21,30 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class CartItemService implements CartItemUseCase {
 
     private final CartItemRepository cartItemRepository;
     private final SaleProductRepository saleProductRepository;
     private final OrderItemRepository orderItemRepository;
+    private final CartUseCase cartUseCase;
+
+    // Constructor with @Lazy to break circular dependency
+    public CartItemService(
+            CartItemRepository cartItemRepository,
+            SaleProductRepository saleProductRepository,
+            OrderItemRepository orderItemRepository,
+            @Lazy CartUseCase cartUseCase) {
+        this.cartItemRepository = cartItemRepository;
+        this.saleProductRepository = saleProductRepository;
+        this.orderItemRepository = orderItemRepository;
+        this.cartUseCase = cartUseCase;
+    }
 
     @Override
     @Transactional
     public CartItemAddResult addToCart(Long cartId, String buyerId, String batchDetailId, Long quantity, Boolean isSelected) {
+        CartItemAddResult result;
         Optional<SaleProduct> activeSale = saleProductRepository.findActiveSaleProductByBatchId(batchDetailId);
 
         if (activeSale.isPresent()) {
@@ -52,32 +66,35 @@ public class CartItemService implements CartItemUseCase {
                 if (remaining <= 0) {
                     // Sale limit exhausted — add everything at original price
                     CartItem normalItem = persistNormalItem(cartId, batchDetailId, quantity, isSelected);
-                    return new CartItemAddResult(normalItem, null,
+                    result = new CartItemAddResult(normalItem, null,
                             "Sale limit reached. " + quantity + " item(s) added at original price.");
-                }
-
-                if (quantity <= remaining) {
+                } else if (quantity <= remaining) {
                     // Entire quantity fits within the sale limit
                     CartItem saleItem = persistSaleItem(cartId, batchDetailId, quantity, isSelected, saleProduct.getSaleEventId());
-                    return new CartItemAddResult(saleItem, null);
+                    result = new CartItemAddResult(saleItem, null);
+                } else {
+                    // Split: remaining at sale price, overflow at original price
+                    CartItem saleItem = persistSaleItem(cartId, batchDetailId, remaining, isSelected, saleProduct.getSaleEventId());
+                    long overflow = quantity - remaining;
+                    CartItem normalItem = persistNormalItem(cartId, batchDetailId, overflow, isSelected);
+                    String note = remaining + " item(s) added at sale price, " + overflow + " item(s) added at original price (sale limit: " + maxBuy + ").";
+                    result = new CartItemAddResult(saleItem, normalItem, note);
                 }
-
-                // Split: remaining at sale price, overflow at original price
-                CartItem saleItem = persistSaleItem(cartId, batchDetailId, remaining, isSelected, saleProduct.getSaleEventId());
-                long overflow = quantity - remaining;
-                CartItem normalItem = persistNormalItem(cartId, batchDetailId, overflow, isSelected);
-                String note = remaining + " item(s) added at sale price, " + overflow + " item(s) added at original price (sale limit: " + maxBuy + ").";
-                return new CartItemAddResult(saleItem, normalItem, note);
+            } else {
+                // Sale exists but no maxBuy limit — tag with saleEventId
+                CartItem cartItem = persistSaleItem(cartId, batchDetailId, quantity, isSelected, saleProduct.getSaleEventId());
+                result = new CartItemAddResult(cartItem, null);
             }
-
-            // Sale exists but no maxBuy limit — tag with saleEventId
-            CartItem cartItem = persistSaleItem(cartId, batchDetailId, quantity, isSelected, saleProduct.getSaleEventId());
-            return new CartItemAddResult(cartItem, null);
+        } else {
+            // Not a sale product — normal flow
+            CartItem cartItem = persistNormalItem(cartId, batchDetailId, quantity, isSelected);
+            result = new CartItemAddResult(cartItem, null);
         }
 
-        // Not a sale product — normal flow
-        CartItem cartItem = persistNormalItem(cartId, batchDetailId, quantity, isSelected);
-        return new CartItemAddResult(cartItem, null);
+        // Recalculate cart totals after adding items (applies to all paths)
+        cartUseCase.recalculateCartTotals(cartId);
+
+        return result;
     }
 
     @Override
@@ -119,7 +136,12 @@ public class CartItemService implements CartItemUseCase {
         CartItem cartItem = get(cartItemId);
         if (quantity <= 0) throw new IllegalArgumentException("Quantity must be greater than 0");
         cartItem.setQuantity(quantity);
-        return cartItemRepository.save(cartItem);
+        CartItem updated = cartItemRepository.save(cartItem);
+
+        // Recalculate cart totals after updating quantity
+        cartUseCase.recalculateCartTotals(cartItem.getCartId());
+
+        return updated;
     }
 
     @Override
@@ -127,7 +149,12 @@ public class CartItemService implements CartItemUseCase {
     public CartItem toggleSelection(Long cartItemId) {
         CartItem cartItem = get(cartItemId);
         cartItem.setIsSelected(!cartItem.getIsSelected());
-        return cartItemRepository.save(cartItem);
+        CartItem updated = cartItemRepository.save(cartItem);
+
+        // Recalculate cart totals after toggling selection
+        cartUseCase.recalculateCartTotals(cartItem.getCartId());
+
+        return updated;
     }
 
     @Override
@@ -141,20 +168,32 @@ public class CartItemService implements CartItemUseCase {
         if (cartItem.getIsSelected() != null) {
             existingItem.setIsSelected(cartItem.getIsSelected());
         }
-        return cartItemRepository.save(existingItem);
+        CartItem updated = cartItemRepository.save(existingItem);
+
+        // Recalculate cart totals after updating item
+        cartUseCase.recalculateCartTotals(existingItem.getCartId());
+
+        return updated;
     }
 
     @Override
     @Transactional
     public void delete(Long cartItemId) {
         CartItem cartItem = get(cartItemId);
+        Long cartId = cartItem.getCartId();
         cartItemRepository.delete(cartItem);
+
+        // Recalculate cart totals after deleting item
+        cartUseCase.recalculateCartTotals(cartId);
     }
 
     @Override
     @Transactional
     public void deleteAllByCartId(Long cartId) {
         cartItemRepository.deleteByCartId(cartId);
+
+        // Recalculate cart totals after clearing cart (will set to 0)
+        cartUseCase.recalculateCartTotals(cartId);
     }
 
     @Override
@@ -169,6 +208,9 @@ public class CartItemService implements CartItemUseCase {
         List<CartItem> items = cartItemRepository.findByCartId(cartId);
         items.forEach(item -> item.setIsSelected(true));
         cartItemRepository.saveAll(items);
+
+        // Recalculate cart totals after selecting all items
+        cartUseCase.recalculateCartTotals(cartId);
     }
 
     @Override
@@ -177,6 +219,9 @@ public class CartItemService implements CartItemUseCase {
         List<CartItem> items = cartItemRepository.findByCartId(cartId);
         items.forEach(item -> item.setIsSelected(false));
         cartItemRepository.saveAll(items);
+
+        // Recalculate cart totals after deselecting all items (will set to 0)
+        cartUseCase.recalculateCartTotals(cartId);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
@@ -280,6 +325,7 @@ public class CartItemService implements CartItemUseCase {
                 .unit(dto.getUnit())
                 .unitQuantity(dto.getUnitQuantity())
                 .unitPrice(unitPrice)
+                .originalUnitPrice(originPrice)
                 .totalPrice(totalPrice)
                 .saleEventId(dto.getSaleEventId())
                 .salePrice(dto.getSalePrice())

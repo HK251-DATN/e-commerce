@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import microservice.base_source.presentation.response.cart.CartDetailResponse;
 import microservice.base_source.presentation.response.coupon.CartCouponResponse;
 import microservice.base_source.infrastructure.security.AuthenticatedUser;
 
@@ -47,12 +48,12 @@ public class CartController {
     }
     
     @GetMapping
-    public ApiResponse<Cart> getCartById(
+    public ApiResponse<CartDetailResponse> getCartById(
             @AuthenticationPrincipal AuthenticatedUser principal
     ) {
         String userId = principal.getId().toString();
-        Cart p = cartService.getByBuyerId(userId);
-        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get Cart success", p);
+        CartDetailResponse cartDetail = cartService.getCartWithItems(userId);
+        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get Cart success", cartDetail);
     }
 
     @GetMapping("/coupons")
@@ -71,6 +72,47 @@ public class CartController {
     public ApiResponse<Cart> adminGetByUserId(@PathVariable String userId) {
         Cart p = cartService.getByBuyerId(userId);
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get Cart success", p);
+    }
+
+    @PostMapping("/apply-coupon")
+    public ApiResponse<Cart> applyCoupon(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @RequestParam String couponCode
+    ) {
+        String buyerId = principal.getId().toString();
+        Cart updatedCart = cartService.applyCoupon(buyerId, couponCode);
+        return ApiResponse.SUCCESS(
+                HttpStatus.OK.toString(),
+                "Coupon applied successfully",
+                updatedCart
+        );
+    }
+
+    @PostMapping("/remove-coupon")
+    public ApiResponse<Cart> removeCoupon(
+            @AuthenticationPrincipal AuthenticatedUser principal
+    ) {
+        String buyerId = principal.getId().toString();
+        Cart updatedCart = cartService.removeCoupon(buyerId);
+        return ApiResponse.SUCCESS(
+                HttpStatus.OK.toString(),
+                "Coupon removed successfully",
+                updatedCart
+        );
+    }
+
+    @PostMapping("/update-address")
+    public ApiResponse<Cart> updateAddress(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @RequestParam Long addressId
+    ) {
+        String buyerId = principal.getId().toString();
+        Cart updatedCart = cartService.updateAddress(buyerId, addressId);
+        return ApiResponse.SUCCESS(
+                HttpStatus.OK.toString(),
+                "Cart address updated successfully",
+                updatedCart
+        );
     }
 
     // @PutMapping("/{id}")

@@ -30,6 +30,7 @@ public class CartItemResponse {
     private String unit;
     private Long unitQuantity;
     private BigDecimal unitPrice;
+    private BigDecimal originalUnitPrice;
     private BigDecimal totalPrice;
 
     // Sale information (null when product is not part of an active sale)

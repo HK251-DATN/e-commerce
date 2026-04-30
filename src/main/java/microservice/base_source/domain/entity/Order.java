@@ -33,6 +33,9 @@ public class Order {
 	@Column(name = "address_id")
 	private Long addressId;
 
+	@Column(name = "shipping_fee")
+	private Long shippingFee;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status")
 	private OrderStatus status;
@@ -42,19 +45,28 @@ public class Order {
 
 	@Column(name = "total_price")
 	private Long totalPrice;
-    
+
+	@Column(name = "coupon_id")
+	private Long couponId;
+
+	@Column(name = "price_before_discount")
+	private Long priceBeforeDiscount;
+
+	@Column(name = "discount_amount")
+	private Long discountAmount;
+
+	@Column(name = "price_after_discount")
+	private Long priceAfterDiscount;
+
     @Column(name = "transaction_id", unique = true)
     private String transactionId;
-    
+
     @Column(name = "transaction_qr_url")
     private String transactionQrUrl;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
-
-	@Column(name = "coupon_id")
-	private String couponId;
 
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;

@@ -65,6 +65,8 @@ public interface ProductDetailRepository extends JpaRepository<ProductDetail, Lo
 				PG.DESCRIPTION AS generalDescription,
 				PG.STATUS AS generalStatus,
 				PG.PHOTO_URLS AS photoUrls
+				PG.UNIT as unit,
+				PG.UNIT_QUANTITY as unitQuantity
 			FROM PRODUCT_DETAIL PD
 			JOIN PRODUCT_GENERAL PG
 				ON PD.PRODUCT_GENERAL_ID = PG.PRODUCT_GENERAL_ID
