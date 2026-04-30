@@ -1,5 +1,6 @@
 package microservice.base_source.persistence.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public interface FeedBackDTO {
@@ -12,8 +13,9 @@ public interface FeedBackDTO {
 
     //batch detail when hover or click
     String getBatchDetailId();
-    
+
     // feedback content
+    BigDecimal getRating();
     String getContent();
     String getImg();
     String getDetail();

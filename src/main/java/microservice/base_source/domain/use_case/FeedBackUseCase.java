@@ -13,6 +13,18 @@ public interface FeedBackUseCase {
 	List<FeedBackDTO> getByBatchId(String batchId, Integer page, Integer size);
 
 	/**
+	 * Get list FeedBack by buyerId
+	 * @return List FeedBackDTO
+	 */
+	List<FeedBackDTO> getByBuyerId(String buyerId, Integer page, Integer size);
+
+	/**
+	 * Get list FeedBack by productGeneralId
+	 * @return List FeedBackDTO
+	 */
+	List<FeedBackDTO> getByProductGeneralId(Long productGeneralId, Integer page, Integer size);
+
+	/**
 	 * Lấy danh sách FeedBack
 	 * @return List FeedBack
 	 */

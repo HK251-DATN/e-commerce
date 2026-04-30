@@ -54,7 +54,8 @@ public interface FeedBackRepository extends JpaRepository<FeedBack, Long> {
 			SELECT 	B.F_NAME 				AS fname,
 					B.L_NAME 				AS lname,
 					FB.BUYER_ID 			AS buyerId,
-					FB.PRODUCT_DETAIL_ID 	AS productDetailId,
+					FB.BATCH_DETAIL_ID		AS batchDetailId,
+					FB.RATING				AS rating,
 					FB.CONTENT 				AS content,
 					FB.IMG 					AS img,
 					FB.DETAIL		 		AS detail,
@@ -69,4 +70,51 @@ public interface FeedBackRepository extends JpaRepository<FeedBack, Long> {
 		nativeQuery = true
 	)
 	List<FeedBackDTO> getByBatchId(String batchId, Integer page, Integer size);
+
+	@Query(
+		value = """
+			SELECT 	B.F_NAME 				AS fname,
+					B.L_NAME 				AS lname,
+					FB.BUYER_ID 			AS buyerId,
+					FB.BATCH_DETAIL_ID		AS batchDetailId,
+					FB.RATING				AS rating,
+					FB.CONTENT 				AS content,
+					FB.IMG 					AS img,
+					FB.DETAIL		 		AS detail,
+					FB.created_at 			AS createdAt
+			FROM FEED_BACK FB
+			JOIN BUYER B
+				ON B.BUYER_ID = FB.BUYER_ID
+			WHERE FB.BUYER_ID = :buyerId
+			LIMIT :size
+			OFFSET ((:page - 1) * :size);
+			""",
+		nativeQuery = true
+	)
+	List<FeedBackDTO> getByBuyerId(String buyerId, Integer page, Integer size);
+
+	@Query(
+		value = """
+			SELECT 	B.F_NAME 				AS fname,
+					B.L_NAME 				AS lname,
+					FB.BUYER_ID 			AS buyerId,
+					FB.BATCH_DETAIL_ID		AS batchDetailId,
+					FB.RATING				AS rating,
+					FB.CONTENT 				AS content,
+					FB.IMG 					AS img,
+					FB.DETAIL		 		AS detail,
+					FB.created_at 			AS createdAt
+			FROM FEED_BACK FB
+			JOIN BUYER B
+				ON B.BUYER_ID = FB.BUYER_ID
+			JOIN BATCH_DETAIL BD
+				ON BD.BATCH_DETAIL_ID = FB.BATCH_DETAIL_ID
+			WHERE BD.PRODUCT_GENERAL_ID = :productGeneralId
+			ORDER BY FB.created_at DESC
+			LIMIT :size
+			OFFSET ((:page - 1) * :size);
+			""",
+		nativeQuery = true
+	)
+	List<FeedBackDTO> getByProductGeneralId(Long productGeneralId, Integer page, Integer size);
 }

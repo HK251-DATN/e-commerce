@@ -38,6 +38,16 @@ public class FeedBackService implements FeedBackUseCase {
 	}
 
 	@Override
+	public List<FeedBackDTO> getByBuyerId(String buyerId, Integer page, Integer size) {
+		return feedBackRepository.getByBuyerId(buyerId, page, size);
+	}
+
+	@Override
+	public List<FeedBackDTO> getByProductGeneralId(Long productGeneralId, Integer page, Integer size) {
+		return feedBackRepository.getByProductGeneralId(productGeneralId, page, size);
+	}
+
+	@Override
 	public FeedBack create(FeedBack feedback) {
 		return feedBackRepository.save(feedback);
 	}
