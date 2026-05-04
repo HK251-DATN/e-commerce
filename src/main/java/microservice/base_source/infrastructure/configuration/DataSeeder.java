@@ -330,38 +330,36 @@ public class DataSeeder {
                 LocalDateTime.now().plusHours(5)
             );
 
-            // Tạo BatchDetail cho sản phẩm đầu tiên
-//            BatchDetail batch1 = createBatchDetail(
-//                "BATCH-SKU-001",      // batchDetailId (Khớp với CartItem)
-//                101L,                 // productGeneralId (ID sản phẩm tổng quát)
-//                50,                   // quantity (Số lượng tồn kho trong lô)
-//                new BigDecimal("150000"), // price (Giá bán: 150.000 VNĐ)
-//                "Màu xanh, Size L, Chất liệu Cotton" // detailContent
-//            );
-//
-//            // ==================== Seed Cart Items ====================
-//            // 1. Sản phẩm A - Số lượng 2, được chọn để thanh toán
-//            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 2L, true);
-//            // 2. Sản phẩm B - Số lượng 1, được chọn để thanh toán
-//            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 1L, true);
-//            // 3. Sản phẩm C - Số lượng 5, chưa chọn thanh toán (để trong giỏ hàng chờ)
-//            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 5L, false);
-//            // 4. Sản phẩm D - Số lượng 10, được chọn để thanh toán
-//            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 10L, true);
-//            // 5. Sản phẩm E - Số lượng 1, chưa chọn thanh toán
-//            createCartItem(cart.getCartId(), batch1.getBatchDetailId(), 1L, false);
-//
-//            createCartItem(cart2.getCartId(), batch8.getBatchDetailId(), 1L, true);
-//            createCartItem(cart2.getCartId(), batch5.getBatchDetailId(), 2L, false);
-//
-//            createCartItem(cart3.getCartId(), batch11.getBatchDetailId(), 1L, true);
-//            createCartItem(cart3.getCartId(), batch12.getBatchDetailId(), 2L, true);
-//
-//            createCartItem(cart4.getCartId(), batch4.getBatchDetailId(), 3L, true);
-//            createCartItem(cart4.getCartId(), batch7.getBatchDetailId(), 2L, true);
-//            createCartItem(cart4.getCartId(), batch14.getBatchDetailId(), 10L, false);
-//
-//            log.info("Seeded {} cart items", cartItemRepository.count());
+            // ==================== Seed Batch Details ====================
+            for (long i = 1; i <= 105; i++) {
+                // Price between 50k and 500k based on ID for variety
+                BigDecimal price = new BigDecimal(50000 + (i * 5000));
+                createBatchDetail(
+                    "BATCH-SKU-" + String.format("%03d", i),
+                    i,
+                    100, // quantity
+                    price,
+                    "Lô hàng đợt 1 cho sản phẩm ID " + i
+                );
+            }
+            log.info("Seeded {} batch details", batchDetailRepository.count());
+
+            // ==================== Seed Cart Items ====================
+            createCartItem(cart.getCartId(), "BATCH-SKU-001", 2L, true);
+            createCartItem(cart.getCartId(), "BATCH-SKU-002", 1L, true);
+            createCartItem(cart.getCartId(), "BATCH-SKU-003", 5L, false);
+            
+            createCartItem(cart2.getCartId(), "BATCH-SKU-008", 1L, true);
+            createCartItem(cart2.getCartId(), "BATCH-SKU-005", 2L, false);
+
+            createCartItem(cart3.getCartId(), "BATCH-SKU-011", 1L, true);
+            createCartItem(cart3.getCartId(), "BATCH-SKU-012", 2L, true);
+
+            createCartItem(cart4.getCartId(), "BATCH-SKU-004", 3L, true);
+            createCartItem(cart4.getCartId(), "BATCH-SKU-007", 2L, true);
+            createCartItem(cart4.getCartId(), "BATCH-SKU-014", 10L, false);
+
+            log.info("Seeded {} cart items", cartItemRepository.count());
 //
 //            // ==================== Seed FeedBack (Product Reviews) ====================
 //            // Note: productDetailId are auto-generated starting from 1L
