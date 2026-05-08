@@ -333,8 +333,8 @@ public class OrderService implements OrderUseCase {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found"));
 
-        if (order.getStatus() != OrderStatus.PENDING) {
-            throw new BadRequestException("Order is not in PENDING state");
+        if ((order.getStatus() != OrderStatus.PENDING) && (order.getStatus() != OrderStatus.PAID)) {
+            throw new BadRequestException("Order is not in PENDING OR PAID state");
         }
 
         order.setStatus(OrderStatus.CONFIRMED);

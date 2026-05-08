@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 public class CartDetailResponse {
 
-    // Cart information
+// Cart information
     private Long cartId;
     private String buyerId;
     private Long addressId;

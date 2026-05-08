@@ -502,6 +502,7 @@ public class DataSeeder {
         coupon.setMaxDiscountAmount(maxDiscountAmount);
         coupon.setMinOrderValue(minOrderValue);
         coupon.setExpiredAt(expiredAt);
+        coupon.setPublicYn("Y");
         return couponRepository.save(coupon);
     }
 

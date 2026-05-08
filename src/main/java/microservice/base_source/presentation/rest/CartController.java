@@ -24,11 +24,13 @@ import microservice.base_source.infrastructure.security.AuthenticatedUser;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import microservice.base_source.domain.entity.Cart;
 import microservice.base_source.domain.service.CartService;
 import microservice.base_source.presentation.request.CartRequest;
 import microservice.base_source.presentation.response.global.ApiResponse;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
@@ -79,13 +81,20 @@ public class CartController {
             @AuthenticationPrincipal AuthenticatedUser principal,
             @RequestParam String couponCode
     ) {
-        String buyerId = principal.getId().toString();
-        Cart updatedCart = cartService.applyCoupon(buyerId, couponCode);
-        return ApiResponse.SUCCESS(
-                HttpStatus.OK.toString(),
-                "Coupon applied successfully",
-                updatedCart
-        );
+        log.info("[POST /api/cart/apply-coupon] principal={}, couponCode={}", principal.getId(), couponCode);
+        try {
+            String buyerId = principal.getId().toString();
+            Cart updatedCart = cartService.applyCoupon(buyerId, couponCode);
+            log.info("[POST /api/cart/apply-coupon] SUCCESS - cartId={}", updatedCart.getCartId());
+            return ApiResponse.SUCCESS(
+                    HttpStatus.OK.toString(),
+                    "Coupon applied successfully",
+                    updatedCart
+            );
+        } catch (Exception e) {
+            log.error("[POST /api/cart/apply-coupon] ERROR - type={}, message={}", e.getClass().getSimpleName(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     @PostMapping("/remove-coupon")

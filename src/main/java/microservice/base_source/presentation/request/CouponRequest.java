@@ -16,6 +16,7 @@ public class CouponRequest {
 	private Long maxDiscountAmount;
 	private Long minOrderValue;
 	private LocalDateTime expiredAt;
+	private String publicYn;
 
 	public Coupon toEntity() {
 		Coupon coupon = new Coupon();
@@ -27,6 +28,7 @@ public class CouponRequest {
 		coupon.setMaxDiscountAmount(this.maxDiscountAmount);
 		coupon.setMinOrderValue(this.minOrderValue);
 		coupon.setExpiredAt(this.expiredAt);
+		coupon.setPublicYn(this.publicYn);
 		return coupon;
 	}
 }

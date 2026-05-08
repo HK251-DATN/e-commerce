@@ -1,12 +1,14 @@
 package microservice.base_source.domain.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import microservice.base_source.domain.entity.Cart;
 import microservice.base_source.domain.entity.CartItem;
 import microservice.base_source.domain.entity.Coupon;
 import microservice.base_source.domain.entity.Address;
 import microservice.base_source.domain.entity.BatchDetail;
 import microservice.base_source.domain.exception.type.NotFoundException;
+import microservice.base_source.persistence.dto.CartItemWithBatchDetailDTO;
 import microservice.base_source.domain.exception.type.BadRequestException;
 import microservice.base_source.domain.use_case.CartUseCase;
 import microservice.base_source.domain.use_case.CartItemUseCase;
@@ -30,6 +32,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CartService implements CartUseCase {
@@ -61,23 +64,27 @@ public class CartService implements CartUseCase {
     }
 
     @Override
+    @Transactional
     public Cart getByBuyerId(String buyerId) {
         return cartRepository.findByBuyerId(buyerId)
                 .orElseThrow(() -> new NotFoundException("Cart not found for buyer: " + buyerId));
     }
 
     public CartDetailResponse getCartWithItems(String buyerId) {
-        // Get cart
         Cart cart = cartRepository.findByBuyerId(buyerId)
                 .orElseThrow(() -> new NotFoundException("Cart not found for buyer: " + buyerId));
 
-        // Validate and update cart coupon if needed
+        Long cartId = cart.getCartId();
+        recalculateCartTotals(cartId);
+
+        // Reload cart to pick up totals saved by recalculateCartTotals
+        cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new NotFoundException("Cart not found with id: " + cartId));
+
         validateAndUpdateCartCoupon(cart);
 
-        // Get cart items with full details
         List<CartItemResponse> items = cartItemUseCase.getAllWithBatchDetailByCartId(cart.getCartId());
 
-        // Build and return response
         return CartDetailResponse.fromCartAndItems(cart, items);
     }
 
@@ -153,55 +160,83 @@ public class CartService implements CartUseCase {
     @Override
     @Transactional
     public Cart applyCoupon(String buyerId, String couponCode) {
+        log.info("[applyCoupon] START - buyerId={}, couponCode={}", buyerId, couponCode);
+
         // Get cart
         Cart cart = cartRepository.findByBuyerId(buyerId)
-                .orElseThrow(() -> new NotFoundException("Cart not found for buyer: " + buyerId));
+                .orElseThrow(() -> {
+                    log.warn("[applyCoupon] Cart not found for buyerId={}", buyerId);
+                    return new NotFoundException("Cart not found for buyer: " + buyerId);
+                });
+        log.info("[applyCoupon] Cart found - cartId={}", cart.getCartId());
 
         // Get selected items
         List<CartItem> selectedItems = cartItemRepository.findByCartIdAndIsSelected(cart.getCartId(), true);
+        log.info("[applyCoupon] Selected items count={}", selectedItems.size());
         if (selectedItems.isEmpty()) {
+            log.warn("[applyCoupon] No selected items in cart - cartId={}", cart.getCartId());
             throw new BadRequestException("No items selected in cart");
         }
 
         // Calculate total price of selected items
         BigDecimal tempTotalPrice = BigDecimal.ZERO;
         for (CartItem cartItem : selectedItems) {
+            log.info("[applyCoupon] Processing cartItemId={}, batchDetailId={}, qty={}",
+                    cartItem.getCartItemId(), cartItem.getBatchDetailId(), cartItem.getQuantity());
+
             BatchDetail batchDetail = batchDetailRepository
                     .findById(cartItem.getBatchDetailId())
-                    .orElseThrow(() -> new NotFoundException(
-                            "Product not found: " + cartItem.getBatchDetailId()));
+                    .orElseThrow(() -> {
+                        log.warn("[applyCoupon] BatchDetail not found - id={}", cartItem.getBatchDetailId());
+                        return new NotFoundException("Product not found: " + cartItem.getBatchDetailId());
+                    });
+            log.info("[applyCoupon] BatchDetail found - id={}, price={}, stockQty={}",
+                    batchDetail.getBatchDetailId(), batchDetail.getPrice(), batchDetail.getQuantity());
 
             // Check stock
             if (batchDetail.getQuantity() < cartItem.getQuantity()) {
+                log.warn("[applyCoupon] Insufficient stock - batchDetailId={}, available={}, requested={}",
+                        batchDetail.getBatchDetailId(), batchDetail.getQuantity(), cartItem.getQuantity());
                 throw new BadRequestException(
                         "Insufficient stock for product: " + batchDetail.getBatchDetailId() +
                                 ". Available: " + batchDetail.getQuantity() +
                                 ", Requested: " + cartItem.getQuantity());
             }
 
-            // Calculate item total
             BigDecimal itemTotal = batchDetail.getPrice()
                     .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
             tempTotalPrice = tempTotalPrice.add(itemTotal);
+            log.info("[applyCoupon] Item total={}, running total={}", itemTotal, tempTotalPrice);
         }
         Long totalPrice = tempTotalPrice.longValue();
+        log.info("[applyCoupon] Calculated cart total={}", totalPrice);
 
         // Get and validate coupon
+        log.info("[applyCoupon] Looking up coupon - code={}", couponCode);
         Coupon coupon = couponRepository.findByCouponCode(couponCode)
-                .orElseThrow(() -> new NotFoundException("Coupon not found: " + couponCode));
+                .orElseThrow(() -> {
+                    log.warn("[applyCoupon] Coupon not found - code={}", couponCode);
+                    return new NotFoundException("Coupon not found: " + couponCode);
+                });
+        log.info("[applyCoupon] Coupon found - couponId={}, type={}, value={}, currentQty={}, minOrderValue={}, expiredAt={}",
+                coupon.getCouponId(), coupon.getDiscountType(), coupon.getDiscountValue(),
+                coupon.getCurrentQuantity(), coupon.getMinOrderValue(), coupon.getExpiredAt());
 
         // Validate coupon is not expired
         if (coupon.getExpiredAt() != null && coupon.getExpiredAt().isBefore(java.time.LocalDateTime.now())) {
+            log.warn("[applyCoupon] Coupon expired - couponId={}, expiredAt={}", coupon.getCouponId(), coupon.getExpiredAt());
             throw new BadRequestException("Coupon has expired");
         }
 
         // Validate coupon has remaining quantity
         if (coupon.getCurrentQuantity() <= 0) {
+            log.warn("[applyCoupon] Coupon exhausted - couponId={}, currentQty={}", coupon.getCouponId(), coupon.getCurrentQuantity());
             throw new BadRequestException("Coupon is no longer available");
         }
 
         // Validate minimum order value
-        if (coupon.getMinOrderValue() > totalPrice) {
+        if (coupon.getMinOrderValue() != null && coupon.getMinOrderValue() > totalPrice) {
+            log.warn("[applyCoupon] Cart total below minimum - required={}, actual={}", coupon.getMinOrderValue(), totalPrice);
             throw new BadRequestException(
                     "Order total does not meet minimum required: " + coupon.getMinOrderValue() +
                             ". Current total: " + totalPrice);
@@ -211,22 +246,27 @@ public class CartService implements CartUseCase {
         Long discountAmount;
         if (coupon.getDiscountType() == Coupon.DiscountType.PERCENTAGE) {
             discountAmount = totalPrice * coupon.getDiscountValue() / 100;
-            // Apply max discount cap if set
             if (coupon.getMaxDiscountAmount() != null && discountAmount > coupon.getMaxDiscountAmount()) {
+                log.info("[applyCoupon] Discount capped at maxDiscountAmount={}", coupon.getMaxDiscountAmount());
                 discountAmount = coupon.getMaxDiscountAmount();
             }
         } else {
             discountAmount = coupon.getDiscountValue();
         }
+        log.info("[applyCoupon] Discount calculated - discountAmount={}", discountAmount);
 
         // Update cart with coupon information
         cart.setCouponId(coupon.getCouponId());
         cart.setPriceBeforeDiscount(totalPrice);
         cart.setDiscountAmount(discountAmount);
         cart.setPriceAfterDiscount(totalPrice - discountAmount);
-        cart.setTotalPrice(totalPrice - discountAmount); // Update total price
+        cart.setTotalPrice(totalPrice - discountAmount);
+        log.info("[applyCoupon] Saving cart - cartId={}, beforeDiscount={}, discountAmount={}, totalPrice={}",
+                cart.getCartId(), totalPrice, discountAmount, totalPrice - discountAmount);
 
-        return cartRepository.save(cart);
+        Cart saved = cartRepository.save(cart);
+        log.info("[applyCoupon] SUCCESS - cartId={}", saved.getCartId());
+        return saved;
     }
 
     @Override
@@ -300,26 +340,22 @@ public class CartService implements CartUseCase {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new NotFoundException("Cart not found with id: " + cartId));
 
-        // Get selected items
-        List<CartItem> selectedItems = cartItemRepository.findByCartIdAndIsSelected(cartId, true);
+        // Get selected items with sale price information
+        List<CartItemWithBatchDetailDTO> selectedItems = cartItemRepository.findSelectedCartItemsWithBatchDetailByCartId(cartId);
 
         // Calculate total price of selected items
         BigDecimal tempTotalPrice = BigDecimal.ZERO;
-        
+
         if (cart.getShippingFee() != null) {
             tempTotalPrice = tempTotalPrice.add(BigDecimal.valueOf(cart.getShippingFee()));
         }
-        
-        for (CartItem cartItem : selectedItems) {
-            BatchDetail batchDetail = batchDetailRepository
-                    .findById(cartItem.getBatchDetailId())
-                    .orElse(null);
 
-            if (batchDetail != null) {
-                BigDecimal itemTotal = batchDetail.getPrice()
-                        .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
-                tempTotalPrice = tempTotalPrice.add(itemTotal);
-            }
+        for (CartItemWithBatchDetailDTO item : selectedItems) {
+            BigDecimal unitPrice = (item.getSalePrice() != null && item.getSalePrice() > 0)
+                    ? BigDecimal.valueOf(item.getSalePrice())
+                    : (item.getUnitPrice() != null ? item.getUnitPrice() : BigDecimal.ZERO);
+            BigDecimal itemTotal = unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
+            tempTotalPrice = tempTotalPrice.add(itemTotal);
         }
         Long totalPrice = tempTotalPrice.longValue();
 
@@ -332,7 +368,7 @@ public class CartService implements CartUseCase {
             boolean couponValid = coupon != null
                     && (coupon.getExpiredAt() == null || coupon.getExpiredAt().isAfter(java.time.LocalDateTime.now()))
                     && coupon.getCurrentQuantity() > 0
-                    && coupon.getMinOrderValue() <= totalPrice;
+                    && (coupon.getMinOrderValue() == null || coupon.getMinOrderValue() <= totalPrice);
 
             if (couponValid) {
                 // Calculate discount amount

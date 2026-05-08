@@ -50,6 +50,7 @@ public class CouponService {
         existing.setMaxDiscountAmount(updatedCoupon.getMaxDiscountAmount());
         existing.setMinOrderValue(updatedCoupon.getMinOrderValue());
         existing.setExpiredAt(updatedCoupon.getExpiredAt());
+        existing.setPublicYn(updatedCoupon.getPublicYn());
 
         return couponRepository.save(existing);
     }
