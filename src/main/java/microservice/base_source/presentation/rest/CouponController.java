@@ -50,6 +50,44 @@ public class CouponController {
         return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get all coupon details success", CouponService.getAll(page, size));
     }
 
+    /**
+     * GET {ecommerce}/api/coupon/admin
+     *
+     * Search and filter coupons for admin management.
+     *
+     * Query parameters:
+     *   couponCode   (String,  optional) - partial match (case-insensitive)
+     *   discountType (String,  optional) - enum name: PERCENTAGE | FIXED_AMOUNT
+     *   publicYn     (String,  optional) - visibility flag: Y | N
+     *   isActive     (Boolean, optional) - true = has remaining quantity and not expired; false = exhausted or expired
+     *   sortBy       (String,  optional) - createdAt | expiredAt | discountValue  (default: createdAt)
+     *   sortDir      (String,  optional) - ASC | DESC  (default: DESC)
+     *   page         (Integer, optional) - 1-based page number  (default: 1)
+     *   size         (Integer, optional) - page size            (default: 20)
+     *
+     * Responses:
+     *   200 OK          - list of matching coupons
+     *   204 No Content  - no coupons matched the filters
+     *   400 Bad Request - invalid sortBy or sortDir value, or unrecognised discountType
+     */
+    @GetMapping("/admin")
+    public ApiResponse<List<Coupon>> adminGetAll(
+            @RequestParam(required = false) String couponCode,
+            @RequestParam(required = false) String discountType,
+            @RequestParam(required = false) String publicYn,
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortDir,
+            @RequestParam(defaultValue = "1")  Integer page,
+            @RequestParam(defaultValue = "20") Integer size) {
+        List<Coupon> results = CouponService.adminSearch(
+                couponCode, discountType, publicYn, isActive, sortBy, sortDir, page, size);
+        if (results.isEmpty()) {
+            return ApiResponse.SKIP_AS_GOOD(HttpStatus.NO_CONTENT.toString(), "No coupons found", null);
+        }
+        return ApiResponse.SUCCESS(HttpStatus.OK.toString(), "Get all coupons success", results);
+    }
+
     @PutMapping("/{id}")
     public ApiResponse<Coupon> update(@PathVariable Long id, @Valid @RequestBody CouponRequest req) {
         Coupon toUpdate = req.toEntity();

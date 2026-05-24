@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import microservice.base_source.domain.exception.type.BadRequestException;
 import microservice.base_source.domain.exception.type.CategoryNotFoundException;
 import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.domain.exception.type.ProductNotFoundException;
@@ -70,6 +71,17 @@ public class GlobalExceptionHandler {
     // Define NotFoundException
     @ExceptionHandler(NotFoundException.class)
     public <T> ResponseEntity<ApiResponse<String>> handleOtherException(NotFoundException ex) {
+        String guide = "Please check your request again";
+        ApiResponse<String> response = ApiResponse.WARN(
+                HttpStatus.BAD_REQUEST.toString(),
+                ex.getMessage(),
+                guide);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    // Define BadRequestException
+    @ExceptionHandler(BadRequestException.class)
+    public <T> ResponseEntity<ApiResponse<String>> handleOtherException(BadRequestException ex) {
         String guide = "Please check your request again";
         ApiResponse<String> response = ApiResponse.WARN(
                 HttpStatus.BAD_REQUEST.toString(),

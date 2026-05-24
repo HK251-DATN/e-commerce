@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import microservice.base_source.domain.entity.*;
 import microservice.base_source.domain.entity.Coupon.DiscountType;
@@ -59,6 +61,8 @@ public class OrderService implements OrderUseCase {
     private QrPaymentService qrPaymentService;
 	@Autowired
 	private CouponRepository couponRepository;
+    @Autowired
+    private ProductGeneralRepository productGeneralRepository;
 
 
 	@Override
@@ -243,7 +247,11 @@ public class OrderService implements OrderUseCase {
 		Order order = new Order();
 		order.setBuyerId(buyerId);
 		order.setAddressId(cart.getAddressId());
-		order.setShippingFee(cart.getShippingFee());
+        if (cart.getShippingFee() != null) {
+            order.setShippingFee(cart.getShippingFee());
+        } else {
+            order.setShippingFee(0L);
+        }
 		order.setPaymentMethod(paymentMethod);
 		order.setNote(note);
 		order.setStatus(OrderStatus.PENDING);
@@ -316,15 +324,45 @@ public class OrderService implements OrderUseCase {
     
     @Override
     public OrderDetailResponse getOrderDetail(Long orderId) {
-        // Get order
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found"));
-        
-        // Get order items
+
         List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
-        
-        // Build response
-        return OrderDetailResponse.fromEntity(order, orderItems);
+
+        // Resolve product names and images via BatchDetail -> ProductGeneral
+        Map<Long, String> productNameByOrderItemId = orderItems.stream()
+                .collect(Collectors.toMap(
+                        OrderItem::getOrderItemId,
+                        item -> {
+                            String batchDetailId = item.getBatchDetailId();
+                            if (batchDetailId == null) return "";
+                            return batchDetailRepository.findById(batchDetailId)
+                                    .map(bd -> productGeneralRepository.findById(bd.getProductGeneralId())
+                                            .map(ProductGeneral::getName)
+                                            .orElse(""))
+                                    .orElse("");
+                        }
+                ));
+
+        Map<Long, String> productImgByOrderItemId = orderItems.stream()
+                .collect(Collectors.toMap(
+                        OrderItem::getOrderItemId,
+                        item -> {
+                            String batchDetailId = item.getBatchDetailId();
+                            if (batchDetailId == null) return "";
+                            return batchDetailRepository.findById(batchDetailId)
+                                    .map(bd -> productGeneralRepository.findById(bd.getProductGeneralId())
+                                            .map(ProductGeneral::getImg)
+                                            .orElse(""))
+                                    .orElse("");
+                        }
+                ));
+
+        Address address = order.getAddressId() != null
+                ? addressRepository.findById(order.getAddressId()).orElse(null)
+                : null;
+
+        return OrderDetailResponse.fromEntityWithProductNamesAndAddress(order, orderItems, productNameByOrderItemId, productImgByOrderItemId, address);
     }
 
     @Override

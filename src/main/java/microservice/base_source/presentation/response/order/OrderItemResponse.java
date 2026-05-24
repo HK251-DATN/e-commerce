@@ -27,7 +27,8 @@ public class OrderItemResponse {
     
     // Optional: Product information (if needed)
     private String productName;
-    
+    private String productImg;
+
     public static OrderItemResponse fromEntity(OrderItem orderItem) {
         BigDecimal totalPrice = orderItem.getUnitPriceAtPurchase() != null
                 ? orderItem.getUnitPriceAtPurchase().multiply(BigDecimal.valueOf(orderItem.getQuantity()))
@@ -51,6 +52,16 @@ public class OrderItemResponse {
             String productName) {
         OrderItemResponse response = fromEntity(orderItem);
         response.setProductName(productName);
+        return response;
+    }
+
+    public static OrderItemResponse fromEntityWithProductInfo(
+            OrderItem orderItem,
+            String productName,
+            String productImg) {
+        OrderItemResponse response = fromEntity(orderItem);
+        response.setProductName(productName);
+        response.setProductImg(productImg);
         return response;
     }
 }

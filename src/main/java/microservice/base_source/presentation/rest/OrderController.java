@@ -3,16 +3,20 @@ package microservice.base_source.presentation.rest;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import microservice.base_source.domain.exception.type.BadRequestException;
 import microservice.base_source.domain.exception.type.NotFoundException;
 import microservice.base_source.domain.exception.type.UnauthorizedException;
+import microservice.base_source.domain.use_case.OrderItemUseCase;
 import microservice.base_source.infrastructure.security.AuthenticatedUser;
+import microservice.base_source.persistence.dto.BestSellingProductDTO;
 import microservice.base_source.persistence.dto.OrderDeliveryDTO;
 import microservice.base_source.persistence.dto.OrderSummaryDTO;
 import microservice.base_source.presentation.request.CreateOrderFromCartRequest;
 import microservice.base_source.presentation.response.order.OrderDetailResponse;
 import microservice.base_source.presentation.response.order.OrderPaymentStatusResponse;
+import microservice.base_source.presentation.response.product.BestSellingProductResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +37,9 @@ public class OrderController {
     
     @Autowired
     private OrderUseCase orderUseCase;
+
+    @Autowired
+    private OrderItemUseCase orderItemUseCase;
     
     /**
      * Create order from cart
@@ -578,6 +585,65 @@ public class OrderController {
                             HttpStatus.NOT_FOUND.toString(),
                             e.getMessage(),
                             null
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.ERROR(
+                            HttpStatus.BAD_REQUEST.toString(),
+                            e.getMessage(),
+                            null
+                    ));
+        }
+    }
+
+    /**
+     * Best-selling products chart data
+     * GET {{ecommerce}}/api/orders/admin/analytics/best-selling
+     *
+     * Query params:
+     *   categoryId  – filter by category at any level (optional)
+     *   startDate   – ISO datetime lower bound for order.created_at (optional)
+     *   endDate     – ISO datetime upper bound for order.created_at (optional)
+     *   limit       – max number of products to return (default 10)
+     */
+    @GetMapping("/admin/analytics/best-selling")
+    public ResponseEntity<ApiResponse<List<BestSellingProductResponse>>> getBestSellingProducts(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "10") int limit) {
+        try {
+            LocalDateTime start = startDate != null
+                    ? java.time.OffsetDateTime.parse(startDate).toLocalDateTime() : null;
+            LocalDateTime end = endDate != null
+                    ? java.time.OffsetDateTime.parse(endDate).toLocalDateTime() : null;
+
+            List<BestSellingProductDTO> data = orderItemUseCase.getBestSellingProducts(
+                    categoryId, start, end, limit);
+
+            if (data.isEmpty()) {
+                return ResponseEntity.ok()
+                        .body(ApiResponse.SKIP_AS_GOOD(
+                                HttpStatus.OK.toString(),
+                                "No best-selling products found",
+                                null
+                        ));
+            }
+
+            List<BestSellingProductResponse> response = data.stream()
+                    .map(d -> new BestSellingProductResponse(
+                            d.getProductGeneralId(),
+                            d.getName(),
+                            d.getCategoryId(),
+                            d.getImg(),
+                            d.getTotalQuantity()))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok()
+                    .body(ApiResponse.SUCCESS(
+                            HttpStatus.OK.toString(),
+                            "Get best-selling products success",
+                            response
                     ));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
