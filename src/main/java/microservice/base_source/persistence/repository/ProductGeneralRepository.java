@@ -92,7 +92,7 @@ public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, 
                         AND C.BELONG_TO_CATEGORY = :categoryId
                     )
                 )
-                AND (:productGeneralId = 0 OR BD.PRODUCT_GENERAL_ID = :productGeneralId)
+                AND (0 IN (:productGeneralIds) OR BD.PRODUCT_GENERAL_ID IN (:productGeneralIds))
                 AND (
                     CAST(:searchString AS TEXT) = '' OR
                     LOWER(PG.NAME)        LIKE LOWER(CONCAT('%', CAST(:searchString AS TEXT), '%')) OR
@@ -120,7 +120,7 @@ public interface ProductGeneralRepository extends JpaRepository<ProductGeneral, 
 			""", nativeQuery = true)
     List<DetailGeneralDTO> aggregatedSearch (
             @Param("categoryId") Long categoryId,
-            @Param("productGeneralId") Long productGeneralId,
+            @Param("productGeneralIds") List<Long> productGeneralIds,
             @Param("searchString") String searchString,
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,

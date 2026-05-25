@@ -48,7 +48,7 @@ public class ProductSearchController {
     @GetMapping
 	public ApiResponse<List<ProductSearchResponse>> search(
 		@RequestParam(defaultValue = "0", name = "categoryId") Long categoryId,
-		@RequestParam(defaultValue = "0", name = "productGeneralId") Long productGeneralId,
+		@RequestParam(defaultValue = "0", name = "productGeneralId") List<Long> productGeneralIds,
 		@RequestParam(defaultValue = "") String searchString,
 		@RequestParam(defaultValue = "0") BigDecimal minPrice,
 		@RequestParam(defaultValue = "0") BigDecimal maxPrice,
@@ -65,7 +65,7 @@ public class ProductSearchController {
 
 		List<DetailGeneralDTO> results = searchUseCase.searchBatch(
                 categoryId,
-                productGeneralId,
+                productGeneralIds,
                 searchString,
                 minPrice,
                 maxPrice,

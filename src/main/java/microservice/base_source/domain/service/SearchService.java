@@ -26,7 +26,7 @@ public class SearchService implements SearchUseCase {
 	@Override
 	public List<DetailGeneralDTO> searchBatch(
             Long categoryId,
-            Long productGeneralId,
+            List<Long> productGeneralIds,
             String searchString,
 			BigDecimal minPrice,
             BigDecimal maxPrice,
@@ -42,7 +42,7 @@ public class SearchService implements SearchUseCase {
             Integer size) {
 		return productGeneralRepository.aggregatedSearch(
 			categoryId,
-			productGeneralId,
+			productGeneralIds,
 			searchString,
 			minPrice,
 			maxPrice,

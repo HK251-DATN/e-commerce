@@ -31,7 +31,7 @@ public interface SearchUseCase {
 	 */
 	List<DetailGeneralDTO> searchBatch(
 		Long categoryId,
-		Long productGeneralId,
+		List<Long> productGeneralIds,
 		String searchString,
 		BigDecimal minPrice,
 		BigDecimal maxPrice,
