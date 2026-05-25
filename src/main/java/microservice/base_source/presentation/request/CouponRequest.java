@@ -1,6 +1,7 @@
 package microservice.base_source.presentation.request;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.Data;
 import microservice.base_source.domain.entity.Coupon;
@@ -17,6 +18,7 @@ public class CouponRequest {
 	private Long minOrderValue;
 	private LocalDateTime expiredAt;
 	private String publicYn;
+	private List<String> listUserGroup;
 
 	public Coupon toEntity() {
 		Coupon coupon = new Coupon();
@@ -29,6 +31,7 @@ public class CouponRequest {
 		coupon.setMinOrderValue(this.minOrderValue);
 		coupon.setExpiredAt(this.expiredAt);
 		coupon.setPublicYn(this.publicYn);
+		coupon.setListUserGroup(this.listUserGroup);
 		return coupon;
 	}
 }
