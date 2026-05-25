@@ -94,6 +94,7 @@ public class CouponService {
         existing.setMinOrderValue(updatedCoupon.getMinOrderValue());
         existing.setExpiredAt(updatedCoupon.getExpiredAt());
         existing.setPublicYn(updatedCoupon.getPublicYn());
+        existing.setListUserGroup(updatedCoupon.getListUserGroup());
 
         return couponRepository.save(existing);
     }

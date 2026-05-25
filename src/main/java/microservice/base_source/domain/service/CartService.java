@@ -2,6 +2,7 @@ package microservice.base_source.domain.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import microservice.base_source.domain.entity.Buyer;
 import microservice.base_source.domain.entity.Cart;
 import microservice.base_source.domain.entity.CartItem;
 import microservice.base_source.domain.entity.Coupon;
@@ -13,6 +14,7 @@ import microservice.base_source.domain.exception.type.BadRequestException;
 import microservice.base_source.domain.use_case.CartUseCase;
 import microservice.base_source.domain.use_case.CartItemUseCase;
 import microservice.base_source.domain.use_case.AddressUseCase;
+import microservice.base_source.persistence.repository.BuyerRepository;
 import microservice.base_source.persistence.repository.CartRepository;
 import microservice.base_source.persistence.repository.CouponRepository;
 import microservice.base_source.persistence.repository.CartItemRepository;
@@ -27,7 +29,9 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +45,7 @@ public class CartService implements CartUseCase {
     private final CouponRepository couponRepository;
     private final CartItemRepository cartItemRepository;
     private final BatchDetailRepository batchDetailRepository;
+    private final BuyerRepository buyerRepository;
     private final CartItemUseCase cartItemUseCase;
     private final AddressUseCase addressUseCase;
 
@@ -126,8 +131,20 @@ public class CartService implements CartUseCase {
 		List<Coupon> coupons = couponRepository.findByPublicYn("Y", pageable);
         List<CartCouponResponse> listCartCouponResponses = new ArrayList<>();
 
+        // Filter coupons by buyer's user groups (default-deny):
+        // - Coupon with empty/null listUserGroup is private (no one sees it).
+        // - Otherwise buyer must share at least one group with the coupon.
+        Buyer buyer = buyerRepository.findById(cart.getBuyerId()).orElse(null);
+        Set<String> buyerGroups = (buyer == null || buyer.getListUserGroup() == null)
+                ? new HashSet<>()
+                : new HashSet<>(buyer.getListUserGroup());
+        List<Coupon> visibleCoupons = coupons.stream()
+                .filter(c -> c.getListUserGroup() != null && !c.getListUserGroup().isEmpty())
+                .filter(c -> c.getListUserGroup().stream().anyMatch(buyerGroups::contains))
+                .toList();
+
         // check coupon: valid calculate saleAmount; not valid calculate amountToReachDiscount
-        coupons.forEach(coupon -> {
+        visibleCoupons.forEach(coupon -> {
             if (coupon.getMinOrderValue() > totalPrice) {
                 CartCouponResponse cartCouponResponse = new CartCouponResponse();
                 cartCouponResponse.setCoupon(coupon);

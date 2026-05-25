@@ -4,8 +4,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import microservice.base_source.persistence.converter.StringListConverter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -42,6 +45,10 @@ public class Coupon {
     @Column(name = "public_yn")
     private String publicYn; // Y or N
 
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "list_user_group")
+    private List<String> listUserGroup = new ArrayList<>();
+
     @Column(name = "expired_at")
     private LocalDateTime expiredAt;
 
@@ -54,6 +61,9 @@ public class Coupon {
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
+        if (listUserGroup == null || listUserGroup.isEmpty()) {
+            listUserGroup = new ArrayList<>(List.of("default_buyer"));
+        }
     }
 
     @PreUpdate
