@@ -59,6 +59,8 @@ public class OrderService implements OrderUseCase {
     private QrPaymentService qrPaymentService;
 	@Autowired
 	private CouponRepository couponRepository;
+	@Autowired
+	private BuyerRepository buyerRepository;
 
 
 	@Override
@@ -237,6 +239,26 @@ public class OrderService implements OrderUseCase {
 			orderItem.setOriginalPrice(batchDetail.getPrice());
 			orderItem.setUnitPriceAtPurchase(effectivePrice);
 			orderItems.add(orderItem);
+		}
+
+		// 5b. Re-validate that the cart's coupon still matches buyer's user groups.
+		// Buyer's groups may have changed since the coupon was applied to the cart.
+		if (cart.getCouponId() != null) {
+			Coupon coupon = couponRepository.findById(cart.getCouponId())
+					.orElseThrow(() -> new BadRequestException("Applied coupon no longer exists"));
+
+			Buyer buyer = buyerRepository.findById(buyerId).orElse(null);
+			List<String> buyerGroups = (buyer == null || buyer.getListUserGroup() == null)
+					? List.of()
+					: buyer.getListUserGroup();
+			List<String> couponGroups = coupon.getListUserGroup();
+
+			boolean matches = couponGroups != null
+					&& !couponGroups.isEmpty()
+					&& couponGroups.stream().anyMatch(buyerGroups::contains);
+			if (!matches) {
+				throw new BadRequestException("Coupon is not available for your user group");
+			}
 		}
 
 		// 6. Create order - copy all information from cart
