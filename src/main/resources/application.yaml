@@ -30,6 +30,19 @@ spring:
 server:
   port: 9300
 
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    readinessstate:
+      enabled: true
+
 cloudflare:
   r2:
     account-id: ${R2_ACCOUNT_ID}
