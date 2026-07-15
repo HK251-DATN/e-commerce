@@ -1,6 +1,7 @@
 package microservice.base_source.persistence.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,6 +12,9 @@ import microservice.base_source.domain.entity.Buyer;
 
 @Repository
 public interface BuyerRepository extends JpaRepository<Buyer, String> {
+
+	Optional<Buyer> findByEmail(String email);
+
 	@Query(
 		value = """
             SELECT *

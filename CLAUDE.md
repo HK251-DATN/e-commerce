@@ -50,16 +50,15 @@ cp .env.example .env
 ```
 
 **Database seeding:**
-The service includes an automatic DataSeeder that populates the database with Vietnamese fresh food sample data on first run:
-- 5 buyers with addresses
-- 18 product categories (hierarchical)
-- 15 fresh food products (fruits, vegetables, meat, seafood, dairy)
-- 15 batch details with pricing
-- 3 active sale events with discounts
-- Shopping carts with items
-- Product reviews in Vietnamese
+The service includes an automatic DataSeeder (`infrastructure/configuration/DataSeeder.java`, bound from `src/main/resources/init_data.json` via `InitData.java`) that seeds only this service's own domain data on first run:
+- 6 addresses across 5 buyers
+- 6 promotional coupons
 
-The seeder only runs when the database is empty (checks `buyer` table). Logs show detailed seeding progress.
+Buyers, categories, and product generals are **not** seeded here — they arrive asynchronously via Kafka from identity-service's and back-office-service's own DataSeeders (`BuyerCreateConsumer`, which also auto-creates each Buyer's Cart; `CategoryCreatedConsumer`; `ProductGeneralCreatedConsumer`). Addresses reference their Buyer by email, resolved against the local Kafka-populated table with a bounded (30s) poll-and-wait so a single `docker compose up` seeds correctly without a restart.
+
+`BatchDetail` and `CartItem` are not seeded at all currently (see `data-init-plan.md` for the tradeoff) — a fresh dev environment has buyers/addresses/coupons but nothing purchasable until product-storage-service processes a batch for real.
+
+The seeder only runs when the database is empty (checks `address` table, since `buyer` is Kafka-sourced and not this seeder's own data). Logs show detailed seeding progress.
 
 **Docker setup:**
 ```bash

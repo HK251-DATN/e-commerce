@@ -1,0 +1,18 @@
+{
+  "Addresses": [
+    { "buyerEmail": "buyer1@example.com", "receiverName": "Nguyễn Lan", "receiverPNum": "0901234001", "province": "TP.HCM", "district": "Quận 7", "commune": "Phường Tân Phú", "detail": "123 Nguyễn Văn Linh", "defaultAddress": true },
+    { "buyerEmail": "buyer2@example.com", "receiverName": "Trần Tuấn", "receiverPNum": "0981234002", "province": "TP.HCM", "district": "Thủ Đức", "commune": "Phường Linh Trung", "detail": "456 Võ Văn Ngân", "defaultAddress": true },
+    { "buyerEmail": "buyer3@example.com", "receiverName": "Lê Minh", "receiverPNum": "0911234003", "province": "TP.HCM", "district": "Gò Vấp", "commune": "Phường 12", "detail": "789 Quang Trung", "defaultAddress": true },
+    { "buyerEmail": "buyer4@example.com", "receiverName": "Phạm Hương", "receiverPNum": "0901234004", "province": "TP.HCM", "district": "Quận 1", "commune": "Phường Bến Nghé", "detail": "321 Nguyễn Thị Minh Khai", "defaultAddress": true },
+    { "buyerEmail": "buyer5@example.com", "receiverName": "Vũ Đức", "receiverPNum": "0981234005", "province": "TP.HCM", "district": "Quận 5", "commune": "Phường 1", "detail": "654 Trần Hưng Đạo", "defaultAddress": true },
+    { "buyerEmail": "buyer1@example.com", "receiverName": "Nguyễn Lan", "receiverPNum": "0901234001", "province": "TP.HCM", "district": "Quận 5", "commune": "Phường 1", "detail": "654 Trần Hưng Đạo", "defaultAddress": false }
+  ],
+  "Coupons": [
+    { "couponCode": "GIAM10% MAX 500K", "totalQuantity": 100, "currentQuantity": 100, "discountType": "PERCENTAGE", "discountValue": 10, "maxDiscountAmount": 500000, "minOrderValue": 100000, "expiresInHours": 720 },
+    { "couponCode": "GIAM10% MAX 50K", "totalQuantity": 100, "currentQuantity": 100, "discountType": "PERCENTAGE", "discountValue": 10, "maxDiscountAmount": 50000, "minOrderValue": 100000, "expiresInHours": 720 },
+    { "couponCode": "VIP100K", "totalQuantity": 50, "currentQuantity": 50, "discountType": "FIXED_AMOUNT", "discountValue": 100000, "maxDiscountAmount": 100000, "minOrderValue": 1000000, "expiresInHours": 336 },
+    { "couponCode": "BANMOI", "totalQuantity": 500, "currentQuantity": 500, "discountType": "PERCENTAGE", "discountValue": 50, "maxDiscountAmount": 20000, "minOrderValue": 50000, "expiresInHours": 168 },
+    { "couponCode": "LE3004", "totalQuantity": 200, "currentQuantity": 200, "discountType": "PERCENTAGE", "discountValue": 15, "maxDiscountAmount": 100000, "minOrderValue": 500000, "expiresInHours": 1440 },
+    { "couponCode": "FLASHSALE", "totalQuantity": 10, "currentQuantity": 10, "discountType": "FIXED_AMOUNT", "discountValue": 200000, "maxDiscountAmount": 200000, "minOrderValue": 2000000, "expiresInHours": 5 }
+  ]
+}
