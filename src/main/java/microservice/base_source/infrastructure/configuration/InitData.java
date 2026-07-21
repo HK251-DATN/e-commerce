@@ -37,6 +37,8 @@ public class InitData {
         private String commune;
         private String detail;
         private boolean defaultAddress;
+        private Double lat;
+        private Double lng;
     }
 
     @Getter

@@ -1,11 +1,11 @@
 {
   "Addresses": [
-    { "buyerEmail": "buyer1@example.com", "receiverName": "Nguyễn Lan", "receiverPNum": "0901234001", "province": "TP.HCM", "district": "Quận 7", "commune": "Phường Tân Phú", "detail": "123 Nguyễn Văn Linh", "defaultAddress": true },
-    { "buyerEmail": "buyer2@example.com", "receiverName": "Trần Tuấn", "receiverPNum": "0981234002", "province": "TP.HCM", "district": "Thủ Đức", "commune": "Phường Linh Trung", "detail": "456 Võ Văn Ngân", "defaultAddress": true },
-    { "buyerEmail": "buyer3@example.com", "receiverName": "Lê Minh", "receiverPNum": "0911234003", "province": "TP.HCM", "district": "Gò Vấp", "commune": "Phường 12", "detail": "789 Quang Trung", "defaultAddress": true },
-    { "buyerEmail": "buyer4@example.com", "receiverName": "Phạm Hương", "receiverPNum": "0901234004", "province": "TP.HCM", "district": "Quận 1", "commune": "Phường Bến Nghé", "detail": "321 Nguyễn Thị Minh Khai", "defaultAddress": true },
-    { "buyerEmail": "buyer5@example.com", "receiverName": "Vũ Đức", "receiverPNum": "0981234005", "province": "TP.HCM", "district": "Quận 5", "commune": "Phường 1", "detail": "654 Trần Hưng Đạo", "defaultAddress": true },
-    { "buyerEmail": "buyer1@example.com", "receiverName": "Nguyễn Lan", "receiverPNum": "0901234001", "province": "TP.HCM", "district": "Quận 5", "commune": "Phường 1", "detail": "654 Trần Hưng Đạo", "defaultAddress": false }
+    { "buyerEmail": "buyer1@example.com", "receiverName": "Nguyễn Lan", "receiverPNum": "0901234001", "province": "TP.HCM", "district": "Quận 7", "commune": "Phường Tân Phú", "detail": "123 Nguyễn Văn Linh", "defaultAddress": true, "lat": 10.813525, "lng": 106.700980 },
+    { "buyerEmail": "buyer2@example.com", "receiverName": "Trần Tuấn", "receiverPNum": "0981234002", "province": "TP.HCM", "district": "Thủ Đức", "commune": "Phường Linh Trung", "detail": "456 Võ Văn Ngân", "defaultAddress": true, "lat": 10.8428223, "lng": 106.6909861 },
+    { "buyerEmail": "buyer3@example.com", "receiverName": "Lê Minh", "receiverPNum": "0911234003", "province": "TP.HCM", "district": "Gò Vấp", "commune": "Phường 12", "detail": "789 Quang Trung", "defaultAddress": true, "lat": 10.8632713, "lng": 106.6968676 },
+    { "buyerEmail": "buyer4@example.com", "receiverName": "Phạm Hương", "receiverPNum": "0901234004", "province": "TP.HCM", "district": "Quận 1", "commune": "Phường Bến Nghé", "detail": "321 Nguyễn Thị Minh Khai", "defaultAddress": true, "lat": 10.8594135, "lng": 106.7800344 },
+    { "buyerEmail": "buyer5@example.com", "receiverName": "Vũ Đức", "receiverPNum": "0981234005", "province": "TP.HCM", "district": "Quận 5", "commune": "Phường 1", "detail": "654 Trần Hưng Đạo", "defaultAddress": true, "lat": 10.8635443, "lng": 106.7923773 },
+    { "buyerEmail": "buyer1@example.com", "receiverName": "Nguyễn Lan", "receiverPNum": "0901234001", "province": "TP.HCM", "district": "Quận 5", "commune": "Phường 1", "detail": "654 Trần Hưng Đạo", "defaultAddress": false, "lat": 10.8645043, "lng": 106.8035573 }
   ],
   "Coupons": [
     { "couponCode": "GIAM10% MAX 500K", "totalQuantity": 100, "currentQuantity": 100, "discountType": "PERCENTAGE", "discountValue": 10, "maxDiscountAmount": 500000, "minOrderValue": 100000, "expiresInHours": 720 },

@@ -155,6 +155,8 @@ public class DataSeeder {
             address.setCommune(seed.getCommune());
             address.setDetail(seed.getDetail());
             address.setIsDefault(seed.isDefaultAddress());
+            address.setLat(seed.getLat());
+            address.setLng(seed.getLng());
             addressRepository.save(address);
         }
 
