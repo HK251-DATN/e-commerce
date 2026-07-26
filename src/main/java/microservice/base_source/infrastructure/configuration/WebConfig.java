@@ -25,6 +25,7 @@ public class WebConfig {
         config.addAllowedOrigin("http://192.168.96.110:3000");
         config.addAllowedOrigin("http://192.168.1.75:3000");
         config.addAllowedOrigin("http://10.194.144.9:3000");// Alternative port
+        config.addAllowedOrigin("http://localhost:5273"); // Provider UI (Vite default port)
         // Allow all headers
         config.addAllowedHeader("*");
 
