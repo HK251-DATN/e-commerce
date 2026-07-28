@@ -29,6 +29,7 @@ spring:
 
 server:
   port: 9300
+  forward-headers-strategy: framework
 
 management:
   endpoint:
